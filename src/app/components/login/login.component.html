@@ -1,0 +1,202 @@
+<div class="auth-layout fade-slide-up">
+
+  <!-- Illustration gauche -->
+  <aside class="illus-side">
+    <svg class="scene" viewBox="0 0 360 320" fill="none">
+      <ellipse cx="180" cy="160" rx="140" ry="110" fill="#ede9ff" opacity="0.5" />
+      <ellipse cx="90" cy="220" rx="60" ry="40" fill="#e8ecff" opacity="0.7" />
+      <rect x="60" y="200" width="240" height="12" rx="6" fill="#c7cadb" />
+      <rect x="50" y="210" width="260" height="6" rx="3" fill="#b0b3c8" />
+      <rect x="80" y="110" width="200" height="130" rx="10" fill="#f0f2ff" stroke="#c7cadb" stroke-width="2" />
+      <rect x="92" y="122" width="176" height="106" rx="6" fill="white" />
+      <rect x="100" y="130" width="75" height="90" rx="8" fill="#eef0f8" stroke="#dde1f0" stroke-width="1" />
+      <circle cx="137" cy="152" r="14" fill="#c7cadb" />
+      <circle cx="137" cy="149" r="6" fill="#a0a4bc" />
+      <path d="M123 166 Q137 172 151 166" stroke="#a0a4bc" stroke-width="2" fill="none" />
+      <rect x="110" y="170" width="55" height="5" rx="2.5" fill="#dde1f0" />
+      <text x="108" y="200" font-size="9" fill="#f6c90e">★★★★</text>
+      <text x="148" y="200" font-size="9" fill="#dde1f0">★</text>
+      <rect x="183" y="126" width="75" height="94" rx="8" fill="#4361ee" opacity="0.95" />
+      <circle cx="220" cy="150" r="14" fill="white" opacity="0.3" />
+      <circle cx="220" cy="147" r="6" fill="white" />
+      <path d="M206 163 Q220 170 234 163" stroke="white" stroke-width="2" fill="none" />
+      <rect x="192" y="174" width="57" height="5" rx="2.5" fill="rgba(255,255,255,0.4)" />
+      <circle cx="241" cy="132" r="10" fill="#38a169" />
+      <polyline points="236,132 239,135 246,128" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"
+        stroke-linejoin="round" />
+      <rect x="76" y="200" width="24" height="36" rx="8" fill="#4361ee" />
+      <circle cx="88" cy="190" r="13" fill="#f4c89a" />
+      <path d="M75 187 Q88 175 101 187" fill="#5c3317" />
+      <rect x="260" y="198" width="24" height="40" rx="8" fill="#7b61ff" />
+      <circle cx="272" cy="188" r="13" fill="#f4c89a" />
+      <path d="M259 183 Q272 175 285 183" fill="#4a2c0a" />
+      <line x1="272" y1="208" x2="244" y2="170" stroke="#7b61ff" stroke-width="10" stroke-linecap="round" />
+      <rect x="40" y="130" width="60" height="22" rx="11" fill="white" stroke="#e8ecff" stroke-width="1.5" />
+      <text x="52" y="145" font-size="9" fill="#4361ee" font-weight="700">RH · CDI</text>
+      <rect x="260" y="100" width="80" height="22" rx="11" fill="white" stroke="#e8ecff" stroke-width="1.5" />
+      <text x="272" y="115" font-size="9" fill="#7b61ff" font-weight="700">12 candidats</text>
+      <rect x="100" y="80" width="70" height="22" rx="11" fill="#4361ee" />
+      <text x="112" y="95" font-size="9" fill="white" font-weight="700">Talent IA ✦</text>
+    </svg>
+
+    <div class="illus-text">
+      <h3>Trouvez les meilleurs talents</h3>
+      <p>Plateforme intelligente de gestion<br>des candidatures et du recrutement</p>
+    </div>
+  </aside>
+
+  <!-- Formulaire -->
+  <div class="form-card">
+
+    <div class="brand">
+      <span class="brand-name">Smart<span class="brand-accent">Hiring</span></span>
+    </div>
+
+    @if (isPendingAdmin()) {
+    <!-- ─── Recruteur en attente d'approbation admin ─── -->
+    <div style="text-align: center; padding: 10px 0 20px;">
+      <div
+        style="width: 72px; height: 72px; background: rgba(123,97,255,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#7b61ff" stroke-width="2" style="width: 36px; height: 36px;">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 10px; color: var(--text);">Validation en attente</h3>
+      <p style="font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px;">
+        Votre compte recruteur est <strong>en cours de validation</strong> par notre équipe administrative.<br>
+        Vous recevrez un e-mail dès que votre profil sera approuvé.
+      </p>
+      <button type="button" class="btn-primary" (click)="isPendingAdmin.set(false)">
+        Réessayer
+      </button>
+    </div>
+
+    } @else if (needsVerification()) {
+    <!-- ─── Candidat non vérifié ─── -->
+    <div style="text-align: center; padding: 10px 0 20px;">
+      <div
+        style="width: 72px; height: 72px; background: rgba(67,97,238,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="2" style="width: 36px; height: 36px;">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg>
+      </div>
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 10px; color: var(--text);">Vérifiez votre e-mail</h3>
+      <p style="font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px;">
+        Un code de vérification vous a été envoyé.<br>
+        Veuillez vérifier votre boîte de réception et activer votre compte.
+      </p>
+
+      @if (resendSuccess()) {
+      <div class="alert-success"
+        style="margin-bottom: 15px; background: #f0fff4; color: #38a169; padding: 10px; border-radius: 8px; font-size: 13px;">
+        Code renvoyé avec succès !
+      </div>
+      }
+
+      <div class="field" style="margin-bottom: 20px;">
+        <label>Code de vérification</label>
+        <input type="text" [value]="verificationCode()" (input)="verificationCode.set($any($event.target).value)"
+          placeholder="123456" maxlength="6" style="text-align: center; letter-spacing: 4px; font-weight: 700;" />
+      </div>
+
+      <button type="button" class="btn-primary" [disabled]="isLoading() || verificationCode().length < 6"
+        (click)="onVerify()">
+        @if (isLoading()) { <span class="spinner"></span> }
+        Vérifier et se connecter
+      </button>
+
+      <button type="button" class="btn-secondary" style="margin-top: 12px; width: 100%;" (click)="resendCode()"
+        [disabled]="isLoading()">
+        Renvoyer le code
+      </button>
+
+      <button type="button" class="btn-secondary"
+        style="margin-top: 8px; width: 100%; border: none; background: transparent; color: var(--muted);"
+        (click)="needsVerification.set(false)">
+        Retour à la connexion
+      </button>
+    </div>
+
+    } @else {
+    <!-- ─── Formulaire de connexion normal ─── -->
+    <p class="subtitle">Connectez-vous pour accéder à votre espace</p>
+
+    <!-- Erreur globale -->
+    @if (errorMessage()) {
+    <div class="alert-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      {{ errorMessage() }}
+    </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Email -->
+      <div class="field" [class.field--error]="isInvalid('email')">
+        <label for="email">Adresse e-mail</label>
+        <input id="email" type="email" formControlName="email" placeholder="nom.prenom@gmail.com" autocomplete="email" />
+        @if (isInvalid('email')) {
+        <span class="error-msg">Veuillez saisir un email valide</span>
+        }
+      </div>
+
+      <!-- Mot de passe -->
+      <div class="field" [class.field--error]="isInvalid('password')">
+        <label for="password">Mot de passe</label>
+        <div class="input-wrap">
+          <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
+            placeholder="••••••••" autocomplete="current-password" />
+          <button type="button" class="eye-btn" (click)="togglePassword()">
+            @if (showPassword()) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+            } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            }
+          </button>
+        </div>
+        @if (isInvalid('password')) {
+        <span class="error-msg">Mot de passe requis (min. 6 caractères)</span>
+        }
+      </div>
+
+      <!-- Extras -->
+      <div class="extras">
+        <label class="check-label">
+          <input type="checkbox" formControlName="rememberMe" />
+          <span>Se souvenir de moi</span>
+        </label>
+        <a routerLink="/forgot-password" class="link-blue">Mot de passe oublié ?</a>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-primary" [disabled]="isLoading()">
+        @if (isLoading()) {
+        <span class="spinner"></span> Connexion...
+        } @else {
+        Se connecter
+        }
+      </button>
+
+    </form>
+
+    <p class="form-footer">
+      Pas encore inscrit ?
+      <a routerLink="/signup">Créer un compte</a>
+    </p>
+    }
+
+  </div>
+</div>

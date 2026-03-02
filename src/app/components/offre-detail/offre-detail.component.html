@@ -1,0 +1,176 @@
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+            <div class="brand-role">{{ isRecruteur() ? 'Espace Recruteur' : 'Espace Candidat' }}</div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Principal</div>
+
+            @if (isRecruteur()) {
+            <div class="nav-item" (click)="navigateTo('/recruteur')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tableau de bord
+            </div>
+            <div class="nav-item active" (click)="navigateTo('/recruteur/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Mes offres
+            </div>
+            <div class="nav-item" (click)="navigateTo('/recruteur/candidatures')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                </svg>
+                Candidatures
+            </div>
+            } @else {
+            <div class="nav-item" (click)="navigateTo('/candidat')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tableau de bord
+            </div>
+            <div class="nav-item active" (click)="navigateTo('/candidat/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                Offres d'emploi
+            </div>
+            <div class="nav-item" (click)="navigateTo('/candidat/candidatures')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Mes candidatures
+            </div>
+            }
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">{{ recruiterInfo.initiales }}</div>
+                <div class="user-info">
+                    <div class="user-name">{{ recruiterInfo.prenom }} {{ recruiterInfo.nom }}</div>
+                    <div class="user-company">{{ recruiterInfo.entreprise || (isCandidat() ? 'Candidat' : 'Recruteur')
+                        }}</div>
+                </div>
+                <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <button class="btn-back" (click)="goBack()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="15,18 9,12 15,6" />
+                    </svg>
+                    Retour aux offres
+                </button>
+                <div class="topbar-title">Détails de l'offre</div>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-postuler-light" (click)="postuler()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Postuler maintenant
+                </button>
+
+            </div>
+        </div>
+
+        <div class="content">
+            @if (isLoading()) {
+            <div class="loading"><span class="spinner"></span> Chargement...</div>
+            } @else if (errorMessage()) {
+            <div class="alert-error">{{ errorMessage() }}</div>
+            } @else if (offre()) {
+            <div class="detail-container">
+                <div class="detail-main">
+                    <div class="detail-card header-card">
+                        <div class="header-content">
+                            <div class="title-section">
+                                <h1 class="job-title">{{ offre()?.title }}</h1>
+                                <p class="job-meta">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                    {{ offre()?.location }} · Publiée le {{ offre()?.publicationDate | date:'dd/MM/yyyy'
+                                    }}
+                                </p>
+                            </div>
+                            <span class="tag {{ getStatutConfig(offre()?.status).css }}">
+                                {{ getStatutConfig(offre()?.status).label }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h2 class="section-title">Description du poste</h2>
+                        <div class="description-text">
+                            {{ offre()?.description }}
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h2 class="section-title">Compétences requises</h2>
+                        <div class="tags-list">
+                            @for (skill of offre()?.requiredSkills; track skill) {
+                            <span class="skill-pill">{{ skill }}</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="detail-sidebar">
+                    <div class="detail-card info-card">
+                        <h3 class="side-title">Informations</h3>
+                        <div class="info-row">
+                            <span class="info-label">Niveau d'études</span>
+                            <span class="info-value">{{ offre()?.educationLevel }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Expérience</span>
+                            <span class="info-value">{{ offre()?.experienceYears }} ans</span>
+                        </div>
+                        @if (isRecruteur()) {
+                        <div class="info-row">
+                            <span class="info-label">Candidatures</span>
+                            <span class="info-value">{{ offre()?.nombreCandidatures }}</span>
+                        </div>
+                        }
+                        <div class="info-row">
+                            <span class="info-label">Expire le</span>
+                            <span class="info-value">{{ offre()?.expirationDate | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+            }
+        </div>
+    </div>
+</div>

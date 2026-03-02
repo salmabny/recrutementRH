@@ -1,0 +1,215 @@
+<div class="dashboard-layout">
+
+    <!-- ── Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+            <div class="brand-role">Espace Recruteur</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Principal</div>
+            <div class="nav-item" (click)="navigateTo('/recruteur')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tableau de bord
+            </div>
+            <div class="nav-item" (click)="navigateTo('/recruteur/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Mes offres
+            </div>
+            <div class="nav-item active" (click)="navigateTo('/recruteur/candidatures')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                </svg>
+                Candidatures
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                @if (recruteur().photoUrl) {
+                <img class="user-avatar avatar-img" [src]="getPhotoUrl({photoUrl: recruteur().photoUrl})" alt="Avatar">
+                } @else {
+                <div class="user-avatar">{{ recruteur().initiales }}</div>
+                }
+                <div class="user-info">
+                    <div class="user-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
+                    <div class="user-company">{{ recruteur().entreprise }}</div>
+                </div>
+                <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Main -->
+    <div class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <div>
+                <button class="btn-back" (click)="navigateTo('/recruteur/candidatures')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="15,18 9,12 15,6" />
+                    </svg>
+                    Retour aux candidatures
+                </button>
+                <div class="topbar-title">Dossier du candidat</div>
+            </div>
+            @if (candidature()) {
+            <div class="topbar-actions">
+                <button class="btn btn-accept" (click)="updateStatus('ACCEPTEE')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Accepter
+                </button>
+                <button class="btn btn-reject" (click)="updateStatus('REFUSEE')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                    Refuser
+                </button>
+            </div>
+            }
+        </div>
+
+        <div class="content">
+
+            @if (isLoading()) {
+            <div class="loading-state">
+                <span class="spinner"></span>
+                Chargement du dossier...
+            </div>
+            } @else if (error()) {
+            <div class="alert-error">{{ error() }}</div>
+            } @else if (candidature()) {
+
+            <div class="detail-grid">
+
+                <!-- Colonne gauche : infos + score -->
+                <div class="left-col">
+
+                    <div class="card">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            <span>Candidat</span>
+                        </div>
+                        <div class="card-body">
+                            @if (candidature()?.candidat?.photoUrl) {
+                            <img class="candidate-photo avatar-img" [src]="getPhotoUrl(candidature()?.candidat)"
+                                alt="Candidat">
+                            } @else {
+                            <div class="candidate-avatar">{{ getInitiales(candidature()) }}</div>
+                            }
+                            <div class="candidate-name">
+                                {{ candidature()!.candidat?.prenom }} {{ candidature()!.candidat?.nom }}
+                            </div>
+                            <div class="candidate-email">{{ candidature()!.candidat?.email }}</div>
+                            <div class="view-profile-link"
+                                (click)="navigateTo('/recruteur/candidat/' + candidature()!.candidat?.id)"
+                                style="margin-top: 10px; font-size: 13px; color: #4361ee; cursor: pointer; text-decoration: underline; font-weight: 600;">
+                                Voir le profil complet
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Offre</span>
+                                <span class="info-value">{{ candidature()!.jobOffer?.title || 'N/A' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Date</span>
+                                <span class="info-value">{{ candidature()!.dateCandidature | date:'dd/MM/yyyy' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Statut</span>
+                                <span class="tag {{ getStatusConfig(candidature()!.status).css }}">
+                                    {{ getStatusConfig(candidature()!.status).label }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card score-card">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            <span>Score IA</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="score-display {{ getScoreClass(candidature()!.score) }}">
+                                {{ candidature()!.score !== undefined ? (candidature()!.score | number:'1.0-0') + '%' :
+                                '—' }}
+                            </div>
+                            @if (candidature()!.analysisResult) {
+                            <div class="analysis-text">{{ candidature()!.analysisResult }}</div>
+                            } @else {
+                            <div class="analysis-empty">Aucune analyse disponible</div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Colonne droite : CV -->
+                <div class="right-col">
+                    <div class="card cv-card">
+                        <div class="card-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            <span>Curriculum Vitae</span>
+                            @if (candidature()!.cv?.fileUrl) {
+                            <button class="btn-open-cv" (click)="openCV()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                    <polyline points="15 3 21 3 21 9" />
+                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                </svg>
+                                Ouvrir dans un nouvel onglet
+                            </button>
+                            }
+                        </div>
+                        <div class="card-body cv-body">
+                            @if (safeCvUrl()) {
+                            <iframe [src]="safeCvUrl()" class="cv-iframe" title="CV du candidat"></iframe>
+                            } @else {
+                            <div class="no-cv">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                </svg>
+                                <p>Aucun CV soumis avec cette candidature</p>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            }
+
+        </div>
+    </div>
+</div>

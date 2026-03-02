@@ -1,0 +1,341 @@
+<div class="admin-layout">
+
+  <!-- ── Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+      <div class="brand-role">Administration</div>
+      <div class="admin-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        Super Admin
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Tableau de bord</div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+        Vue globale
+      </div>
+
+      <div class="nav-section-label">Utilisateurs</div>
+      <div class="nav-item" (click)="navigateTo('/admin/recruteurs')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Recruteurs
+        @if (adminService.stats()) {
+        <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalRecruteurs }}</span>
+        }
+      </div>
+
+      <div class="nav-item" (click)="navigateTo('/admin/users')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        Tous les utilisateurs
+        @if (adminService.stats()) {
+        <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalUtilisateurs }}</span>
+        }
+      </div>
+
+      <div class="nav-section-label">Contenu</div>
+      <div class="nav-item" (click)="navigateTo('/admin/offres')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        Offres d'emploi
+        @if (adminService.stats()) {
+        <span class="nav-badge nav-badge-white">{{ adminService.stats()!.offresActives }}</span>
+        }
+      </div>
+
+
+      <div class="nav-section-label">Système</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+        Statistiques
+      </div>
+
+      <!-- Déconnexion moved to footer -->
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        @if (adminUser()?.photoUrl) {
+        <img class="user-avatar avatar-img" [src]="getPhotoUrl(adminUser()?.photoUrl)" alt="Admin">
+        } @else {
+        <div class="user-avatar">
+          {{ adminUser() ? (adminUser()!.prenom.charAt(0) + adminUser()!.nom.charAt(0)).toUpperCase() : 'AD' }}
+        </div>
+        }
+        <div class="user-info">
+          <div class="user-name">{{ adminUser() ? adminUser()!.prenom + ' ' + adminUser()!.nom : 'Admin' }}</div>
+          <div class="user-role-label">Super Administrateur</div>
+        </div>
+        <button class="btn-logout" (click)="logout()" title="Déconnexion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-greeting-wrapper">
+        @if (adminUser()?.photoUrl) {
+        <img class="topbar-avatar avatar-img" [src]="getPhotoUrl(adminUser()?.photoUrl)" alt="Admin">
+        } @else {
+        <div class="topbar-avatar-initials">
+          {{ adminUser() ? (adminUser()!.prenom.charAt(0) + adminUser()!.nom.charAt(0)).toUpperCase() : 'AD' }}
+        </div>
+        }
+        <div>
+          <div class="topbar-title">Vue globale</div>
+          <div class="topbar-subtitle">Bonjour, Administrateur {{ adminUser()?.prenom }}</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        @if (adminService.stats() && adminService.stats()!.recruteursEnAttente > 0) {
+        <button class="btn-sm btn-danger-sm" (click)="navigateTo('/admin/recruteurs')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+          </svg>
+          Valider recruteurs ({{ adminService.stats()!.recruteursEnAttente }})
+        </button>
+        }
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Alerte recruteurs en attente -->
+      @if (adminService.stats() && adminService.stats()!.recruteursEnAttente > 0) {
+      <div class="alert-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <p>
+          <strong>{{ adminService.stats()!.recruteursEnAttente }} recruteurs</strong>
+          sont en attente de validation.
+          <a (click)="navigateTo('/admin/recruteurs')">Voir les demandes →</a>
+        </p>
+      </div>
+      }
+
+      <!-- Erreur -->
+      @if (errorMessage()) {
+      <div class="alert-error">{{ errorMessage() }}</div>
+      }
+
+      <!-- Stats -->
+      @if (adminService.stats()) {
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon si-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div class="stat-value">{{ adminService.stats()!.totalUtilisateurs }}</div>
+          <div class="stat-label">Utilisateurs total</div>
+          <div class="stat-change up">{{ adminService.stats()!.totalCandidats }} candidats · {{
+            adminService.stats()!.totalRecruteurs }}
+            recruteurs</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon si-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2" />
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+            </svg>
+          </div>
+          <div class="stat-value">{{ adminService.stats()!.totalRecruteurs }}</div>
+          <div class="stat-label">Recruteurs validés</div>
+          <div class="stat-change warn">
+            @if (adminService.stats()!.recruteursEnAttente > 0) { ⚠ {{ adminService.stats()!.recruteursEnAttente }} en
+            attente } @else { ✓ Tous
+            validés }
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon si-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            </svg>
+          </div>
+          <div class="stat-value">{{ adminService.stats()!.offresActives }}</div>
+          <div class="stat-label">Offres publiées</div>
+          <div class="stat-change up">Total des offres en base</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon si-orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
+          <div class="stat-value">{{ adminService.stats()!.candidaturesTraitees }}</div>
+          <div class="stat-label">Candidatures totales</div>
+          <div class="stat-change up">Total en base de données</div>
+        </div>
+      </div>
+      }
+
+      <!-- Chart + Pending -->
+      <div class="two-col">
+
+        <!-- Graphique -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              Activité mensuelle
+            </div>
+          </div>
+          <div class="chart-area">
+            <div class="chart-bars">
+              @if (chartData().length === 0) {
+              <div style="text-align:center;color:#64748b;padding:2rem;width:100%">Aucune donnée disponible</div>
+              }
+              @for (item of chartData(); track item.mois) {
+              <div class="bar-group">
+                <div class="bar-wrap">
+                  <div class="bar bar-blue" [style.height]="getBarHeight(item.inscriptions)">
+                  </div>
+                  <div class="bar bar-purple" [style.height]="getBarHeight(item.recruteurs)">
+                  </div>
+                  <div class="bar bar-green" [style.height]="getBarHeight(item.candidatures)">
+                  </div>
+                </div>
+                <div class="bar-label">{{ item.mois }}</div>
+              </div>
+              }
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#4361ee;"></div>
+                Inscriptions
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#7b61ff;"></div>
+                Recruteurs
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#38a169;"></div>
+                Candidatures
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recruteurs en attente -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              En attente de validation
+            </div>
+            @if (enAttente().length > 0) {
+            <span class="tag tag-red">{{ enAttente().length }} nouveaux</span>
+            }
+          </div>
+
+          @if (isLoading()) {
+          <div class="loading">Chargement...</div>
+          } @else if (enAttente().length === 0) {
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20,6 9,17 4,12" />
+            </svg>
+            <p>Aucun recruteur en attente</p>
+          </div>
+          } @else {
+          @for (user of enAttente(); track user.id) {
+          <div class="pending-item">
+            <!-- Recruteur -->
+            <div class="user-cell">
+              @if (user.photoUrl) {
+              <img class="avatar-sm avatar-img" [src]="getPhotoUrl(user.photoUrl)" alt="Photo">
+              } @else {
+              <div class="avatar-sm" [style.background]="user.status === 'PENDING_ADMIN_VALIDATION'
+                    ? 'linear-gradient(135deg,#ed8936,#dd6b20)'
+                    : user.status === 'SUSPENDU'
+                    ? 'linear-gradient(135deg,#e53e3e,#c53030)'
+                    : 'linear-gradient(135deg,#4361ee,#7b61ff)'">
+                {{ getInitiales(user.prenom, user.nom) }}
+              </div>
+              }
+              <div class="user-cell-info">
+                <div class="name" (click)="viewProfile(user)"
+                  style="cursor: pointer; color: #4361ee; text-decoration: underline;">
+                  {{ user.prenom }} {{ user.nom }}
+                </div>
+                <div class="email">{{ user.email }}</div>
+              </div>
+            </div>
+            <div class="pending-info">
+              <div class="pending-sub">{{ user.entreprise }} · {{ user.ville }}</div>
+              <div class="pending-sub">Inscrit le {{ user.dateInscription | date:'dd/MM/yyyy' }}</div>
+              @if (user.adminDocPath) {
+              <div class="pending-doc" (click)="viewDocument(user.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Consulter document
+              </div>
+              }
+            </div>
+            <div class="pending-actions">
+              <button class="btn-validate" (click)="valider(user)">✓ Valider</button>
+              <button class="btn-reject" (click)="refuser(user)">✕ Refuser</button>
+            </div>
+          </div>
+          }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

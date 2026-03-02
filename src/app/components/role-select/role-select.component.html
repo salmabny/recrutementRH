@@ -1,0 +1,115 @@
+<div class="role-layout fade-slide-up">
+
+  <!-- Retour -->
+  <button class="btn-back" type="button" routerLink="/login">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="15,18 9,12 15,6" />
+    </svg>
+    Retour à la connexion
+  </button>
+
+  <!-- Brand -->
+  <div class="brand">
+    <span class="brand-name">Smart<span class="brand-accent">Hiring</span></span>
+  </div>
+
+  <h1 class="title">Vous êtes... ?</h1>
+  <p class="subtitle">
+    Choisissez votre profil pour créer votre compte adapté à vos besoins.
+  </p>
+
+  <!-- Cards -->
+  <div class="role-cards">
+
+    <!-- Recruteur -->
+    <div class="role-card role-card--recruteur" [class.role-card--hovered]="hoveredRole === 'RECRUTEUR'"
+      [routerLink]="['/signup/recruteur']" (click)="selectRole('RECRUTEUR')" (mouseenter)="hoveredRole = 'RECRUTEUR'"
+      (mouseleave)="hoveredRole = null" role="button" tabindex="0" (keydown.enter)="selectRole('RECRUTEUR')">
+      <div class="card-icon card-icon--purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="7" width="20" height="14" rx="2" />
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+          <line x1="12" y1="12" x2="12" y2="16" />
+          <line x1="10" y1="14" x2="14" y2="14" />
+        </svg>
+      </div>
+
+      <h2 class="card-title">Recruteur</h2>
+      <p class="card-desc">
+        Je représente une entreprise et souhaite publier des offres
+        d'emploi et gérer mes candidatures.
+      </p>
+
+      <div class="card-features">
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20,6 9,17 4,12" />
+          </svg>
+          Publication d'offres illimitées
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20,6 9,17 4,12" />
+          </svg>
+          Gestion des candidatures
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20,6 9,17 4,12" />
+          </svg>
+          Tableau de bord analytique
+        </div>
+      </div>
+
+      <div class="card-cta card-cta--purple">
+        Continuer en tant que Recruteur →
+      </div>
+    </div>
+
+    <!-- Candidat -->
+    <div class="role-card role-card--candidat" [class.role-card--hovered]="hoveredRole === 'CANDIDAT'"
+      [routerLink]="['/signup/candidat']" (click)="selectRole('CANDIDAT')" (mouseenter)="hoveredRole = 'CANDIDAT'"
+      (mouseleave)="hoveredRole = null" role="button" tabindex="0" (keydown.enter)="selectRole('CANDIDAT')">
+      <div class="card-icon card-icon--blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </div>
+
+      <h2 class="card-title">Candidat</h2>
+      <p class="card-desc">
+        Je suis à la recherche d'un emploi et souhaite postuler
+        aux offres disponibles sur la plateforme.
+      </p>
+
+      <div class="card-features">
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20,6 9,17 4,12" />
+          </svg>
+          Candidature en 1 clic
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20,6 9,17 4,12" />
+          </svg>
+          Suivi des candidatures
+        </div>
+
+      </div>
+
+      <div class="card-cta card-cta--blue">
+        Continuer en tant que Candidat →
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <p class="footer-link">
+    Déjà inscrit ?
+    <a routerLink="/login">Se connecter</a>
+  </p>
+
+</div>

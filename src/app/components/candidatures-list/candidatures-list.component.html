@@ -1,0 +1,219 @@
+<div class="dashboard-layout">
+
+    <!-- ── Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+            <div class="brand-role">Espace Recruteur</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Principal</div>
+            <div class="nav-item" (click)="navigateTo('/recruteur')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tableau de bord
+            </div>
+
+            <div class="nav-item" (click)="navigateTo('/recruteur/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Mes offres
+            </div>
+
+            <div class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                </svg>
+                Candidatures
+            </div>
+            <div class="nav-item" (click)="navigateTo('/recruteur/profil')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Mon profil
+            </div>
+
+            <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Statistiques
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                @if (recruteur().photoUrl) {
+                <img class="user-avatar avatar-img" [src]="getPhotoUrl({photoUrl: recruteur().photoUrl})" alt="Avatar">
+                } @else {
+                <div class="user-avatar">{{ recruteur().initiales }}</div>
+                }
+                <div class="user-info">
+                    <div class="user-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
+                    <div class="user-company">{{ recruteur().entreprise }}</div>
+                </div>
+                <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Main -->
+    <div class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-greeting-wrapper">
+                @if (recruteur().photoUrl) {
+                <img class="topbar-avatar avatar-img" [src]="getPhotoUrlHelper(recruteur().photoUrl)" alt="Profile">
+                } @else {
+                <div class="topbar-avatar-initials">{{ recruteur().initiales }}</div>
+                }
+                <div>
+                    <div class="topbar-title">Gestion des Candidatures</div>
+                    <div class="topbar-subtitle">Bonjour {{ recruteur().prenom }} 👋</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- Filtres -->
+            <div class="filters-bar">
+                <div class="search-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input class="search-input" type="text" placeholder="Rechercher un candidat ou une offre..."
+                        [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+                </div>
+
+                <select class="filter-select" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
+                    <option value="ALL">Tous les statuts</option>
+                    <option value="SOUMISE">Soumises</option>
+                    <option value="EN_COURS">En cours</option>
+                    <option value="ACCEPTEE">Acceptées</option>
+                    <option value="REFUSEE">Refusées</option>
+                </select>
+            </div>
+
+            <!-- Erreur -->
+            @if (errorMessage()) {
+            <div class="alert-error">{{ errorMessage() }}</div>
+            }
+
+            <!-- Tableau -->
+            <div class="table-container">
+                @if (isLoading()) {
+                <div class="loading">
+                    <span class="spinner"></span> Chargement des candidatures...
+                </div>
+                } @else if (filteredCandidatures().length === 0) {
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                    </svg>
+                    <p>Aucune candidature trouvée</p>
+                </div>
+                } @else {
+                <table class="candidatures-table">
+                    <thead>
+                        <tr>
+                            <th>Candidat</th>
+                            <th>Offre visée</th>
+                            <th>Date</th>
+                            <th>Score IA</th>
+                            <th>Statut</th>
+                            <th class="actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (c of filteredCandidatures(); track c.id) {
+                        <tr>
+                            <td>
+                                <div class="candidate-info-wrapper">
+                                    <div class="candidate-mini-avatar">
+                                        @if (getPhotoUrl(c.candidat)) {
+                                        <img [src]="getPhotoUrl(c.candidat)" alt="Avatar">
+                                        } @else {
+                                        {{ (c.candidat?.prenom?.[0] || '') + (c.candidat?.nom?.[0] || '') }}
+                                        }
+                                    </div>
+                                    <div class="candidate-info">
+                                        <div class="candidate-name"
+                                            (click)="navigateTo('/recruteur/candidat/' + c.candidat?.id)"
+                                            style="cursor: pointer; color: var(--primary-blue);">
+                                            {{ c.candidat?.prenom }} {{ c.candidat?.nom }}
+                                        </div>
+                                        <div class="candidate-email">{{ c.candidat?.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="job-title">{{ c.jobOffer?.title || 'N/A' }}</div>
+                            </td>
+                            <td>
+                                <div class="date">{{ c.dateCandidature | date:'dd/MM/yyyy' }}</div>
+                            </td>
+                            <td>
+                                <div class="score-badge" [ngClass]="getScoreClass(c.score)">
+                                    {{ c.score !== undefined ? (c.score | number:'1.0-0') + '%' : '—' }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="tag {{ getStatusConfig(c.status).css }}">
+                                    {{ getStatusConfig(c.status).label }}
+                                </span>
+                            </td>
+                            <td class="actions-col">
+                                <div class="action-buttons">
+                                    <button class="btn-icon" title="Voir CV"
+                                        (click)="navigateTo('/recruteur/candidatures/' + c.id)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                            <polyline points="14 2 14 8 20 8" />
+                                        </svg>
+                                    </button>
+                                    <button class="btn-icon btn-accept" title="Accepter"
+                                        (click)="updateStatus(c, 'ACCEPTEE')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                    </button>
+                                    <button class="btn-icon btn-reject" title="Refuser"
+                                        (click)="updateStatus(c, 'REFUSEE')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="18" y1="6" x2="6" y2="18" />
+                                            <line x1="6" y1="6" x2="18" y2="18" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,276 @@
+<div class="auth-layout fade-slide-up">
+
+  <!-- Illustration gauche -->
+  <aside class="illus-side">
+    <svg class="scene" viewBox="0 0 360 300" fill="none">
+      <ellipse cx="180" cy="155" rx="130" ry="105" fill="#ede9ff" opacity="0.5" />
+      <rect x="90" y="60" width="180" height="190" rx="14" fill="white" stroke="#dde1f0" stroke-width="2" />
+      <rect x="90" y="60" width="180" height="50" rx="14" fill="#4361ee" />
+      <rect x="90" y="96" width="180" height="14" fill="#4361ee" />
+      <circle cx="180" cy="85" r="20" fill="white" opacity="0.2" />
+      <circle cx="180" cy="82" r="10" fill="white" opacity="0.5" />
+      <path d="M163 98 Q180 106 197 98" stroke="white" stroke-width="2.5" fill="none" />
+      <rect x="108" y="122" width="144" height="8" rx="4" fill="#eef0f8" />
+      <rect x="108" y="136" width="144" height="8" rx="4" fill="#eef0f8" />
+      <rect x="108" y="150" width="90" height="8" rx="4" fill="#4361ee" opacity="0.4" />
+      <rect x="204" y="150" width="48" height="8" rx="4" fill="#eef0f8" />
+      <rect x="108" y="164" width="144" height="8" rx="4" fill="#eef0f8" />
+      <circle cx="162" cy="220" r="5" fill="#4361ee" />
+      <circle cx="180" cy="220" r="5" fill="#dde1f0" />
+      <circle cx="198" cy="220" r="5" fill="#dde1f0" />
+      <circle cx="248" cy="66" r="16" fill="#38a169" />
+      <polyline points="241,66 246,71 255,60" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"
+        stroke-linejoin="round" />
+      <rect x="38" y="188" width="22" height="40" rx="8" fill="#7b61ff" />
+      <circle cx="49" cy="178" r="13" fill="#f4c89a" />
+      <path d="M36 174 Q49 163 62 174" fill="#2d1b00" />
+      <line x1="60" y1="196" x2="85" y2="165" stroke="#7b61ff" stroke-width="10" stroke-linecap="round" />
+      <circle cx="88" cy="163" r="5" fill="#f4c89a" />
+      <rect x="298" y="192" width="22" height="38" rx="8" fill="#4361ee" />
+      <circle cx="309" cy="182" r="13" fill="#f4c89a" />
+      <path d="M296 178 Q309 167 322 178" fill="#5c3317" />
+      <rect x="30" y="100" width="74" height="22" rx="11" fill="white" stroke="#e8ecff" stroke-width="1.5" />
+      <text x="42" y="115" font-size="9" fill="#7b61ff" font-weight="700">Profil créé ✦</text>
+      <rect x="256" y="108" width="76" height="22" rx="11" fill="white" stroke="#e8ecff" stroke-width="1.5" />
+      <text x="265" y="123" font-size="9" fill="#4361ee" font-weight="700">Vérification ✉</text>
+    </svg>
+
+    <div class="illus-text">
+      <h3>Espace Candidat</h3>
+      <p>Créez votre profil et postulez<br>aux meilleures offres d'emploi</p>
+    </div>
+  </aside>
+
+  <!-- Formulaire -->
+  <div class="form-card">
+
+    <!-- Retour -->
+    <button class="btn-back" type="button" (click)="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15,18 9,12 15,6" />
+      </svg>
+      Retour au choix du profil
+    </button>
+
+    <div class="brand">
+      <span class="brand-name">Smart<span class="brand-accent">Hiring</span></span>
+    </div>
+    <p class="subtitle">Créer un compte <strong>Candidat</strong></p>
+
+    <!-- Toggle rôle -->
+    <div class="role-toggle">
+      <button type="button" class="role-btn" (click)="switchToRecruteur()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2" />
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+        </svg>
+        Recruteur
+      </button>
+      <button type="button" class="role-btn role-btn--active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        Candidat
+      </button>
+    </div>
+
+    <!-- Étapes -->
+    <div class="steps">
+      <div class="step">
+        <div class="step-dot step-dot--done">✓</div>
+        <div class="step-label">Profil</div>
+      </div>
+      <div class="step-line step-line--done"></div>
+      <div class="step">
+        <div class="step-dot step-dot--current">2</div>
+        <div class="step-label step-label--current">Compte</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-dot">3</div>
+        <div class="step-label">Vérification</div>
+      </div>
+    </div>
+
+    <!-- Erreur -->
+    @if (errorMessage()) {
+    <div class="alert-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      {{ errorMessage() }}
+    </div>
+    }
+
+    @if (!isRegistered()) {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Prénom / Nom -->
+      <div class="two-col">
+        <div class="field" [class.field--error]="isInvalid('prenom')">
+          <label for="prenom">Prénom</label>
+          <input id="prenom" type="text" formControlName="prenom" placeholder="Lucas" />
+          @if (isInvalid('prenom')) {
+          <span class="error-msg">Prénom requis</span>
+          }
+        </div>
+        <div class="field" [class.field--error]="isInvalid('nom')">
+          <label for="nom">Nom</label>
+          <input id="nom" type="text" formControlName="nom" placeholder="Bernard" />
+          @if (isInvalid('nom')) {
+          <span class="error-msg">Nom requis</span>
+          }
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="field" [class.field--error]="isInvalid('email')">
+        <label for="email">Adresse e-mail</label>
+        <input id="email" type="email" formControlName="email" placeholder="lucas.bernard@gmail.com"
+          autocomplete="email" />
+        @if (isInvalid('email')) {
+        <span class="error-msg">Email valide requis</span>
+        }
+      </div>
+
+      <!-- Mot de passe -->
+      <div class="field" [class.field--error]="isInvalid('password')">
+        <label for="password">Mot de passe</label>
+        <div class="input-wrap">
+          <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
+            placeholder="8 caractères minimum" autocomplete="new-password" />
+          <button type="button" class="eye-btn" (click)="togglePassword()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+
+        @if (passwordStrength()) {
+        <div class="strength">
+          <div class="strength-bar">
+            @for (filled of strengthSegments; track $index) {
+            <div class="strength-seg" [style.background]="filled ? passwordStrength()!.color : '#dde1f0'"></div>
+            }
+          </div>
+          <span class="strength-label">
+            Force :
+            <strong [style.color]="passwordStrength()!.color">
+              {{ passwordStrength()!.label }}
+            </strong>
+          </span>
+        </div>
+        }
+      </div>
+
+
+
+      <!-- Submit -->
+      <button type="submit" class="btn-primary" [disabled]="isLoading()">
+        @if (isLoading()) {
+        <span class="spinner"></span> Création en cours...
+        } @else {
+        Créer mon compte
+        }
+      </button>
+
+      <div class="divider">
+        <span>ou</span>
+      </div>
+
+      <div id="google-btn-container" class="google-btn-container"></div>
+
+
+    </form>
+    } @else if (isVerified()) {
+    <div class="success-step fade-in">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+      <h2 class="success-title">Vérification réussie !</h2>
+      <p class="success-desc">
+        Bienvenue sur <strong>SmartHiring</strong>, {{ form.get('prenom')?.value }}.<br>
+        Votre compte est désormais actif.
+      </p>
+      <div class="loading-redirect">
+        <span class="spinner"></span>
+        Redirection vers votre tableau de bord...
+      </div>
+    </div>
+    } @else {
+    <div class="verification-step">
+
+      <!-- Icône email animée -->
+      <div class="verify-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg>
+      </div>
+
+      <h2 class="verify-title">Vérifiez votre e-mail</h2>
+      <p class="verify-desc">
+        Un code de vérification a été envoyé à<br>
+        <strong>{{ form.get('email')?.value }}</strong>
+      </p>
+
+      <!-- Bannière succès renvoi -->
+      @if (resendSuccess()) {
+      <div class="alert-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22,4 12,14.01 9,11.01" />
+        </svg>
+        Code renvoyé ! Vérifiez votre boîte de réception.
+      </div>
+      }
+
+      <!-- Champ code -->
+      <div class="field verify-code-field">
+        <label for="v-code">Code de vérification</label>
+        <input id="v-code" type="text" [value]="verificationCode()"
+          (input)="verificationCode.set($any($event.target).value)" placeholder="_ _ _ _ _ _" maxlength="6"
+          class="code-input" />
+      </div>
+
+      <!-- Bouton vérifier -->
+      <button type="button" class="btn-primary" [disabled]="isLoading() || verificationCode().length < 6"
+        (click)="onVerify()">
+        @if (isLoading()) {
+        <span class="spinner"></span> Vérification...
+        } @else {
+        Vérifier mon compte
+        }
+      </button>
+
+      <!-- Renvoyer le code -->
+      <div class="resend-section">
+        <span class="resend-label">Vous n'avez pas reçu le code ?</span>
+        @if (resendCountdown() > 0) {
+        <span class="resend-countdown">Renvoyer dans {{ resendCountdown() }}s</span>
+        } @else {
+        <button type="button" class="btn-resend" (click)="resendCode()" [disabled]="isLoading()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 .49-4" />
+          </svg>
+          Renvoyer le code
+        </button>
+        }
+      </div>
+
+    </div>
+    }
+
+    <p class="form-footer">
+      Déjà inscrit ? <a routerLink="/login">Se connecter</a>
+    </p>
+
+  </div>
+</div>

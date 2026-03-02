@@ -1,0 +1,264 @@
+<div class="auth-layout fade-slide-up">
+
+  <!-- Illustration gauche -->
+  <aside class="illus-side">
+    <svg class="scene" viewBox="0 0 360 300" fill="none">
+      <ellipse cx="180" cy="155" rx="130" ry="105" fill="#ede9ff" opacity="0.5" />
+      <rect x="110" y="90" width="140" height="160" rx="8" fill="white" stroke="#dde1f0" stroke-width="2" />
+      <rect x="110" y="90" width="140" height="40" rx="8" fill="#7b61ff" />
+      <rect x="110" y="116" width="140" height="14" fill="#7b61ff" />
+      <rect x="124" y="148" width="24" height="20" rx="4" fill="#e8ecff" />
+      <rect x="158" y="148" width="24" height="20" rx="4" fill="#e8ecff" />
+      <rect x="192" y="148" width="24" height="20" rx="4" fill="#4361ee" opacity="0.5" />
+      <rect x="124" y="176" width="24" height="20" rx="4" fill="#e8ecff" />
+      <rect x="158" y="176" width="24" height="20" rx="4" fill="#4361ee" opacity="0.5" />
+      <rect x="192" y="176" width="24" height="20" rx="4" fill="#e8ecff" />
+      <rect x="158" y="212" width="44" height="38" rx="4" fill="#4361ee" opacity="0.3" />
+      <circle cx="196" cy="231" r="3" fill="#4361ee" />
+      <text x="136" y="113" font-size="10" fill="white" font-weight="700">ENTREPRISE</text>
+      <rect x="52" y="130" width="52" height="68" rx="6" fill="white" stroke="#dde1f0" stroke-width="1.5" />
+      <rect x="60" y="142" width="36" height="4" rx="2" fill="#dde1f0" />
+      <rect x="60" y="152" width="30" height="4" rx="2" fill="#dde1f0" />
+      <rect x="60" y="162" width="36" height="4" rx="2" fill="#dde1f0" />
+      <rect x="60" y="172" width="22" height="4" rx="2" fill="#7b61ff" opacity="0.5" />
+      <circle cx="78" cy="186" r="10" fill="none" stroke="#7b61ff" stroke-width="2" />
+      <polyline points="73,186 76,189 83,182" stroke="#7b61ff" stroke-width="2" fill="none" stroke-linecap="round"
+        stroke-linejoin="round" />
+      <rect x="280" y="195" width="22" height="40" rx="8" fill="#7b61ff" />
+      <circle cx="291" cy="185" r="13" fill="#f4c89a" />
+      <path d="M278 181 Q291 170 304 181" fill="#5c3317" />
+      <rect x="256" y="200" width="22" height="30" rx="4" fill="white" stroke="#dde1f0" stroke-width="1.5" />
+      <rect x="259" y="206" width="16" height="3" rx="1.5" fill="#dde1f0" />
+      <rect x="259" y="212" width="12" height="3" rx="1.5" fill="#dde1f0" />
+      <line x1="278" y1="198" x2="268" y2="208" stroke="#7b61ff" stroke-width="7" stroke-linecap="round" />
+      <rect x="30" y="100" width="74" height="22" rx="11" fill="white" stroke="#e8ecff" stroke-width="1.5" />
+      <text x="40" y="115" font-size="9" fill="#7b61ff" font-weight="700">Vérification ✦</text>
+      <rect x="256" y="96" width="76" height="22" rx="11" fill="#7b61ff" />
+      <text x="264" y="111" font-size="9" fill="white" font-weight="700">Entreprise ✓</text>
+    </svg>
+
+    <div class="illus-text">
+      <h3>Espace Recruteur</h3>
+      <p>Inscrivez votre entreprise et commencez<br>à publier vos offres d'emploi</p>
+    </div>
+  </aside>
+
+  <!-- Formulaire -->
+  <div class="form-card">
+
+    <!-- Retour -->
+    <button class="btn-back" type="button" (click)="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15,18 9,12 15,6" />
+      </svg>
+      Retour au choix du profil
+    </button>
+
+    <div class="brand">
+      <span class="brand-name">Smart<span class="brand-accent">Hiring</span></span>
+    </div>
+    <p class="subtitle">Créer un compte <strong>Recruteur</strong></p>
+
+    <!-- Toggle rôle -->
+    <div class="role-toggle">
+      <button type="button" class="role-btn role-btn--active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2" />
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+        </svg>
+        Recruteur
+      </button>
+      <button type="button" class="role-btn" (click)="switchToCandidat()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        Candidat
+      </button>
+    </div>
+
+    <!-- Étapes -->
+    <div class="steps">
+      <div class="step">
+        <div class="step-dot step-dot--done">✓</div>
+        <div class="step-label">Profil</div>
+      </div>
+      <div class="step-line step-line--done"></div>
+      <div class="step">
+        <div class="step-dot step-dot--current">2</div>
+        <div class="step-label step-label--current">Compte</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-dot">3</div>
+        <div class="step-label">Validation</div>
+      </div>
+    </div>
+
+    <!-- Erreur -->
+    @if (errorMessage()) {
+    <div class="alert-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      {{ errorMessage() }}
+    </div>
+    }
+
+    @if (!isRegistered()) {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Prénom / Nom -->
+      <div class="two-col">
+        <div class="field" [class.field--error]="isInvalid('prenom')">
+          <label for="prenom">Prénom</label>
+          <input id="prenom" type="text" formControlName="prenom" placeholder="prenom" />
+          @if (isInvalid('prenom')) {
+          <span class="error-msg">Prénom requis</span>
+          }
+        </div>
+        <div class="field" [class.field--error]="isInvalid('nom')">
+          <label for="nom">Nom</label>
+          <input id="nom" type="text" formControlName="nom" placeholder="nom" />
+          @if (isInvalid('nom')) {
+          <span class="error-msg">Nom requis</span>
+          }
+        </div>
+      </div>
+
+      <!-- Entreprise / Ville -->
+      <div class="two-col">
+        <div class="field" [class.field--error]="isInvalid('entreprise')">
+          <label for="entreprise">Nom de l'entreprise</label>
+          <input id="entreprise" type="text" formControlName="entreprise" placeholder="Ex : Tech Corp SAS" />
+          @if (isInvalid('entreprise')) {
+          <span class="error-msg">Requis</span>
+          }
+        </div>
+        <div class="field" [class.field--error]="isInvalid('ville')">
+          <label for="ville">Ville</label>
+          <input id="ville" type="text" formControlName="ville" placeholder="Ex : Paris" />
+          @if (isInvalid('ville')) {
+          <span class="error-msg">Requis</span>
+          }
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="field" [class.field--error]="isInvalid('email')">
+        <label for="email">Adresse e-mail</label>
+        <input id="email" type="email" formControlName="email" placeholder="nom@techcorp.tn" autocomplete="email" />
+        @if (isInvalid('email')) {
+        <span class="error-msg">Email valide requis</span>
+        }
+      </div>
+
+      <!-- Mot de passe -->
+      <div class="field" [class.field--error]="isInvalid('password')">
+        <label for="password">Mot de passe</label>
+        <div class="input-wrap">
+          <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
+            placeholder="8 caractères minimum" autocomplete="new-password" />
+          <button type="button" class="eye-btn" (click)="togglePassword()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+
+        @if (passwordStrength()) {
+        <div class="strength">
+          <div class="strength-bar">
+            @for (filled of strengthSegments; track $index) {
+            <div class="strength-seg" [style.background]="filled ? passwordStrength()!.color : '#dde1f0'"></div>
+            }
+          </div>
+          <span class="strength-label">
+            Force :
+            <strong [style.color]="passwordStrength()!.color">
+              {{ passwordStrength()!.label }}
+            </strong>
+          </span>
+        </div>
+        }
+      </div>
+
+      <!-- Info document -->
+      <div class="info-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <p>Un document est requis pour vérifier l'identité de votre entreprise (Kbis, extrait RCS…).</p>
+      </div>
+
+      <!-- Upload -->
+      @if (!selectedFile()) {
+      <div class="upload-zone" [class.upload-zone--drag]="isDragOver()" (click)="fileInput.click()"
+        (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+        <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileSelected($event)" hidden />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <p class="upload-title">Document administratif</p>
+        <p class="upload-sub">Glissez-déposez ou cliquez pour sélectionner</p>
+        <span class="upload-badge">PDF · JPG · PNG — max 5 Mo</span>
+      </div>
+      } @else {
+      <div class="file-preview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        <div class="file-info">
+          <span class="file-name">{{ selectedFile()!.name }}</span>
+          <span class="file-size">{{ formatFileSize(selectedFile()!.size) }}</span>
+        </div>
+        <button type="button" class="file-remove" (click)="removeFile()">✕</button>
+      </div>
+      }
+
+
+
+      <!-- Submit -->
+      <button type="submit" class="btn-primary" [disabled]="isLoading()">
+        @if (isLoading()) {
+        <span class="spinner"></span> Création en cours...
+        } @else {
+        Créer mon compte Recruteur
+        }
+      </button>
+
+    </form>
+    } @else {
+    <div class="pending-step" style="text-align: center; padding: 20px 0;">
+      <div
+        style="width: 64px; height: 64px; background: rgba(123, 97, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#7b61ff" stroke-width="2" style="width: 32px; height: 32px;">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 12px;">Validation en cours</h3>
+      <p style="font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px;">
+        Votre compte est en cours de validation par notre équipe administrative.
+        Vous recevrez un e-mail de confirmation une fois votre profil approuvé.
+      </p>
+      <button type="button" class="btn-primary" (click)="goBack()">
+        Retour à la connexion
+      </button>
+    </div>
+    }
+
+    <p class="form-footer">
+      Déjà inscrit ? <a routerLink="/login">Se connecter</a>
+    </p>
+
+  </div>
+</div>

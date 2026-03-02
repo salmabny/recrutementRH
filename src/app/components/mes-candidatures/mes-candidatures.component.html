@@ -1,0 +1,201 @@
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+      <div class="brand-role">Espace Candidat</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item" (click)="navigateTo('/candidat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+        <span>Tableau de bord</span>
+      </div>
+
+      <div class="nav-item" (click)="navigateTo('/candidat/offres')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <span>Offres d'emploi</span>
+      </div>
+
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        <span>Mes candidatures</span>
+        @if (total() > 0) {
+        <span class="nav-badge">{{ total() }}</span>
+        }
+      </div>
+
+      <div class="nav-section-label">Profil</div>
+
+      <div class="nav-item" (click)="navigateTo('/candidat/profil')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        <span>Mon profil</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        @if (candidat()?.photoUrl) {
+        <img class="user-avatar avatar-img" [src]="getPhotoUrl(candidat()?.photoUrl)" alt="Avatar">
+        } @else {
+        <div class="user-avatar">{{ getInitiales() }}</div>
+        }
+        <div class="user-info">
+          @if (candidat()) {
+          <div class="user-name">{{ candidat()!.prenom }} {{ candidat()!.nom }}</div>
+          } @else {
+          <div class="user-name">Chargement...</div>
+          }
+          <div class="user-role">Candidat</div>
+        </div>
+        <button class="btn-logout" (click)="logout()" title="Déconnexion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-greeting-wrapper">
+        @if (candidat()?.photoUrl) {
+        <img class="topbar-avatar avatar-img" [src]="getPhotoUrl(candidat()?.photoUrl)" alt="Profile">
+        } @else {
+        <div class="topbar-avatar-initials">{{ getInitiales() }}</div>
+        }
+        <div>
+          <div class="topbar-title">Mes candidatures</div>
+          <div class="topbar-sub">Bonjour {{ candidat()?.prenom }} 👋</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Chargement de vos candidatures...</p>
+      </div>
+      } @else if (error()) {
+      <div class="error-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <p>{{ error() }}</p>
+        <button class="btn btn-secondary" (click)="onRetry()">Réessayer</button>
+      </div>
+      } @else if (candidatures().length === 0) {
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+        </svg>
+        <p>Vous n'avez pas encore postulé à des offres.</p>
+        <button class="btn btn-primary" (click)="navigateTo('/candidat/offres')" style="margin-top: 10px;">
+          Voir les offres
+        </button>
+      </div>
+      } @else {
+      <!-- Summary Stats -->
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <span class="stat-value">{{ total() }}</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-card pending">
+          <span class="stat-value">{{ pendingCount() }}</span>
+          <span class="stat-label">En cours</span>
+        </div>
+        <div class="stat-card accepted">
+          <span class="stat-value">{{ acceptedCount() }}</span>
+          <span class="stat-label">Acceptées</span>
+        </div>
+        <div class="stat-card refused">
+          <span class="stat-value">{{ refusedCount() }}</span>
+          <span class="stat-label">Refusées</span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="candidatures-table">
+          <thead>
+            <tr>
+              <th>Offre & Entreprise</th>
+              <th>Date</th>
+              <th>Score IA</th>
+              <th>Statut</th>
+              <th class="actions-col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of candidatures(); track c.id) {
+            <tr>
+              <td>
+                <div class="job-info-wrapper">
+                  @if (c.jobOffer?.recruteur?.photoUrl) {
+                  <img class="recruiter-mini-avatar avatar-img" [src]="getPhotoUrl(c.jobOffer?.recruteur?.photoUrl)"
+                    alt="Logo">
+                  } @else {
+                  <div class="recruiter-mini-avatar">
+                    {{ (c.jobOffer?.recruteur?.entreprise?.[0] || 'E').toUpperCase() }}
+                  </div>
+                  }
+                  <div class="job-info">
+                    <div class="job-title">{{ c.jobOffer?.title }}</div>
+                    <div class="job-company">{{ c.jobOffer?.recruteur?.entreprise || 'Entreprise' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="date">{{ c.dateCandidature | date:'dd/MM/yyyy' }}</div>
+              </td>
+              <td>
+                <div class="score-badge" [ngClass]="getScoreClass(c.score)">
+                  {{ c.score }}%
+                </div>
+              </td>
+              <td>
+                <span class="tag" [ngClass]="getStatusConfig(c.status).css">
+                  {{ getStatusConfig(c.status).label }}
+                </span>
+              </td>
+              <td class="actions-col">
+                <button class="btn-icon" title="Voir l'offre"
+                  (click)="navigateTo('/candidat/offres/' + c.jobOffer?.id)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+  </div>
+</div>

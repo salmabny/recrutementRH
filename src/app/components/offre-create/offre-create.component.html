@@ -1,0 +1,352 @@
+<div class="dashboard-layout">
+
+  <!-- ── Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+      <div class="brand-role">Espace Recruteur</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item" (click)="navigateTo('/recruteur')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+        Tableau de bord
+      </div>
+
+      <div class="nav-item active" (click)="navigateTo('/recruteur/offres')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        Mes offres
+      </div>
+
+      <div class="nav-item" (click)="navigateTo('/recruteur/candidatures')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+        </svg>
+        Candidatures
+      </div>
+
+
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+        Statistiques
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">{{ recruteur.initiales }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ recruteur.prenom }} {{ recruteur.nom }}</div>
+          <div class="user-company">{{ recruteur.entreprise }}</div>
+        </div>
+        <button class="btn-logout" (click)="logout()" title="Déconnexion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <button class="btn-back" (click)="navigateTo('/recruteur/offres')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15,18 9,12 15,6" />
+          </svg>
+          Retour aux offres
+        </button>
+        <div class="topbar-title">{{ isEditMode() ? 'Modifier l\'offre' : 'Créer une offre d\'emploi' }}</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-sm btn-ghost-sm" [disabled]="isLoading()" (click)="onSubmit(false)">
+          Enregistrer brouillon
+        </button>
+        <button class="btn-sm btn-primary-sm" [disabled]="isLoading()" (click)="onSubmit(true)">
+          @if (isLoading()) {
+          <span class="spinner"></span> {{ isEditMode() ? 'Mise à jour...' : 'Publication...' }}
+          } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20,6 9,17 4,12" />
+          </svg>
+          {{ isEditMode() ? 'Mettre à jour' : 'Publier l\'offre' }}
+          }
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Succès -->
+      @if (successMsg()) {
+      <div class="alert-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20,6 9,17 4,12" />
+        </svg>
+        {{ successMsg() }}
+      </div>
+      }
+
+      <!-- Erreur -->
+      @if (errorMessage()) {
+      <div class="alert-error">{{ errorMessage() }}</div>
+      }
+
+      <form [formGroup]="form" novalidate>
+        <div class="create-layout">
+
+          <!-- Colonne principale -->
+          <div class="form-col">
+
+            <!-- Infos générales -->
+            <div class="form-section">
+              <div class="form-section-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                </svg>
+                <div class="form-section-title">Informations générales</div>
+              </div>
+              <div class="form-section-body">
+
+                <!-- Titre -->
+                <div class="field" [class.field--error]="isInvalid('title')">
+                  <label>Titre du poste *</label>
+                  <input class="form-input" type="text" formControlName="title"
+                    placeholder="Ex : Développeur Full Stack React/Node.js" />
+                  @if (isInvalid('title')) {
+                  <span class="error-msg">Titre requis (min. 5 caractères)</span>
+                  }
+                </div>
+
+                <!-- Image Section -->
+                <div class="field">
+                  <label>Image de l'offre (Upload)</label>
+                  <div class="image-upload-container">
+                    @if (imagePreview()) {
+                    <div class="image-preview-wrap">
+                      <img [src]="imagePreview()" class="image-preview" alt="Preview">
+                      <button type="button" class="btn-remove-img"
+                        (click)="selectedFile.set(null); imagePreview.set(null)">
+                        ✕ Supprimer
+                      </button>
+                    </div>
+                    } @else {
+                    <label class="drop-zone">
+                      <input type="file" (change)="onFileSelected($event)" accept="image/*" hidden />
+                      <div class="drop-zone-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                          <circle cx="8.5" cy="8.5" r="1.5" />
+                          <polyline points="21 15 16 10 5 21" />
+                        </svg>
+                        <span>Cliquez pour importer une image</span>
+                      </div>
+                    </label>
+                    }
+                  </div>
+                </div>
+
+                <!-- Localisation -->
+                <div class="field" [class.field--error]="isInvalid('location')">
+                  <label>Localisation *</label>
+                  <input class="form-input" type="text" formControlName="location"
+                    placeholder="Ex : Paris, Lyon, Remote..." />
+                  @if (isInvalid('location')) {
+                  <span class="error-msg">Localisation requise</span>
+                  }
+                </div>
+
+                <!-- Niveau études + Années exp -->
+                <div class="form-row">
+                  <div class="field" [class.field--error]="isInvalid('educationLevel')">
+                    <label>Niveau d'études requis *</label>
+                    <select class="form-input" formControlName="educationLevel">
+                      <option value="">Choisir...</option>
+                      <option>Bac</option>
+                      <option>Bac+2</option>
+                      <option>Bac+3</option>
+                      <option>Bac+5</option>
+                      <option>Doctorat</option>
+                    </select>
+                    @if (isInvalid('educationLevel')) {
+                    <span class="error-msg">Niveau requis</span>
+                    }
+                  </div>
+                  <div class="field" [class.field--error]="isInvalid('experienceYears')">
+                    <label>Années d'expérience *</label>
+                    <input class="form-input" type="number" formControlName="experienceYears" min="0" max="20"
+                      placeholder="Ex : 3" />
+                    @if (isInvalid('experienceYears')) {
+                    <span class="error-msg">Valeur requise</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-section">
+              <div class="form-section-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="17" y1="10" x2="3" y2="10" />
+                  <line x1="21" y1="6" x2="3" y2="6" />
+                  <line x1="21" y1="14" x2="3" y2="14" />
+                  <line x1="17" y1="18" x2="3" y2="18" />
+                </svg>
+                <div class="form-section-title">Description du poste *</div>
+              </div>
+              <div class="form-section-body">
+                <div class="field" [class.field--error]="isInvalid('description')">
+                  <textarea class="form-textarea" formControlName="description"
+                    placeholder="Décrivez le poste, les missions, l'environnement de travail..." rows="5"></textarea>
+                  @if (isInvalid('description')) {
+                  <span class="error-msg">Description requise (min. 20 caractères)</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Compétences requises -->
+            <div class="form-section">
+              <div class="form-section-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="16 18 22 12 16 6" />
+                  <polyline points="8 6 2 12 8 18" />
+                </svg>
+                <div class="form-section-title">Compétences requises</div>
+              </div>
+              <div class="form-section-body">
+                <div class="tag-input-wrap">
+                  <div class="tags-container">
+                    @for (skill of skills(); track skill) {
+                    <div class="skill-pill">
+                      {{ skill }}
+                      <button type="button" (click)="removeSkill(skill)">✕</button>
+                    </div>
+                    }
+                    <input class="tag-input" type="text" placeholder="Ex: React.js — Appuyez sur Entrée"
+                      [value]="skillInput()" (input)="onSkillInput($event)" (keydown)="onSkillKeydown($event)" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Domaines d'expérience -->
+            <div class="form-section">
+              <div class="form-section-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 8v4l3 3" />
+                </svg>
+                <div class="form-section-title">Domaines d'expérience</div>
+              </div>
+              <div class="form-section-body">
+                <div class="tag-input-wrap">
+                  <div class="tags-container">
+                    @for (field of expFields(); track field) {
+                    <div class="skill-pill skill-pill--purple">
+                      {{ field }}
+                      <button type="button" (click)="removeExpField(field)">✕</button>
+                    </div>
+                    }
+                    <input class="tag-input" type="text" placeholder="Ex: Web, Backend — Appuyez sur Entrée"
+                      [value]="expFieldInput()" (input)="onExpFieldInput($event)"
+                      (keydown)="onExpFieldKeydown($event)" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+
+          <!-- Sidebar résumé -->
+          <div class="summary-col">
+
+            <!-- Résumé offre -->
+            <div class="summary-card">
+              <div class="summary-title">📋 Résumé de l'offre</div>
+              <div class="summary-item">
+                <span class="summary-label">Titre</span>
+                <span class="summary-value">
+                  {{ form.get('title')?.value || '—' }}
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Lieu</span>
+                <span class="summary-value">
+                  {{ form.get('location')?.value || '—' }}
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Niveau</span>
+                <span class="summary-value">
+                  {{ form.get('educationLevel')?.value || '—' }}
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Expérience</span>
+                <span class="summary-value">
+                  {{ form.get('experienceYears')?.value }} ans
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Compétences</span>
+                <span class="summary-value">{{ skills().length }} ajoutées</span>
+              </div>
+            </div>
+
+
+            <!-- Checklist -->
+            <div class="summary-card">
+              <div class="summary-title">✅ Checklist</div>
+              <div class="checklist">
+                <div class="check-item" [class.check-done]="form.get('title')?.valid">
+                  <div class="check-dot"></div>
+                  Titre du poste
+                </div>
+                <div class="check-item" [class.check-done]="form.get('location')?.valid">
+                  <div class="check-dot"></div>
+                  Localisation
+                </div>
+                <div class="check-item" [class.check-done]="form.get('educationLevel')?.valid">
+                  <div class="check-dot"></div>
+                  Niveau d'études
+                </div>
+                <div class="check-item" [class.check-done]="form.get('description')?.valid">
+                  <div class="check-dot"></div>
+                  Description
+                </div>
+                <div class="check-item" [class.check-done]="skills().length > 0">
+                  <div class="check-dot"></div>
+                  Compétences requises
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

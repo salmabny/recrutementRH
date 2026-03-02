@@ -1,0 +1,253 @@
+<div class="dashboard-layout">
+
+    <!-- ── Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+            <div class="brand-role">Espace Candidat</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Principal</div>
+            <div class="nav-item" (click)="navigateTo('/candidat')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Tableau de bord
+            </div>
+            <div class="nav-item" (click)="navigateTo('/candidat/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                Offres d'emploi
+            </div>
+            <div class="nav-item" (click)="navigateTo('/candidat/candidatures')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Mes candidatures
+            </div>
+            <div class="nav-section-label">Profil</div>
+            <div class="nav-item" (click)="navigateTo('/candidat/profil')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Mon profil
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">{{ getSidebarInitiales() }}</div>
+                <div class="user-info">
+                    <div class="user-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
+                    <div class="user-role">Candidat</div>
+                </div>
+                <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Main -->
+    <div class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <button class="btn-back" (click)="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="15,18 9,12 15,6" />
+                </svg>
+                Retour
+            </button>
+            <div class="topbar-greeting-wrapper">
+                @if (recruteur()?.photoUrl) {
+                <img class="topbar-avatar avatar-img" [src]="getPhotoUrl()" alt="Profile">
+                } @else {
+                <div class="topbar-avatar-initials">{{ getInitiales() }}</div>
+                }
+                <div>
+                    <div class="topbar-title">Profil du recruteur</div>
+                    <div class="topbar-subtitle">Consultation de {{ recruteur()?.prenom }} {{ recruteur()?.nom }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+
+            @if (isLoading()) {
+            <div class="loading-state">
+                <span class="spinner"></span>
+                Chargement...
+            </div>
+            } @else if (recruteur()) {
+
+            <!-- Header Card -->
+            <div class="profile-header-card">
+                <div class="profile-banner"></div>
+                <div class="profile-header-content">
+                    <div class="avatar-zone">
+                        <div class="avatar-circle">
+                            @if (getPhotoUrl()) {
+                            <img [src]="getPhotoUrl()" alt="Photo" class="avatar-img">
+                            } @else {
+                            {{ getInitiales() }}
+                            }
+                        </div>
+                    </div>
+
+                    <div class="header-info">
+                        <h1 class="header-name">{{ recruteur()?.prenom }} {{ recruteur()?.nom }}</h1>
+                        <div class="header-meta">
+                            <span class="meta-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
+                                    <path d="M16 3H8l-2 4h12l-2-4z" />
+                                </svg>
+                                {{ recruteur()?.entreprise || 'Entreprise non renseignée' }}
+                            </span>
+                            @if (recruteur()?.ville) {
+                            <span class="meta-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                                {{ recruteur()?.ville }}
+                            </span>
+                            }
+                            <span class="meta-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72A12.84 12.84 0 0 0 10 6.54a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6z" />
+                                </svg>
+                                {{ recruteur()?.telephone || 'Tél. non renseigné' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        Informations personnelles
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row-grid">
+                            <div class="info-item">
+                                <label>Prénom</label>
+                                <span>{{ recruteur()?.prenom || '—' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Nom</label>
+                                <span>{{ recruteur()?.nom || '—' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Email</label>
+                                <span>{{ recruteur()?.email || '—' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Téléphone</label>
+                                <span>{{ recruteur()?.telephone || 'Non renseigné' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Ville</label>
+                                <span>{{ recruteur()?.ville || 'Non renseignée' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                            <path d="M16 3H8L6 7h12l-2-4z" />
+                        </svg>
+                        Informations professionnelles
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row-grid">
+                            <div class="info-item">
+                                <label>Entreprise</label>
+                                <span>{{ recruteur()?.entreprise || 'Non renseignée' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Domaine</label>
+                                <span>{{ recruteur()?.companyDomain || 'Non renseigné' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Offres -->
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                        <path d="M16 3H8l-2 4h12l-2-4z" />
+                    </svg>
+                    Offres d'emploi publiées
+                </div>
+
+                @if (offres().length > 0) {
+                <div class="offres-grid">
+                    @for (offre of offres(); track offre.id) {
+                    <div class="offre-card" (click)="goToOffreDetail(offre)">
+                        <div class="offre-card-header">
+                            <h3 class="offre-title">{{ offre.titre }}</h3>
+                            <span class="offre-status" [class.status-active]="offre.statut === 'OUVERT'">
+                                {{ offre.statut }}
+                            </span>
+                        </div>
+                        <div class="offre-card-body">
+                            <div class="offre-meta-row">
+                                <div class="offre-meta-item">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                    {{ offre.localisation }}
+                                </div>
+                                <div class="offre-meta-item">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                                        <path d="M16 3H8l-2 4h12l-2-4z" />
+                                    </svg>
+                                    {{ offre.typeContrat }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="offre-card-footer">
+                            <span class="voir-offre">Voir les détails →</span>
+                        </div>
+                    </div>
+                    }
+                </div>
+                } @else {
+                <div class="empty-offres">
+                    Aucune offre publiée pour le moment.
+                </div>
+                }
+            </div>
+
+            }
+
+        </div>
+    </div>
+</div>
