@@ -9,7 +9,7 @@ import com.esb.recrutementRH.user.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 public class CandidatureService {
@@ -43,7 +43,8 @@ public class CandidatureService {
         }
 
         Candidature candidature = new Candidature();
-        candidature.setDateCandidature(LocalDate.now());
+        candidature.setDateCandidature(LocalDateTime.now());
+        candidature.setLastStatusUpdate(LocalDateTime.now());
         candidature.setStatus(CandidatureStatus.SOUMISE);
         candidature.setJobOffer(jobOfferRepository.findById(jobOfferId).orElseThrow());
         candidature.setCandidat(realCandidat); // Use fetched user
@@ -57,5 +58,13 @@ public class CandidatureService {
 
     public java.util.List<Candidature> getCandidaturesByRecruiter(Long recruiterId) {
         return candidatureRepository.findByJobOffer_RecruiterId(recruiterId);
+    }
+
+    public Candidature updateStatus(Long id, CandidatureStatus status) {
+        Candidature candidature = candidatureRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Candidature non trouvée"));
+        candidature.setStatus(status);
+        candidature.setLastStatusUpdate(LocalDateTime.now());
+        return candidatureRepository.save(candidature);
     }
 }

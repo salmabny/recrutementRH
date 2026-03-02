@@ -31,7 +31,12 @@ public class CvAnalysisService {
         String cvFilePath = null;
         if (cvFilePathRaw != null) {
             try {
-                cvFilePath = java.nio.file.Paths.get(cvFilePathRaw).toAbsolutePath().toString();
+                // If the path is just a filename, we need to prepend the upload directory
+                java.nio.file.Path p = java.nio.file.Paths.get(cvFilePathRaw);
+                if (!p.isAbsolute()) {
+                    p = java.nio.file.Paths.get("uploads/cv").resolve(cvFilePathRaw);
+                }
+                cvFilePath = p.toAbsolutePath().toString();
             } catch (Exception e) {
                 cvFilePath = cvFilePathRaw;
             }
@@ -90,6 +95,17 @@ public class CvAnalysisService {
                     candidature.setScore(Double.valueOf(result.get("score_percent").toString()));
                 }
 
+                // Extraction des scores détaillés (points)
+                if (result.containsKey("skills_points")) {
+                    candidature.setSkillsScore(Double.valueOf(result.get("skills_points").toString()));
+                }
+                if (result.containsKey("education_points")) {
+                    candidature.setEducationScore(Double.valueOf(result.get("education_points").toString()));
+                }
+                if (result.containsKey("experience_points")) {
+                    candidature.setExperienceScore(Double.valueOf(result.get("experience_points").toString()));
+                }
+
                 // Formattage du résultat d'analyse
                 StringBuilder formattedResult = new StringBuilder();
 
@@ -134,6 +150,70 @@ public class CvAnalysisService {
         } catch (Exception e) {
             logger.error("Unexpected error during CV Analysis", e);
             candidature.setAnalysisResult("Erreur inattendue : " + e.getMessage());
+        }
+    }
+
+    public void analyzeProfile(com.esb.recrutementRH.user.model.Candidat candidat,
+            com.esb.recrutementRH.candidature.model.CV cv) {
+        if (cv == null)
+            return;
+
+        String cvFilePath = null;
+        try {
+            java.nio.file.Path p = java.nio.file.Paths.get(cv.getFilePath());
+            if (!p.isAbsolute()) {
+                p = java.nio.file.Paths.get("uploads/cv").resolve(cv.getFilePath());
+            }
+            cvFilePath = p.toAbsolutePath().toString();
+        } catch (Exception e) {
+            cvFilePath = cv.getFilePath();
+        }
+
+        // Generic baseline for a technical profile
+        String genericJobDescription = "Profil technique, développeur informatique, compétences en programmation, outils de développement, expérience professionnelle et formation académique.";
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("file_path", cvFilePath);
+            requestBody.put("job_description", genericJobDescription);
+            requestBody.put("required_skills", java.util.List.of("Java", "Python", "JavaScript", "SQL", "Git"));
+
+            org.springframework.http.HttpEntity<Map<String, Object>> request = new org.springframework.http.HttpEntity<>(
+                    requestBody, headers);
+            org.springframework.http.ResponseEntity<Map> response = restTemplate.postForEntity(PYTHON_API_URL, request,
+                    Map.class);
+
+            if (response.getBody() != null) {
+                Map<String, Object> result = response.getBody();
+
+                if (result.containsKey("score_percent")) {
+                    candidat.setProfileScore(Double.valueOf(result.get("score_percent").toString()));
+                }
+                if (result.containsKey("skills_points")) {
+                    candidat.setProfileSkillsScore(Double.valueOf(result.get("skills_points").toString()));
+                }
+                if (result.containsKey("education_points")) {
+                    candidat.setProfileEducationScore(Double.valueOf(result.get("education_points").toString()));
+                }
+                if (result.containsKey("experience_points")) {
+                    candidat.setProfileExperienceScore(Double.valueOf(result.get("experience_points").toString()));
+                }
+
+                StringBuilder summary = new StringBuilder("Synthèse du profil :\n");
+                summary.append("Score Global : ").append(result.getOrDefault("score_percent", "0")).append("%\n");
+                summary.append("Compétences : ").append(result.getOrDefault("competences", "—")).append("\n");
+                summary.append("Diplômes : ").append(result.getOrDefault("diplomes", "—")).append("\n");
+                summary.append("Expériences : ").append(result.getOrDefault("experiences", "—"));
+
+                candidat.setProfileAnalysisResult(summary.toString());
+            }
+        } catch (Exception e) {
+            logger.error("Error during profile analysis: ", e);
+            candidat.setProfileAnalysisResult("Erreur lors de l'analyse du profil : " + e.getMessage());
         }
     }
 }

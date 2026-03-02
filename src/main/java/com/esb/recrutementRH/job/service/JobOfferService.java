@@ -2,21 +2,58 @@ package com.esb.recrutementRH.job.service;
 
 import com.esb.recrutementRH.job.model.JobOffer;
 import com.esb.recrutementRH.job.repository.JobOfferRepository;
+import com.esb.recrutementRH.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class JobOfferService {
+    private static final Logger logger = LoggerFactory.getLogger(JobOfferService.class);
 
     @Autowired
     private JobOfferRepository jobOfferRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     // Créer / Mettre à jour une offre
     public JobOffer saveJobOffer(JobOffer jobOffer) {
         return jobOfferRepository.save(jobOffer);
+    }
+
+    // Mettre à jour une offre existante (préserve candidatures, likes, etc.)
+    @Transactional
+    public Optional<JobOffer> updateJobOffer(Long id, JobOffer incoming) {
+        return jobOfferRepository.findById(id).map(existing -> {
+            existing.setTitle(incoming.getTitle());
+            existing.setDescription(incoming.getDescription());
+            existing.setLocation(incoming.getLocation());
+            existing.setEducationLevel(incoming.getEducationLevel());
+            existing.setExperienceYears(incoming.getExperienceYears());
+            existing.setImageUrl(incoming.getImageUrl());
+
+            if (incoming.getStatus() != null) {
+                existing.setStatus(incoming.getStatus());
+            }
+
+            if (incoming.getRequiredSkills() != null) {
+                existing.getRequiredSkills().clear();
+                existing.getRequiredSkills().addAll(incoming.getRequiredSkills());
+            }
+            if (incoming.getExperienceFields() != null) {
+                existing.getExperienceFields().clear();
+                existing.getExperienceFields().addAll(incoming.getExperienceFields());
+            }
+
+            // No need to call save — entity is managed within @Transactional
+            return existing;
+        });
     }
 
     // Obtenir toutes les offres

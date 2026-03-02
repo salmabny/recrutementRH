@@ -1,29 +1,28 @@
 package com.esb.recrutementRH.candidature.controller;
 
-import com.esb.recrutementRH.candidature.model.*;
-import com.esb.recrutementRH.candidature.repository.CandidatureRepository;
+import com.esb.recrutementRH.candidature.model.CV;
+import com.esb.recrutementRH.candidature.model.Candidature;
+import com.esb.recrutementRH.candidature.model.CandidatureStatus;
 import com.esb.recrutementRH.candidature.repository.CvRepository;
+import com.esb.recrutementRH.candidature.repository.CandidatureRepository;
 import com.esb.recrutementRH.candidature.service.CandidatureService;
 import com.esb.recrutementRH.candidature.service.FileStorageService;
+import com.esb.recrutementRH.candidature.service.CvAnalysisService;
 import com.esb.recrutementRH.job.repository.JobOfferRepository;
-import com.esb.recrutementRH.user.model.Role;
-import com.esb.recrutementRH.user.model.User;
+import com.esb.recrutementRH.user.model.Candidat;
 import com.esb.recrutementRH.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import java.util.Enumeration;
 
-import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/candidatures")
@@ -31,124 +30,63 @@ public class CandidatureController {
 
     private static final Logger logger = LoggerFactory.getLogger(CandidatureController.class);
 
-    private final CandidatureService candidatureService;
-    private final FileStorageService fileStorageService;
-    private final CvRepository cvRepository;
-    private final CandidatureRepository candidatureRepository;
-    private final UserRepository userRepository;
-    private final JobOfferRepository jobOfferRepository;
+    @Autowired
+    private CandidatureService candidatureService;
 
     @Autowired
-    public CandidatureController(
-            CandidatureService candidatureService,
-            FileStorageService fileStorageService,
-            CvRepository cvRepository,
-            CandidatureRepository candidatureRepository,
-            UserRepository userRepository,
-            JobOfferRepository jobOfferRepository) {
-        this.candidatureService = candidatureService;
-        this.fileStorageService = fileStorageService;
-        this.cvRepository = cvRepository;
-        this.candidatureRepository = candidatureRepository;
-        this.userRepository = userRepository;
-        this.jobOfferRepository = jobOfferRepository;
-    }
+    private CandidatureRepository candidatureRepository;
 
-    // ✅ Postuler à une offre
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CvRepository cvRepository;
+
+    @Autowired
+    private JobOfferRepository jobOfferRepository;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @Autowired
+    private CvAnalysisService cvAnalysisService;
+
+    @Autowired
+    private Environment env;
+
     @PostMapping("/postuler")
     public ResponseEntity<?> postuler(
-            @RequestParam(required = false) Long jobOfferId,
-            @RequestParam(required = false) Long candidatId,
-            @RequestParam(required = false) MultipartFile cvFile,
-            HttpServletRequest request) {
-
-        logger.info("New application request received on /postuler");
-        logger.info("Content-Type: {}", request.getContentType());
-
-        // Log all standard parameters
-        Enumeration<String> parameterNames = request.getParameterNames();
-        while (parameterNames.hasMoreElements()) {
-            String paramName = parameterNames.nextElement();
-            logger.info("Standard Param: {} = {}", paramName, request.getParameter(paramName));
-        }
-
-        // Diagnostic for multipart
-        if (request instanceof MultipartHttpServletRequest) {
-            MultipartHttpServletRequest multi = (MultipartHttpServletRequest) request;
-            multi.getFileMap()
-                    .forEach((name, file) -> logger.info("Multipart File: {} ({} bytes)", name, file.getSize()));
-            multi.getParameterMap().forEach((name, vals) -> logger.info("Multipart Param: {} = {}", name, vals[0]));
-        }
-
-        logger.info("- @RequestParam jobOfferId: {}", jobOfferId);
-        logger.info("- @RequestParam candidatId: {}", candidatId);
-        logger.info("- cvFile present: {}", (cvFile != null && !cvFile.isEmpty()));
-
-        Long resolvedJobOfferId = jobOfferId;
-        Long resolvedCandidatId = candidatId;
-
-        // Proactive check for aliases if null
-        if (resolvedJobOfferId == null) {
-            String[] aliases = { "job_offer_id", "job_id", "jobId", "idOffre", "offreId", "id_offre" };
-            for (String alias : aliases) {
-                String val = request.getParameter(alias);
-                if (val != null) {
-                    try {
-                        resolvedJobOfferId = Long.parseLong(val);
-                        break;
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        }
-        if (resolvedCandidatId == null) {
-            String[] aliases = { "candidate_id", "candidateId", "id_candidat", "idCandidat" };
-            for (String alias : aliases) {
-                String val = request.getParameter(alias);
-                if (val != null) {
-                    try {
-                        resolvedCandidatId = Long.parseLong(val);
-                        break;
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        }
-
-        final Long finalJobOfferId = resolvedJobOfferId;
-        final Long finalCandidatId = resolvedCandidatId;
-
-        if (finalJobOfferId == null || finalCandidatId == null || cvFile == null || cvFile.isEmpty()) {
-            String missing = "";
-            if (finalJobOfferId == null)
-                missing += "jobOfferId ";
-            if (finalCandidatId == null)
-                missing += "candidatId ";
-            if (cvFile == null || cvFile.isEmpty())
-                missing += "cvFile ";
-
-            logger.warn("Missing parameters: {}", missing);
-            return ResponseEntity.status(400).body("Missing required parameters: " + missing.trim());
-        }
+            @RequestParam("jobOfferId") String jobOfferId,
+            @RequestParam("candidatId") String candidatId,
+            @RequestParam("cv") MultipartFile cvFile) {
 
         try {
-            // 1️⃣ Vérifier candidat
-            User candidat = userRepository.findById(finalCandidatId)
+            Long finalJobOfferId = Long.parseLong(jobOfferId);
+            Long finalCandidatId = Long.parseLong(candidatId);
+
+            logger.info("New Candidature Request: Offer={}, Candidate={}", finalJobOfferId, finalCandidatId);
+
+            Candidat candidat = (Candidat) userRepository.findById(finalCandidatId)
                     .orElseThrow(() -> new RuntimeException("Candidat non trouvé (" + finalCandidatId + ")"));
 
-            // 2️⃣ Vérifier offre
             var jobOffer = jobOfferRepository.findById(finalJobOfferId)
                     .orElseThrow(() -> new RuntimeException("Offre non trouvée (" + finalJobOfferId + ")"));
 
-            // 3️⃣ Vérifier fichier CV
+            if (candidatureRepository.existsByJobOfferIdAndCandidatId(finalJobOfferId, finalCandidatId)) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "ALREADY_APPLIED");
+                error.put("message", "Tu as déjà postulé pour cette offre");
+                return ResponseEntity.status(409).body(error);
+            }
+
             if (cvFile.isEmpty())
                 return ResponseEntity.status(400).body("Fichier CV vide");
 
             if (!cvFile.getContentType().equals("application/pdf"))
                 return ResponseEntity.status(400).body("Seul le format PDF est accepté");
 
-            // 4️⃣ Stockage du CV
-            String path = fileStorageService.store(cvFile);
+            String uploadDir = env.getProperty("file.upload-dir", "uploads/cv");
+            String path = fileStorageService.store(uploadDir, cvFile, ".pdf");
 
             CV cv = new CV();
             cv.setFileName(cvFile.getOriginalFilename());
@@ -159,10 +97,7 @@ public class CandidatureController {
 
             cvRepository.save(cv);
 
-            // 5️⃣ Création candidature
             Candidature saved = candidatureService.postuler(finalJobOfferId, candidat, cv);
-
-            logger.info("Application successful! Saved Id: {}", saved.getId());
 
             Map<String, Object> successResponse = new HashMap<>();
             successResponse.put("id", saved.getId());
@@ -180,9 +115,98 @@ public class CandidatureController {
         }
     }
 
-    // ✅ Liste des candidatures pour un recruteur
-    @GetMapping("/recruteur/{recruteurId}")
-    public List<Candidature> getCandidaturesByRecruteur(@PathVariable Long recruteurId) {
-        return candidatureRepository.findByJobOffer_RecruiterId(recruteurId);
+    @GetMapping
+    public ResponseEntity<List<Candidature>> getAll() {
+        return ResponseEntity.ok(candidatureRepository.findAll());
+    }
+
+    @GetMapping("/offre/{offerId}")
+    public ResponseEntity<List<Candidature>> getByOffer(@PathVariable Long offerId) {
+        return ResponseEntity.ok(candidatureRepository.findByJobOfferId(offerId));
+    }
+
+    @GetMapping("/candidat/{candidatId}")
+    public ResponseEntity<List<Candidature>> getByCandidat(@PathVariable Long candidatId) {
+        return ResponseEntity.ok(candidatureRepository.findByCandidat_Id(candidatId));
+    }
+
+    @GetMapping("/recruteur/{recruiterId}")
+    public ResponseEntity<List<Candidature>> getByRecruiter(@PathVariable Long recruiterId) {
+        return ResponseEntity.ok(candidatureRepository.findByJobOffer_RecruiterId(recruiterId));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Candidature> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String statusStr = body.get("status");
+        CandidatureStatus status = CandidatureStatus.valueOf(statusStr);
+        return ResponseEntity.ok(candidatureService.updateStatus(id, status));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Candidature> getById(@PathVariable Long id) {
+        return candidatureRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // --- Profile Analysis Endpoints ---
+
+    @PostMapping("/analyze-profile/{id}")
+    public ResponseEntity<?> analyzeProfile(@PathVariable Long id, @RequestParam("cvFile") MultipartFile file) {
+        try {
+            logger.info("Starting profile analysis for ID: {}", id);
+            Candidat candidat = (Candidat) userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Candidat non trouvé avec l'id: " + id));
+
+            String uploadDir = env.getProperty("file.upload-dir", "uploads/cv");
+            logger.info("Storing file in: {}", uploadDir);
+            String fileName = fileStorageService.store(uploadDir, file, ".pdf");
+            logger.info("File stored as: {}", fileName);
+
+            CV cv = new CV();
+            cv.setFileName(file.getOriginalFilename());
+            cv.setFilePath(fileName);
+            cv.setFileType(file.getContentType());
+            cv.setFileSize(file.getSize());
+            cv.setUploadDate(LocalDate.now());
+
+            logger.info("Saving CV metadata...");
+            cvRepository.save(cv);
+
+            candidat.setCv(cv);
+
+            try {
+                logger.info("Attempting CV analysis via Python service...");
+                cvAnalysisService.analyzeProfile(candidat, cv);
+            } catch (Exception analysisEx) {
+                logger.warn("CV Analysis failed but upload will proceed: {}", analysisEx.getMessage());
+                // Non-blocking: we continue even if analysis fails
+            }
+
+            logger.info("Saving updated candidate profile with CV...");
+            userRepository.save(candidat);
+
+            return ResponseEntity.ok(candidat);
+        } catch (Throwable t) {
+            logger.error("CRITICAL ERROR in analyzeProfile: ", t);
+            String message = t.getMessage();
+            if (message == null)
+                message = t.getClass().getSimpleName();
+            return ResponseEntity.status(500).body("Error: " + message);
+        }
+    }
+
+    @GetMapping("/reanalyze-profile/{id}")
+    public ResponseEntity<?> reanalyzeProfile(@PathVariable Long id) {
+        try {
+            Candidat candidat = (Candidat) userRepository.findById(id).orElseThrow();
+            if (candidat.getCv() != null) {
+                cvAnalysisService.analyzeProfile(candidat, candidat.getCv());
+                userRepository.save(candidat);
+            }
+            return ResponseEntity.ok(candidat);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.esb.recrutementRH.job.model.JobOffer;
 import com.esb.recrutementRH.user.model.User;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -15,13 +15,12 @@ public class Candidature {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate dateCandidature;
+    private LocalDateTime dateCandidature;
 
     @Enumerated(EnumType.STRING)
     private CandidatureStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "job_offer_id")
     private JobOffer jobOffer;
 
@@ -35,8 +34,14 @@ public class Candidature {
 
     private Double score;
 
+    private Double skillsScore;
+    private Double educationScore;
+    private Double experienceScore;
+
     @Column(columnDefinition = "TEXT")
     private String analysisResult;
+
+    private LocalDateTime lastStatusUpdate;
 
     // ===== Getters & Setters =====
 
@@ -48,11 +53,11 @@ public class Candidature {
         this.id = id;
     }
 
-    public LocalDate getDateCandidature() {
+    public LocalDateTime getDateCandidature() {
         return dateCandidature;
     }
 
-    public void setDateCandidature(LocalDate dateCandidature) {
+    public void setDateCandidature(LocalDateTime dateCandidature) {
         this.dateCandidature = dateCandidature;
     }
 
@@ -96,11 +101,43 @@ public class Candidature {
         this.score = score;
     }
 
+    public Double getSkillsScore() {
+        return skillsScore;
+    }
+
+    public void setSkillsScore(Double skillsScore) {
+        this.skillsScore = skillsScore;
+    }
+
+    public Double getEducationScore() {
+        return educationScore;
+    }
+
+    public void setEducationScore(Double educationScore) {
+        this.educationScore = educationScore;
+    }
+
+    public Double getExperienceScore() {
+        return experienceScore;
+    }
+
+    public void setExperienceScore(Double experienceScore) {
+        this.experienceScore = experienceScore;
+    }
+
     public String getAnalysisResult() {
         return analysisResult;
     }
 
     public void setAnalysisResult(String analysisResult) {
         this.analysisResult = analysisResult;
+    }
+
+    public LocalDateTime getLastStatusUpdate() {
+        return lastStatusUpdate;
+    }
+
+    public void setLastStatusUpdate(LocalDateTime lastStatusUpdate) {
+        this.lastStatusUpdate = lastStatusUpdate;
     }
 }

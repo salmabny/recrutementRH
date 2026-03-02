@@ -2,5 +2,6 @@ package com.esb.recrutementRH.user.model;
 
 public enum Role {
     CANDIDAT,
-    RECRUTEUR
+    RECRUTEUR,
+    ADMIN
 }
