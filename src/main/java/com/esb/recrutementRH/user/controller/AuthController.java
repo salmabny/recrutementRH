@@ -1,8 +1,10 @@
 package com.esb.recrutementRH.user.controller;
 
 import com.esb.recrutementRH.user.dto.LoginDto;
+import com.esb.recrutementRH.user.dto.PasswordChangeDto;
 import com.esb.recrutementRH.user.dto.RegistrationDto;
 import com.esb.recrutementRH.user.dto.VerificationDto;
+import java.security.Principal;
 import com.esb.recrutementRH.user.model.Recruteur;
 import com.esb.recrutementRH.user.model.User;
 import com.esb.recrutementRH.user.model.UserStatus;
@@ -31,6 +33,12 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegistrationDto dto) {
         try {
@@ -58,7 +66,8 @@ public class AuthController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             System.err.println("[AuthController] Recruiter registration failed: " + e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Erreur lors de l'inscription"));
         }
     }
 
@@ -82,12 +91,6 @@ public class AuthController {
         }
     }
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtUtils jwtUtils;
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto dto) {
         System.out.println("\n>>> [AuthController] LOGIN ATTEMPT: " + dto.getEmail() + " <<<");
@@ -108,8 +111,9 @@ public class AuthController {
             if (user.getStatus() == UserStatus.PENDING_ADMIN_VALIDATION) {
                 return ResponseEntity.badRequest().body("Votre compte est en cours de validation par l'admin");
             }
-            if (user.getStatus() == UserStatus.REJECTED) {
-                return ResponseEntity.status(403).body("Votre compte a été rejeté");
+            if (user.getStatus() == UserStatus.SUSPENDU) {
+                return ResponseEntity.status(403)
+                        .body("Votre compte est suspendu. Veuillez contacter l'administration.");
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -133,7 +137,8 @@ public class AuthController {
         } catch (Exception e) {
             System.err.println("[AuthController] Error during login: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Erreur interne du serveur : " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body("Erreur interne du serveur : " + (e.getMessage() != null ? e.getMessage() : "Inconnue"));
         }
     }
 
@@ -167,7 +172,25 @@ public class AuthController {
             authService.resetPassword(email, code, newPassword);
             return ResponseEntity.ok("Mot de passe réinitialisé avec succès");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, String> err = new HashMap<>();
+            err.put("message", e.getMessage() != null ? e.getMessage() : "Une erreur est survenue");
+            return ResponseEntity.badRequest().body(err);
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody PasswordChangeDto dto, Principal principal) {
+        try {
+            if (principal == null) {
+                return ResponseEntity.status(401).body(Map.of("message", "Non authentifié"));
+            }
+            authService.changePassword(principal.getName(), dto.getOldPassword(), dto.getNewPassword());
+            return ResponseEntity.ok(Map.of("message", "Mot de passe modifié avec succès"));
+        } catch (Exception e) {
+            Map<String, String> err = new HashMap<>();
+            err.put("message", e.getMessage() != null ? e.getMessage()
+                    : "L'ancien mot de passe est incorrect ou une erreur est survenue");
+            return ResponseEntity.badRequest().body(err);
         }
     }
 }

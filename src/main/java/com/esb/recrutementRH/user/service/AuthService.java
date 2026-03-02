@@ -257,6 +257,22 @@ public class AuthService {
         return response;
     }
 
+    public void changePassword(String email, String oldPassword, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getMotDePasse())) {
+            throw new RuntimeException("L'ancien mot de passe est incorrect");
+        }
+
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new RuntimeException("Le nouveau mot de passe est obligatoire");
+        }
+
+        user.setMotDePasse(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     private String generateVerificationCode() {
         return String.format("%06d", new Random().nextInt(999999));
     }
