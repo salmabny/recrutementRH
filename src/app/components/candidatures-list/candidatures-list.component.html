@@ -29,8 +29,8 @@
 
             <div class="nav-item active">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
                 </svg>
                 Candidatures
             </div>
@@ -42,23 +42,11 @@
                 Mon profil
             </div>
 
-            <div class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                </svg>
-                Statistiques
-            </div>
+
         </nav>
 
         <div class="sidebar-footer">
             <div class="user-card">
-                @if (recruteur().photoUrl) {
-                <img class="user-avatar avatar-img" [src]="getPhotoUrl({photoUrl: recruteur().photoUrl})" alt="Avatar">
-                } @else {
-                <div class="user-avatar">{{ recruteur().initiales }}</div>
-                }
                 <div class="user-info">
                     <div class="user-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
                     <div class="user-company">{{ recruteur().entreprise }}</div>
@@ -185,8 +173,7 @@
                             </td>
                             <td class="actions-col">
                                 <div class="action-buttons">
-                                    <button class="btn-icon" title="Voir CV"
-                                        (click)="navigateTo('/recruteur/candidatures/' + c.id)">
+                                    <button class="btn-icon" title="Voir CV" (click)="viewCV(c)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                                             <polyline points="14 2 14 8 20 8" />

@@ -177,6 +177,21 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
+  toggleSuspension(user: User): void {
+    const isSuspended = user.status === 'SUSPENDU';
+    const action = isSuspended ? this.adminService.activerUser(user.id) : this.adminService.suspendreUser(user.id);
+    const actionName = isSuspended ? 'activer' : 'suspendre';
+
+    if (!confirm(`Voulez-vous ${actionName} le compte de ${user.prenom} ${user.nom} ?`)) return;
+
+    action.subscribe({
+      next: (updatedUser) => {
+        this.users.update(list => list.map(u => u.id === user.id ? updatedUser : u));
+      },
+      error: () => this.errorMessage.set(`Erreur lors de l'action ${actionName}`)
+    });
+  }
+
   // ── Suppression en masse
   supprimerSelection(): void {
     const ids = this.selectedIds();

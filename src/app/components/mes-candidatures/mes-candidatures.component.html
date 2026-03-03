@@ -15,7 +15,7 @@
           <rect x="14" y="14" width="7" height="7" />
           <rect x="3" y="14" width="7" height="7" />
         </svg>
-        <span>Tableau de bord</span>
+        Tableau de bord
       </div>
 
       <div class="nav-item" (click)="navigateTo('/candidat/offres')">
@@ -23,7 +23,7 @@
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <span>Offres d'emploi</span>
+        Offres d'emploi
       </div>
 
       <div class="nav-item active">
@@ -31,10 +31,7 @@
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />
         </svg>
-        <span>Mes candidatures</span>
-        @if (total() > 0) {
-        <span class="nav-badge">{{ total() }}</span>
-        }
+        Mes candidatures
       </div>
 
       <div class="nav-section-label">Profil</div>
@@ -44,23 +41,14 @@
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
-        <span>Mon profil</span>
+        Mon profil
       </div>
     </nav>
 
     <div class="sidebar-footer">
       <div class="user-card">
-        @if (candidat()?.photoUrl) {
-        <img class="user-avatar avatar-img" [src]="getPhotoUrl(candidat()?.photoUrl)" alt="Avatar">
-        } @else {
-        <div class="user-avatar">{{ getInitiales() }}</div>
-        }
         <div class="user-info">
-          @if (candidat()) {
-          <div class="user-name">{{ candidat()!.prenom }} {{ candidat()!.nom }}</div>
-          } @else {
-          <div class="user-name">Chargement...</div>
-          }
+          <div class="user-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
           <div class="user-role">Candidat</div>
         </div>
         <button class="btn-logout" (click)="logout()" title="Déconnexion">

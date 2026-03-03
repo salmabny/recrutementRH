@@ -53,6 +53,7 @@ export interface Candidat {
   profileEducationScore?: number;
   profileExperienceScore?: number;
   profileAnalysisResult?: string;
+  experienceProf?: string;
   photoUrl?: string;
 }
 

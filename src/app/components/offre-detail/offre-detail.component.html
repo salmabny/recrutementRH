@@ -1,5 +1,89 @@
 <div class="dashboard-layout">
     <!-- Sidebar -->
+    @if (isAdmin()) {
+    <aside class="sidebar sidebar-dark">
+        <div class="sidebar-brand">
+            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+            <div class="brand-sub-title">ADMINISTRATION</div>
+            <div class="admin-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                </svg>
+                SUPER ADMIN
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">TABLEAU DE BORD</div>
+            <div class="nav-item" (click)="navigateTo('/admin')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Vue globale
+            </div>
+            <div class="nav-section-label">UTILISATEURS</div>
+            <div class="nav-item" (click)="navigateTo('/admin/recruteurs')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Recruteurs
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalRecruteurs }}</span>
+                }
+            </div>
+            <div class="nav-item" (click)="navigateTo('/admin/users')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Tous les utilisateurs
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalUtilisateurs }}</span>
+                }
+            </div>
+            <div class="nav-section-label">CONTENU</div>
+            <div class="nav-item active" (click)="navigateTo('/admin/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Offres d'emploi
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.offresActives }}</span>
+                }
+            </div>
+            <div class="nav-section-label">SYSTÈME</div>
+            <div class="nav-item" (click)="navigateTo('/admin')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Statistiques
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-info">
+                    <div class="user-name">{{ user()?.prenom }} {{ user()?.nom }}</div>
+                    <div class="user-company">Super Administrateur</div>
+                </div>
+                <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+    } @else {
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
@@ -27,10 +111,17 @@
             </div>
             <div class="nav-item" (click)="navigateTo('/recruteur/candidatures')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
                 </svg>
                 Candidatures
+            </div>
+            <div class="nav-item" (click)="navigateTo('/recruteur/profil')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Mon profil
             </div>
             } @else {
             <div class="nav-item" (click)="navigateTo('/candidat')">
@@ -60,11 +151,10 @@
         </nav>
         <div class="sidebar-footer">
             <div class="user-card">
-                <div class="user-avatar">{{ recruiterInfo.initiales }}</div>
                 <div class="user-info">
-                    <div class="user-name">{{ recruiterInfo.prenom }} {{ recruiterInfo.nom }}</div>
-                    <div class="user-company">{{ recruiterInfo.entreprise || (isCandidat() ? 'Candidat' : 'Recruteur')
-                        }}</div>
+                    <div class="user-name">{{ isCandidat() ? 'Candidat' : (recruiterInfo.prenom + ' ' +
+                        recruiterInfo.nom) }}</div>
+                    <div class="user-role">{{ isCandidat() ? 'Candidat' : 'Recruteur' }}</div>
                 </div>
                 <button class="btn-logout" (click)="logout()" title="Déconnexion">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -76,6 +166,7 @@
             </div>
         </div>
     </aside>
+    }
 
     <!-- Main -->
     <div class="main">
@@ -85,11 +176,21 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <polyline points="15,18 9,12 15,6" />
                     </svg>
-                    Retour aux offres
+                    {{ isAdmin() ? 'Retour à la liste' : 'Retour aux offres' }}
                 </button>
                 <div class="topbar-title">Détails de l'offre</div>
             </div>
             <div class="topbar-actions">
+                @if (isAdmin()) {
+                <button class="btn-postuler-light" (click)="goToRecruteurProfile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                    </svg>
+                    Retour au profil recruteur
+                </button>
+                }
+                @if (isCandidat()) {
                 <button class="btn-postuler-light" (click)="postuler()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                         stroke-linejoin="round">
@@ -98,7 +199,7 @@
                     </svg>
                     Postuler maintenant
                 </button>
-
+                }
             </div>
         </div>
 
@@ -144,6 +245,17 @@
                             }
                         </div>
                     </div>
+
+                    @if (offre()?.experienceFields?.length) {
+                    <div class="detail-card">
+                        <h2 class="section-title">Domaine d'expérience</h2>
+                        <div class="tags-list">
+                            @for (field of offre()?.experienceFields; track field) {
+                            <span class="skill-pill exp-pill">{{ field }}</span>
+                            }
+                        </div>
+                    </div>
+                    }
                 </div>
 
                 <aside class="detail-sidebar">
@@ -165,7 +277,13 @@
                         }
                         <div class="info-row">
                             <span class="info-label">Expire le</span>
-                            <span class="info-value">{{ offre()?.expirationDate | date:'dd/MM/yyyy' }}</span>
+                            <span class="info-value">
+                                @if (offre()?.expirationDate) {
+                                {{ offre()?.expirationDate | date:'dd/MM/yyyy' }}
+                                } @else {
+                                Non spécifiée
+                                }
+                            </span>
                         </div>
                     </div>
                 </aside>

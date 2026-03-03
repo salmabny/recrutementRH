@@ -119,14 +119,6 @@
         </div>
       </div>
       <div class="topbar-actions">
-        <button class="btn-sm btn-ghost-sm">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          Exporter CSV
-        </button>
       </div>
     </div>
 
@@ -249,6 +241,15 @@
 
           <!-- Actions -->
           <div class="row-actions">
+
+            <!-- Voir profil -->
+            <div class="btn-icon btn-icon--primary" title="Voir profil"
+              (click)="navigateTo('/admin/recruteur/' + user.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </div>
 
             @if (user.status === 'PENDING_ADMIN_VALIDATION') {
             <!-- Voir document -->

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CandidatService } from '../../services/candidat.service';
 import { AuthService } from '../../services/auth.service';
+import { AdminService } from '../../services/admin.service';
 import { Candidat } from '../../models/candidat.model';
 
 @Component({
@@ -17,6 +18,7 @@ export class CandidateProfileViewComponent implements OnInit {
     private router = inject(Router);
     private candidatService = inject(CandidatService);
     private authService = inject(AuthService);
+    public adminService = inject(AdminService);
 
     candidat = signal<Candidat | null>(null);
     candidatureCount = signal(0);
@@ -24,17 +26,10 @@ export class CandidateProfileViewComponent implements OnInit {
     error = signal<string | null>(null);
     isDragging = signal(false);
     photoTimestamp = signal<number>(Date.now());
+    isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
+    isRecruteur = computed(() => this.authService.currentUser()?.role === 'RECRUTEUR');
 
-    recruteur = computed(() => {
-        const user = this.authService.currentUser();
-        return {
-            prenom: user?.prenom || '',
-            nom: user?.nom || '',
-            entreprise: user?.entreprise || 'Ma Société',
-            photoUrl: user?.photoUrl,
-            initiales: (user?.prenom?.[0] || 'U') + (user?.nom?.[0] || '')
-        };
-    });
+    currentUser = computed(() => this.authService.currentUser());
 
 
 
@@ -138,6 +133,21 @@ export class CandidateProfileViewComponent implements OnInit {
     }
 
     goBack(): void {
-        this.router.navigate(['/recruteur/candidatures']);
+        if (this.isAdmin()) {
+            this.router.navigate(['/admin/users']);
+        } else {
+            this.router.navigate(['/recruteur/candidatures']);
+        }
+    }
+
+    sendEmail(): void {
+        const email = this.candidat()?.email;
+        if (email) {
+            window.location.href = `mailto:${email}`;
+        }
+    }
+
+    scheduleInterview(): void {
+        alert("Fonctionnalité de planification d'entretien bientôt disponible !");
     }
 }

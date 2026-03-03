@@ -220,3 +220,18 @@
 .btn-icon--danger:hover svg {
     stroke: #e53e3e;
 }
+
+.sidebar-footer {
+    background: transparent !important;
+}
+
+.me-badge {
+    font-size: 10px;
+    background: rgba(67, 97, 238, 0.1);
+    color: #4361ee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 700;
+    vertical-align: middle;
+}

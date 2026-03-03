@@ -25,34 +25,27 @@
           <polyline points="14 2 14 8 20 8" />
         </svg>
         Mes offres
-        <span class="nav-badge">{{ offres().length }}</span>
       </div>
 
       <div class="nav-item" (click)="navigateTo('/recruteur/candidatures')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
         </svg>
         Candidatures
       </div>
 
-      <div class="nav-item">
+      <div class="nav-item" (click)="navigateTo('/recruteur/profil')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="20" x2="18" y2="10" />
-          <line x1="12" y1="20" x2="12" y2="4" />
-          <line x1="6" y1="20" x2="6" y2="14" />
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
         </svg>
-        Statistiques
+        Mon profil
       </div>
     </nav>
 
     <div class="sidebar-footer">
       <div class="user-card">
-        @if (recruteur().photoUrl) {
-        <img class="user-avatar avatar-img" [src]="getPhotoUrl({photoUrl: recruteur().photoUrl})" alt="Avatar">
-        } @else {
-        <div class="user-avatar">{{ recruteur().initiales }}</div>
-        }
         <div class="user-info">
           <div class="user-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
           <div class="user-company">{{ recruteur().entreprise }}</div>
@@ -84,13 +77,6 @@
           <div class="topbar-subtitle">
             Bonjour {{ recruteur().prenom }} 👋
           </div>
-        </div>
-      </div>
-      <div>
-        <div class="topbar-subtitle">
-          {{ offres().length }} offres ·
-          {{ totalPubliees() }} publiées ·
-          {{ totalBrouillon() }} brouillons
         </div>
       </div>
       <div class="topbar-actions">
@@ -187,7 +173,7 @@
               </div>
             </div>
             <div class="header-tags">
-              @if (isExpiringSoon(offre.expirationDate)) {
+              @if (offre.expirationDate && isExpiringSoon(offre.expirationDate)) {
               <span class="tag tag-urgent" title="Expire bientôt">
                 ⚠ À renouveler ?
               </span>

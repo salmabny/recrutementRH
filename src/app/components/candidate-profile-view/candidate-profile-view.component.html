@@ -1,6 +1,97 @@
 <div class="dashboard-layout">
 
-    <!-- ── Sidebar -->
+    <!-- ── Sidebar Admin (if isAdmin) -->
+    @if (isAdmin()) {
+    <aside class="sidebar sidebar-dark">
+        <div class="sidebar-brand">
+            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+            <div class="brand-sub-title">ADMINISTRATION</div>
+            <div class="admin-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                </svg>
+                SUPER ADMIN
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">TABLEAU DE BORD</div>
+            <div class="nav-item" (click)="navigateTo('/admin')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Vue globale
+            </div>
+
+            <div class="nav-section-label">UTILISATEURS</div>
+            <div class="nav-item" (click)="navigateTo('/admin/recruteurs')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Recruteurs
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalRecruteurs }}</span>
+                }
+            </div>
+
+            <div class="nav-item active" (click)="navigateTo('/admin/users')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Tous les utilisateurs
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalUtilisateurs }}</span>
+                }
+            </div>
+
+            <div class="nav-section-label">CONTENU</div>
+            <div class="nav-item" (click)="navigateTo('/admin/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Offres d'emploi
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.offresActives }}</span>
+                }
+            </div>
+
+            <div class="nav-section-label">SYSTÈME</div>
+            <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Statistiques
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-info">
+                    <div class="user-name">{{ currentUser()?.prenom }} {{ currentUser()?.nom }}</div>
+                    <div class="user-company">Super Administrateur</div>
+                </div>
+                <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+    } @else {
+    <!-- ── Sidebar Recruteur -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
@@ -27,23 +118,25 @@
             </div>
             <div class="nav-item active" (click)="navigateTo('/recruteur/candidatures')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
                 </svg>
                 Candidatures
+            </div>
+            <div class="nav-item" (click)="navigateTo('/recruteur/profil')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Mon profil
             </div>
         </nav>
 
         <div class="sidebar-footer">
             <div class="user-card">
-                @if (recruteur().photoUrl) {
-                <img class="user-avatar avatar-img" [src]="getPhotoUrlHelper(recruteur().photoUrl)" alt="Avatar">
-                } @else {
-                <div class="user-avatar">{{ recruteur().initiales }}</div>
-                }
                 <div class="user-info">
-                    <div class="user-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
-                    <div class="user-company">{{ recruteur().entreprise }}</div>
+                    <div class="user-name">{{ currentUser()?.prenom }} {{ currentUser()?.nom }}</div>
+                    <div class="user-company">{{ currentUser()?.entreprise }}</div>
                 </div>
                 <button class="btn-logout" (click)="logout()" title="Déconnexion">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,49 +148,36 @@
             </div>
         </div>
     </aside>
+    }
 
     <!-- ── Main -->
     <div class="main">
 
-        <!-- Topbar -->
-        <div class="topbar">
-            <button class="btn-back" (click)="goBack()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="15,18 9,12 15,6" />
-                </svg>
-                Retour
-            </button>
-            <div class="topbar-greeting-wrapper">
-                @if (candidat()?.photoUrl) {
-                <img class="topbar-avatar avatar-img" [src]="getPhotoUrl()" alt="Profile">
-                } @else {
-                <div class="topbar-avatar-initials">{{ getInitiales() }}</div>
-                }
-                <div>
-                    <div class="topbar-title">Profil du candidat</div>
-                    <div class="topbar-sub">Consultation de {{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
-                </div>
-            </div>
-        </div>
-
         <div class="content">
+            <!-- Back Button -->
+            <div class="header-actions-row">
+                <button class="btn-back-minimal" (click)="goBack()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="15,18 9,12 15,6" />
+                    </svg>
+                    {{ isAdmin() ? 'Retour à la liste' : 'Retour aux candidatures' }}
+                </button>
+            </div>
 
             @if (isLoading()) {
             <div class="loading-state">
                 <span class="spinner"></span>
-                Chargement du profil...
+                Chargement...
             </div>
-            } @else if (error()) {
-            <div class="alert-error">{{ error() }}</div>
             } @else if (candidat()) {
 
-            <!-- ── Master Profile Card ── -->
-            <div class="master-profile-card">
+            <!-- Header Card -->
+            <div class="profile-header-card">
                 <div class="profile-banner"></div>
 
                 <div class="profile-header-content">
-                    <div class="avatar-overlap-wrapper">
-                        <div class="ph-avatar-overlap">
+                    <div class="avatar-zone">
+                        <div class="avatar-circle">
                             @if (getPhotoUrl()) {
                             <img [src]="getPhotoUrl()" class="avatar-img" alt="Avatar">
                             } @else {
@@ -106,156 +186,174 @@
                         </div>
                     </div>
 
-                    <div class="profile-main-meta">
-                        <div class="pmm-left">
-                            <h1 class="ph-name-large">{{ candidat()?.prenom }} {{ candidat()?.nom }}</h1>
-
-                            <div class="ph-sub-info-stack">
-                                <div class="psi-item">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path
-                                            d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                        <polyline points="22,6 12,13 2,6" />
-                                    </svg>
-                                    {{ candidat()?.email }}
-                                </div>
-                                <div class="psi-item">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                        <circle cx="12" cy="10" r="3" />
-                                    </svg>
-                                    {{ candidat()?.ville || 'Non renseigné' }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="ph-badges-row">
-                            <span class="badge-pill badge-pill-active">Profil actif</span>
-                            @if (candidat()?.ouvertAuxOffres) {
-                            <span class="badge-pill badge-pill-open">Ouvert aux offres</span>
-                            }
+                    <div class="header-info">
+                        <h1 class="header-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</h1>
+                        <div class="header-meta">
+                            <span class="meta-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                    <polyline points="22,6 12,13 2,6" />
+                                </svg>
+                                {{ candidat()?.email }}
+                            </span>
+                            <span class="meta-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                                {{ candidat()?.ville || 'Non renseigné' }}
+                            </span>
+                            <span class="meta-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                </svg>
+                                {{ candidat()?.telephone || 'Non renseigné' }}
+                            </span>
                         </div>
                     </div>
-                </div>
 
-                <hr class="card-divider">
-
-                <div class="stats-integrated-row">
-                    <div class="stat-item-inner">
-                        <span class="stat-val-large">{{ candidatureCount() }}</span>
-                        <span class="stat-lbl-small">Candidatures</span>
-                    </div>
-                    <div class="stat-item-inner">
-                        <span class="stat-val-large">{{ candidat()?.profileScore || 0 }}%</span>
-                        <span class="stat-lbl-small">Score profil</span>
-                    </div>
-                    <div class="stat-item-inner">
-                        <span class="stat-val-large">{{ candidat()?.anneesExperience || 0 }}</span>
-                        <span class="stat-lbl-small">Années exp.</span>
-                    </div>
-                    <div class="stat-item-inner">
-                        <span class="stat-val-large">{{ candidat()?.niveauEtudes || 'Non renseigné' }}</span>
-                        <span class="stat-lbl-small">Niveau</span>
+                    <div class="header-main-actions">
+                        @if (!isAdmin()) {
+                        <button class="btn-secondary" (click)="sendEmail()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <polyline points="22,6 12,13 2,6" />
+                            </svg>
+                            Envoyer un message
+                        </button>
+                        <button class="btn-primary" (click)="scheduleInterview()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            Planifier Entretien
+                        </button>
+                        }
                     </div>
                 </div>
             </div>
 
-            <div class="profile-main-layout">
-                <!-- ── Left Column: Personal Info ── -->
-                <div class="profile-info-column">
-                    <div class="section-card">
-                        <div class="card-header">
-                            <div class="card-title">Informations personnelles</div>
-                        </div>
-                        <div class="card-body">
-                            <div class="display-grid-2col">
-                                <div class="display-item">
-                                    <label>Prénom</label>
-                                    <span>{{ candidat()!.prenom }}</span>
-                                </div>
-                                <div class="display-item">
-                                    <label>Nom</label>
-                                    <span>{{ candidat()!.nom }}</span>
-                                </div>
-                                <div class="display-item">
-                                    <label>Email</label>
-                                    <span>{{ candidat()!.email }}</span>
-                                </div>
-                                <div class="display-item">
-                                    <label>Téléphone</label>
-                                    <span>{{ candidat()!.telephone || 'Non renseigné' }}</span>
-                                </div>
-                                <div class="display-item">
-                                    <label>Ville</label>
-                                    <span>{{ candidat()!.ville || 'Non renseignée' }}</span>
-                                </div>
-                                <div class="display-item">
-                                    <label>Niveau d'études</label>
-                                    <span>{{ candidat()!.niveauEtudes || 'Non renseigné' }}</span>
-                                </div>
-                                <div class="display-item">
-                                    <label>Expérience</label>
-                                    <span>{{ candidat()!.anneesExperience || 0 }} ans</span>
-                                </div>
+            <div class="info-grid">
+                <!-- Info Section -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        Informations personnelles
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row-grid">
+                            <div class="info-item">
+                                <label>Prénom</label>
+                                <span>{{ candidat()?.prenom }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Nom</label>
+                                <span>{{ candidat()?.nom }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Email</label>
+                                <span>{{ candidat()?.email }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Téléphone</label>
+                                <span>{{ candidat()?.telephone || '—' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Ville</label>
+                                <span>{{ candidat()?.ville || '—' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Expérience</label>
+                                <span>{{ candidat()?.anneesExperience || 0 }} ans</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Niveau d'études</label>
+                                <span>{{ candidat()?.niveauEtudes || '—' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Candidatures</label>
+                                <span>{{ candidatureCount() }} posée(s)</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ── Right Column: Analysis & CV ── -->
-                <div class="profile-sidebar-column">
-                    <!-- 1. Analysis Block -->
-                    <div class="side-compact-card analysis-block">
-                        <div class="card-header-sm">Analyse & score</div>
-                        <div class="card-body-sm">
-                            <div class="score-summary-compact">
-                                <div class="score-circle-sm">
-                                    <svg viewBox="0 0 36 36" class="circular-chart-sm">
-                                        <path class="circle-bg-sm"
-                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                            stroke-width="2" />
-                                        <path class="circle-sm"
-                                            [style.stroke-dasharray]="(candidat()?.profileScore || 0) + ', 100'"
-                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                            stroke-width="2" />
-                                        <text x="18" y="20.35" class="percentage-sm">{{ candidat()?.profileScore || 0
-                                            }}%</text>
-                                    </svg>
-                                </div>
-                                <div class="score-breakdown-mini">
-                                    <div class="mini-row">
-                                        <span>Compétences</span>
-                                        <strong>{{ candidat()?.profileSkillsScore || 0 }}%</strong>
-                                    </div>
-                                    <div class="mini-row">
-                                        <span>Diplômes</span>
-                                        <strong>{{ candidat()?.profileEducationScore || 0 }}%</strong>
-                                    </div>
-                                    <div class="mini-row">
-                                        <span>Expériences</span>
-                                        <strong>{{ candidat()?.profileExperienceScore || 0 }}%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="btn-premium mt-3" (click)="triggerAnalysis()" [disabled]="isLoading()">
-                                Actualiser l'analyse
-                            </button>
-                        </div>
+                <!-- Compétences Card -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg>
+                        Compétences
                     </div>
-
-                    <!-- 2. CV Block -->
-                    <div class="side-compact-card cv-block">
-                        <div class="card-header-sm">CV du candidat</div>
-                        <div class="card-body-sm">
-                            @if (candidat()?.cvFileName) {
-                            <div class="cv-file-mini">
-                                <div class="cv-icon-sm">📄</div>
-                                <div class="cv-name-sm">{{ candidat()!.cvFileName }}</div>
-                            </div>
+                    <div class="info-card-body">
+                        <div class="skills-wrap">
+                            @if (candidat()?.competences && (candidat()?.competences?.length || 0) > 0) {
+                            @for (skill of candidat()?.competences; track skill) {
+                            <span class="skill-pill">{{ skill }}</span>
+                            }
                             } @else {
-                            <div class="empty-cv-msg">Aucun CV n'a été déposé par ce candidat.</div>
+                            <div class="empty-data">Aucune compétence renseignée</div>
                             }
                         </div>
+                    </div>
+                </div>
+
+                <!-- Expériences Card -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                        </svg>
+                        Expériences professionnelles
+                    </div>
+                    <div class="info-card-body">
+                        <div class="experiences-list">
+                            @if (candidat()?.experiences && candidat()?.experiences!.length > 0) {
+                            @for (exp of candidat()?.experiences; track exp.id) {
+                            <div class="experience-item">
+                                <div class="exp-icon">
+                                    {{ (exp.entreprise[0] || 'E').toUpperCase() }}
+                                </div>
+                                <div class="exp-details">
+                                    <div class="exp-job">{{ exp.poste }}</div>
+                                    <div class="exp-company">{{ exp.entreprise }}</div>
+                                    <div class="exp-date">
+                                        {{ exp.dateDebut | date:'MMM yyyy' }} —
+                                        {{ exp.enCours ? 'Présent' : (exp.dateFin | date:'MMM yyyy') }}
+                                    </div>
+                                    <p class="exp-desc">{{ exp.description }}</p>
+                                </div>
+                            </div>
+                            }
+                            } @else {
+                            <div class="empty-data">Aucune expérience renseignée</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis & CV Card -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4" />
+                            <path d="M12 8h.01" />
+                        </svg>
+                        Analyse & Score
+                    </div>
+                    <div class="info-card-body">
+                        <!-- Contenu supprimé à la demande de l'utilisateur -->
                     </div>
                 </div>
             </div>

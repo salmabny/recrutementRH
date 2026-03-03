@@ -1,5 +1,5 @@
 <div class="dashboard-layout">
-  <!-- ── Sidebar -->
+  <!-- ── Sidebar ── -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
@@ -15,7 +15,7 @@
           <rect x="14" y="14" width="7" height="7" />
           <rect x="3" y="14" width="7" height="7" />
         </svg>
-        <span>Tableau de bord</span>
+        Tableau de bord
       </div>
 
       <div class="nav-item" (click)="navigateTo('/candidat/offres')">
@@ -23,7 +23,7 @@
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <span>Offres d'emploi</span>
+        Offres d'emploi
       </div>
 
       <div class="nav-item" (click)="navigateTo('/candidat/candidatures')">
@@ -31,7 +31,7 @@
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />
         </svg>
-        <span>Mes candidatures</span>
+        Mes candidatures
       </div>
 
       <div class="nav-section-label">Profil</div>
@@ -40,23 +40,14 @@
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
-        <span>Mon profil</span>
+        Mon profil
       </div>
     </nav>
 
     <div class="sidebar-footer">
       <div class="user-card">
-        @if (candidat()?.photoUrl) {
-        <img class="user-avatar avatar-img" [src]="getPhotoUrl()" alt="Avatar">
-        } @else {
-        <div class="user-avatar">{{ getInitiales() }}</div>
-        }
         <div class="user-info">
-          @if (candidat()) {
-          <div class="user-name">{{ candidat()!.prenom }} {{ candidat()!.nom }}</div>
-          } @else {
-          <div class="user-name">Chargement...</div>
-          }
+          <div class="user-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
           <div class="user-role">Candidat</div>
         </div>
         <button class="btn-logout" (click)="logout()" title="Déconnexion">
@@ -70,132 +61,91 @@
     </div>
   </aside>
 
-  <!-- ── Main -->
-  <div class="main">
-    <div class="topbar">
-      <div class="topbar-greeting-wrapper">
-        @if (candidat()?.photoUrl) {
-        <img class="topbar-avatar avatar-img" [src]="getPhotoUrl()" alt="Profile">
-        } @else {
-        <div class="topbar-avatar-initials">{{ getInitiales() }}</div>
-        }
-        <div>
-          <div class="topbar-title">Mon profil</div>
-          <div class="topbar-sub">Bonjour {{ candidat()?.prenom }} 👋</div>
-        </div>
-      </div>
-    </div>
+  <!-- ── Main Content ── -->
+  <main class="main">
 
     <div class="content">
-      <!-- Success Alert -->
-      @if (successMsg()) {
-      <div class="alert alert-success">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20,6 9,17 4,12" />
-        </svg>
-        {{ successMsg() }}
-      </div>
-      }
-
-      @if (errorMsg()) {
-      <div class="alert alert-error">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        {{ errorMsg() }}
-      </div>
-      }
-
       @if (isLoading()) {
-      <div class="loading-state">
-        <span class="spinner"></span> Chargement de votre profil...
+      <div class="loader-container">
+        <div class="spinner-large"></div>
+        <p>Chargement de votre profil...</p>
       </div>
       } @else if (candidat()) {
-      <!-- ── Master Profile Card ── -->
-      <div class="master-profile-card">
-        <div class="profile-banner"></div>
 
+      <!-- ── Profile Master Header Card ── -->
+      <div class="profile-header-card">
+        <div class="profile-banner"></div>
         <div class="profile-header-content">
           <div class="avatar-overlap-wrapper">
-            <div class="ph-avatar-overlap" (click)="photoInput.click()" style="cursor: pointer;"
-              title="Changer la photo de profil">
-              <input type="file" #photoInput (change)="onPhotoSelected($event)" accept="image/*" style="display: none;">
-
-              <ng-container *ngIf="candidat()?.photoUrl; else initiales">
-                <img [src]="getPhotoUrl()" class="avatar-img" alt="Photo de profil"
-                  (error)="$event.target.style.display='none'">
-              </ng-container>
-              <ng-template #initiales>
-                {{ getInitiales() }}
-              </ng-template>
+            <div class="ph-avatar-overlap">
+              @if (candidat()?.photoUrl) {
+              <img [src]="getPhotoUrl()" class="avatar-img" alt="Avatar">
+              } @else {
+              {{ getInitiales() }}
+              }
             </div>
-
+            <label class="avatar-edit-icon" title="Changer la photo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+              <input type="file" (change)="onPhotoSelected($event)" accept="image/*" hidden>
+            </label>
           </div>
 
           <div class="profile-main-meta">
             <div class="pmm-left">
               <h1 class="ph-name-large">{{ candidat()?.prenom }} {{ candidat()?.nom }}</h1>
-
               <div class="ph-sub-info-stack">
-                <div class="psi-item">
+                <span class="psi-item">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
                   {{ candidat()?.email }}
-                </div>
-                <div class="psi-item">
-                  {{ candidat()?.ville || 'Non renseigné' }}
-                </div>
+                </span>
+                <span class="psi-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  {{ candidat()?.ville || 'Ville non renseignée' }}
+                </span>
               </div>
             </div>
 
-            <div class="ph-badges-row">
-              <span class="badge-pill badge-pill-active">Profil actif</span>
-              @if (candidat()?.ouvertAuxOffres) {
-              <span class="badge-pill badge-pill-open">Ouvert aux offres</span>
+            <div class="ph-actions">
+              <button class="ph-btn ph-btn-edit" (click)="toggleEdit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                {{ editMode() ? 'Annuler' : 'Modifier le profil' }}
+              </button>
+              @if (!editMode()) {
+              <button class="ph-btn ph-btn-pwd" (click)="togglePwdModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Modifier mot de passe
+              </button>
               }
             </div>
-          </div>
-        </div>
-
-        <hr class="card-divider">
-
-        <div class="stats-integrated-row">
-          <div class="stat-item-inner">
-            <span class="stat-val-large">{{ candidatureCount() }}</span>
-            <span class="stat-lbl-small">Candidatures</span>
-          </div>
-          <div class="stat-item-inner">
-            <span class="stat-val-large">0</span>
-            <span class="stat-lbl-small">Score profil</span>
-          </div>
-          <div class="stat-item-inner">
-            <span class="stat-val-large">{{ candidat()?.anneesExperience || 0 }}</span>
-            <span class="stat-lbl-small">Années exp.</span>
-          </div>
-          <div class="stat-item-inner">
-            <span class="stat-val-large">{{ candidat()?.niveauEtudes || 'Non renseigné' }}</span>
-            <span class="stat-lbl-small">Niveau</span>
           </div>
         </div>
       </div>
 
       <div class="profile-main-layout">
-        <!-- ── Left Column: Personal Info ── -->
         <div class="profile-info-column">
+          <!-- Main Info Card -->
           <div class="card section-card">
             <div class="card-header">
               <div class="card-title">Informations personnelles</div>
-              <button class="btn btn-xs btn-ghost" (click)="toggleEdit()">
-                {{ editMode() ? 'Annuler' : 'Modifier' }}
-              </button>
             </div>
             <div class="card-body">
               @if (editMode()) {
-              <form [formGroup]="form" (ngSubmit)="onSubmit()" class="compact-form">
+              <form [formGroup]="form" class="compact-form">
                 <div class="form-grid-2col">
                   <div class="form-group">
                     <label>Prénom <span class="required">*</span></label>
@@ -225,20 +175,6 @@
                     <label>Années d'expérience</label>
                     <input formControlName="anneesExperience" class="form-control" type="number">
                   </div>
-                  <div class="form-group col-span-2">
-                    <label class="checkbox-label">
-                      <input type="checkbox" formControlName="ouvertAuxOffres">
-                      Je suis ouvert aux nouvelles opportunités (Disponible)
-                    </label>
-                  </div>
-                </div>
-                <div class="form-actions-right">
-                  <button type="button" class="btn btn-ghost" (click)="toggleEdit()">Annuler</button>
-                  <button type="submit" class="btn btn-ghost" [disabled]="isLoading()"
-                    style="color: var(--primary-color); font-weight: 600;">
-                    @if (isLoading()) { <span class="spinner"></span> }
-                    Enregistrer
-                  </button>
                 </div>
               </form>
               } @else {
@@ -317,11 +253,147 @@
               }
             </div>
           </div>
+
+          <!-- Compétences Card -->
+          <div class="card section-card">
+            <div class="card-header">
+              <div class="card-title">Compétences</div>
+            </div>
+            <div class="card-body">
+              @if (editMode()) {
+              <div class="tag-input-wrap">
+                <div class="tags-container">
+                  @for (skill of skills(); track skill) {
+                  <div class="skill-pill">
+                    {{ skill }}
+                    <button type="button" (click)="$event.stopPropagation(); removeSkill(skill)">✕</button>
+                  </div>
+                  }
+                  <input class="tag-input" type="text" placeholder="Ex: React.js — Appuyez sur Entrée"
+                    [value]="skillInput()" (input)="onSkillInput($event)" (keydown)="onSkillKeydown($event)" />
+                </div>
+              </div>
+              } @else {
+              <div class="skills-stack">
+                @if (skills().length > 0) {
+                @for (skill of skills(); track skill) {
+                <span class="skill-tag">{{ skill }}</span>
+                }
+                } @else {
+                <span class="text-muted">Aucune compétence renseignée</span>
+                }
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Expérience Card -->
+          <div class="card section-card">
+            <div class="card-header">
+              <div class="card-title">Expériences professionnelles</div>
+            </div>
+            <div class="card-body">
+              @if (editMode()) {
+              <!-- Form for new experience -->
+              <div class="new-exp-form">
+                <div class="form-grid-2col">
+                  <div class="form-group">
+                    <label>Poste / Titre</label>
+                    <input [(ngModel)]="newExp.poste" name="poste" class="form-control"
+                      placeholder="Ex: Développeur Senior">
+                  </div>
+                  <div class="form-group">
+                    <label>Entreprise / Lieu</label>
+                    <input [(ngModel)]="newExp.entreprise" name="entreprise" class="form-control"
+                      placeholder="Ex: Google, Paris">
+                  </div>
+                  <div class="form-group">
+                    <label>Date Début</label>
+                    <input type="date" [(ngModel)]="newExp.dateDebut" name="dateDebut" class="form-control">
+                  </div>
+                  <div class="form-group">
+                    <label>Date Fin</label>
+                    <input type="date" [(ngModel)]="newExp.dateFin" name="dateFin" class="form-control"
+                      [disabled]="newExp.enCours">
+                  </div>
+                  <div class="form-group col-span-2">
+                    <label class="checkbox-label">
+                      <input type="checkbox" [(ngModel)]="newExp.enCours" name="enCours">
+                      Poste actuel
+                    </label>
+                  </div>
+                  <div class="form-group col-span-2">
+                    <label>Description</label>
+                    <textarea [(ngModel)]="newExp.description" name="description" class="form-control" rows="3"
+                      placeholder="Décrivez brièvement vos missions..."></textarea>
+                  </div>
+                </div>
+                <button type="button" class="btn-add-exp" (click)="addExperience()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Ajouter l'expérience
+                </button>
+              </div>
+
+              <!-- List of added experiences in edit mode -->
+              <div class="experiences-edit-list mt-6">
+                @for (exp of experiences(); track $index) {
+                <div class="exp-edit-item">
+                  <div class="exp-edit-info">
+                    <div class="exp-job">{{ exp.poste }}</div>
+                    <div class="exp-company">{{ exp.entreprise }}</div>
+                  </div>
+                  <button type="button" class="btn-remove-exp" (click)="removeExperience($index)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </div>
+                }
+              </div>
+
+              <div class="form-actions-right mt-6">
+                <button type="button" class="btn btn-ghost" (click)="toggleEdit()">Annuler</button>
+                <button type="submit" class="btn btn-primary-gradient" (click)="onSubmit()" [disabled]="isLoading()">
+                  @if (isLoading()) { <span class="spinner"></span> }
+                  Enregistrer les modifications
+                </button>
+              </div>
+              } @else {
+              <!-- List of experiences in view mode -->
+              <div class="experiences-list">
+                @if (experiences().length > 0) {
+                @for (exp of experiences(); track (exp.id || $index)) {
+                <div class="experience-item">
+                  <div class="exp-icon">
+                    {{ (exp.entreprise[0] || 'E').toUpperCase() }}
+                  </div>
+                  <div class="exp-details">
+                    <div class="exp-job">{{ exp.poste }}</div>
+                    <div class="exp-company">{{ exp.entreprise }}</div>
+                    <div class="exp-date">
+                      {{ exp.dateDebut | date:'MMM yyyy' }} —
+                      {{ exp.enCours ? 'Présent' : (exp.dateFin | date:'MMM yyyy') }}
+                    </div>
+                    @if (exp.description) {
+                    <p class="exp-desc">{{ exp.description }}</p>
+                    }
+                  </div>
+                </div>
+                }
+                } @else {
+                <div class="empty-data">Aucune expérience renseignée</div>
+                }
+              </div>
+              }
+            </div>
+          </div>
         </div>
 
-        <!-- ── Right Column: Analysis & CV ── -->
         <div class="profile-sidebar-column">
-          <!-- 1. Analysis Block (Above CV) -->
           <div class="card side-compact-card analysis-block">
             <div class="card-header-sm">Analyse & score</div>
             <div class="card-body-sm">
@@ -358,7 +430,6 @@
             </div>
           </div>
 
-          <!-- 2. CV Block -->
           <div class="card side-compact-card cv-block">
             <div class="card-header-sm">Mon CV</div>
             <div class="card-body-sm">
@@ -369,8 +440,8 @@
               </div>
               }
               <div class="upload-area-sm" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()"
-                (drop)="onDrop($event)" (click)="fileInput.click()">
-                <input type="file" #fileInput (change)="onFileChange($event)" hidden accept=".pdf">
+                (drop)="onDrop($event)" (click)="cvInput.click()">
+                <input type="file" #cvInput (change)="onFileChange($event)" hidden accept=".pdf">
                 <span>Cliquez ou déposez un nouveau CV</span>
               </div>
             </div>
@@ -379,5 +450,73 @@
       </div>
       }
     </div>
+  </main>
+
+  <!-- ── Password Change Modal ── -->
+  @if (showPwdModal()) {
+  <div class="modal-backdrop" (click)="togglePwdModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Modifier le mot de passe</h2>
+        <button class="btn-close" (click)="togglePwdModal()">&times;</button>
+      </div>
+
+      <form [formGroup]="pwdForm" (ngSubmit)="onChangePassword()">
+        <div class="modal-body">
+          @if (pwdSuccessMsg()) {
+          <div class="alert-success">✓ {{ pwdSuccessMsg() }}</div>
+          }
+          @if (pwdErrorMsg()) {
+          <div class="alert-error">{{ pwdErrorMsg() }}</div>
+          }
+
+          <div class="form-group">
+            <label>Ancien mot de passe</label>
+            <input type="password" class="form-control" formControlName="oldPassword"
+              placeholder="Entrez votre mot de passe actuel">
+          </div>
+
+          <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <input type="password" class="form-control" formControlName="newPassword"
+              placeholder="6 caractères minimum">
+
+            @if (passwordStrength()) {
+            <div class="strength-meter-container">
+              <div class="strength-meter-bar">
+                <div class="strength-meter-fill" [style.width.%]="passwordStrength()!.level * 25"
+                  [style.backgroundColor]="passwordStrength()!.color">
+                </div>
+              </div>
+              <span class="strength-meter-label" [style.color]="passwordStrength()!.color">
+                Force : <strong>{{ passwordStrength()!.label }}</strong>
+              </span>
+            </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Confirmer le nouveau mot de passe</label>
+            <input type="password" class="form-control" formControlName="confirmPassword"
+              placeholder="Répétez le nouveau mot de passe">
+            @if (pwdForm.hasError('mismatch') && pwdForm.get('confirmPassword')?.touched) {
+            <small class="text-error">Les mots de passe ne correspondent pas.</small>
+            }
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="togglePwdModal()">Annuler</button>
+          <button type="submit" class="btn-save" [disabled]="pwdForm.invalid || isLoading()">
+            @if (isLoading()) {
+            <span class="spinner-small"></span>
+            } @else {
+            Enregistrer
+            }
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
+  }
 </div>

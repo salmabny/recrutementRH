@@ -132,7 +132,13 @@ export const routes: Routes = [
       import('./components/admin-offres/admin-offres.component').then(m => m.AdminOffresComponent),
     title: 'SmartHiring — Gestion Offres'
   },
-  /*
+  {
+    path: 'admin/offres/:id',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () =>
+      import('./components/offre-detail/offre-detail.component').then(m => m.OffreDetailComponent),
+    title: 'SmartHiring — Détails de l\'offre'
+  },
   {
     path: 'admin/candidat/:id',
     canActivate: [authGuard, adminGuard],
@@ -147,7 +153,6 @@ export const routes: Routes = [
       import('./components/recruteur-public-profile/recruteur-public-profile.component').then(m => m.RecruteurPublicProfileComponent),
     title: 'SmartHiring — Profil Recruteur'
   },
-  */
   // ── Dashboard Candidat
   {
     path: 'candidat',

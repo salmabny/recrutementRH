@@ -1,15 +1,15 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CandidatService } from '../../services/candidat.service';
 import { AuthService } from '../../services/auth.service';
-import { Candidat } from '../../models/candidat.model';
+import { Candidat, Experience } from '../../models/candidat.model';
 
 @Component({
   selector: 'app-mon-profil',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './mon-profil.component.html',
   styleUrls: ['./mon-profil.component.css']
 })
@@ -23,8 +23,27 @@ export class MonProfilComponent implements OnInit {
   errorMsg = signal('');
   isDragging = signal(false);
   photoTimestamp = signal<number>(Date.now());
+  showPwdModal = signal(false);
+  pwdSuccessMsg = signal('');
+  pwdErrorMsg = signal('');
+  passwordStrength = signal<any | null>(null);
+
+  skills = signal<string[]>([]);
+  skillInput = signal('');
+  experiences = signal<Experience[]>([]);
+
+  // New experience form fields (plain object — mutated directly by ngModel)
+  newExp: { poste: string; entreprise: string; dateDebut: string; dateFin: string; enCours: boolean; description: string } = {
+    poste: '',
+    entreprise: '',
+    dateDebut: '',
+    dateFin: '',
+    enCours: false,
+    description: ''
+  };
 
   form!: FormGroup;
+  pwdForm!: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -33,13 +52,14 @@ export class MonProfilComponent implements OnInit {
     private router: Router
   ) {
     this.buildForm();
+    this.buildPwdForm();
   }
 
   ngOnInit(): void {
     this.loadProfil();
   }
 
-  buildForm(c?: Candidat): void {
+  buildForm(c?: Candidat, preserveState = false): void {
     this.form = this.fb.group({
       prenom: [c?.prenom || '', Validators.required],
       nom: [c?.nom || '', Validators.required],
@@ -47,9 +67,86 @@ export class MonProfilComponent implements OnInit {
       telephone: [c?.telephone || ''],
       ville: [c?.ville || ''],
       niveauEtudes: [c?.niveauEtudes || ''],
-      anneesExperience: [c?.anneesExperience || 0],
-      ouvertAuxOffres: [c?.ouvertAuxOffres ?? true]
+      anneesExperience: [c?.anneesExperience || 0]
     });
+    if (!preserveState) {
+      this.skills.set(c?.competences || []);
+      this.experiences.set(c?.experiences || []);
+    }
+  }
+
+  // ── Skills
+  addSkill(): void {
+    const val = this.skillInput().trim();
+    if (val && !this.skills().includes(val)) {
+      this.skills.update(s => [...s, val]);
+      this.skillInput.set('');
+    }
+  }
+
+  removeSkill(skill: string): void {
+    this.skills.update(s => s.filter(x => x !== skill));
+  }
+
+  onSkillKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.addSkill();
+    }
+  }
+
+  onSkillInput(event: Event): void {
+    this.skillInput.set((event.target as HTMLInputElement).value);
+  }
+
+  // ── Experiences
+  addExperience(): void {
+    const poste = this.newExp.poste?.trim();
+    const entreprise = this.newExp.entreprise?.trim();
+    if (!poste || !entreprise) {
+      alert('Veuillez renseigner au moins le Poste et lEntreprise.');
+      return;
+    }
+
+    const exp: Experience = {
+      poste,
+      entreprise,
+      dateDebut: this.newExp.dateDebut || null as any,
+      dateFin: this.newExp.enCours ? null as any : (this.newExp.dateFin || null as any),
+      enCours: this.newExp.enCours,
+      description: this.newExp.description?.trim() || ''
+    };
+
+    this.experiences.update(exps => [...exps, exp]);
+
+    // Reset form fields individually so ngModel stays synced
+    this.newExp.poste = '';
+    this.newExp.entreprise = '';
+    this.newExp.dateDebut = '';
+    this.newExp.dateFin = '';
+    this.newExp.enCours = false;
+    this.newExp.description = '';
+  }
+
+  removeExperience(index: number): void {
+    this.experiences.update(exps => exps.filter((_, i) => i !== index));
+  }
+
+  buildPwdForm(): void {
+    this.pwdForm = this.fb.group({
+      oldPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required]
+    }, { validators: this.passwordMatchValidator });
+
+    this.pwdForm.get('newPassword')?.valueChanges.subscribe(val => {
+      this.passwordStrength.set(this.authService.checkPasswordStrength(val));
+    });
+  }
+
+  passwordMatchValidator(g: FormGroup) {
+    return g.get('newPassword')?.value === g.get('confirmPassword')?.value
+      ? null : { mismatch: true };
   }
 
   loadProfil(): void {
@@ -80,12 +177,15 @@ export class MonProfilComponent implements OnInit {
   }
 
   toggleEdit(): void {
-    this.editMode.update(v => !v);
+    const entering = !this.editMode();
+    this.editMode.set(entering);
     this.errorMsg.set('');
     this.successMsg.set('');
-    if (!this.editMode()) {
+    if (!entering) {
+      // Cancelled — reset form AND signals back to last saved candidat
       if (this.candidat()) this.buildForm(this.candidat()!);
     }
+    // When entering edit mode, keep existing signal state (skills, experiences)
   }
 
   onSubmit(): void {
@@ -98,10 +198,30 @@ export class MonProfilComponent implements OnInit {
     const current = this.candidat();
     if (!current) return;
 
+    // Keep current skills/experiences before the server call
+    const currentSkills = this.skills();
+    const currentExperiences = this.experiences();
+
+    const payload = {
+      ...this.form.value,
+      competences: currentSkills,
+      experiences: currentExperiences
+    };
+
     this.isLoading.set(true);
-    this.candidatService.updateProfil(current.id, this.form.value).subscribe({
+    this.candidatService.updateProfil(current.id, payload).subscribe({
       next: (updated) => {
-        this.candidat.set(updated);
+        // Merge server response with local state
+        this.candidat.set({
+          ...updated,
+          competences: updated.competences?.length ? updated.competences : currentSkills,
+          experiences: updated.experiences?.length ? updated.experiences : currentExperiences
+        });
+        // Rebuild reactive form only (preserve skills/experiences signals)
+        this.buildForm(updated, true);
+        // Restore signals with merged data
+        this.skills.set(updated.competences?.length ? updated.competences : currentSkills);
+        this.experiences.set(updated.experiences?.length ? updated.experiences : currentExperiences);
         this.editMode.set(false);
         this.successMsg.set('Profil mis à jour avec succès !');
         this.isLoading.set(false);
@@ -234,5 +354,30 @@ export class MonProfilComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  togglePwdModal(): void {
+    this.showPwdModal.update(v => !v);
+    this.pwdErrorMsg.set('');
+    this.pwdSuccessMsg.set('');
+    this.pwdForm.reset();
+  }
+
+  onChangePassword(): void {
+    if (this.pwdForm.invalid) return;
+    const { oldPassword, newPassword } = this.pwdForm.value;
+
+    this.isLoading.set(true);
+    this.authService.changePassword(oldPassword, newPassword).subscribe({
+      next: () => {
+        this.pwdSuccessMsg.set('Mot de passe mis à jour !');
+        this.isLoading.set(false);
+        setTimeout(() => this.togglePwdModal(), 2000);
+      },
+      error: (err) => {
+        this.pwdErrorMsg.set(err.message || 'Erreur lors du changement.');
+        this.isLoading.set(false);
+      }
+    });
   }
 }

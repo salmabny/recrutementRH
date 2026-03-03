@@ -111,6 +111,23 @@ export class CandidaturesListComponent implements OnInit {
         return `http://localhost:8081/uploads/images/${url}`;
     }
 
+    viewCV(candidature: Candidature): void {
+        // Priorité au CV de la candidature spécifique
+        const candidatureCV = candidature.cv?.fileUrl;
+        const profileCV = (candidature.candidat as any)?.cvFileName;
+
+        if (candidatureCV) {
+            // fileUrl contient déjà le chemin relatif ou absolu depuis l'API
+            const url = candidatureCV.startsWith('http') ? candidatureCV : `http://localhost:8081/uploads/cvs/${candidatureCV}`;
+            window.open(url, '_blank');
+        } else if (profileCV) {
+            const url = `http://localhost:8081/uploads/cvs/${profileCV}`;
+            window.open(url, '_blank');
+        } else {
+            alert("Aucun CV n'est disponible pour cette candidature.");
+        }
+    }
+
     getStatusConfig(status: string) {
         const configs: any = {
             'SOUMISE': { label: 'Soumise', css: 'tag-blue' },

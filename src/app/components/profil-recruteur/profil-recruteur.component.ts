@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RecruteurService, Recruteur } from '../../services/recruteur.service';
+import { RecruiterService } from '../../services/recruiter.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -15,6 +16,7 @@ import { AuthService } from '../../services/auth.service';
 export class ProfilRecruteurComponent implements OnInit {
     private recruteurService = inject(RecruteurService);
     private authService = inject(AuthService);
+    private statsService = inject(RecruiterService);
     private router = inject(Router);
     private fb = inject(FormBuilder);
 
@@ -23,9 +25,22 @@ export class ProfilRecruteurComponent implements OnInit {
     editMode = signal(false);
     successMsg = signal('');
     errorMsg = signal('');
+    pwdSuccessMsg = signal('');
+    pwdErrorMsg = signal('');
     photoTimestamp = signal<number>(Date.now());
+    totalOffresCount = signal<number>(0);
+    totalCandidaturesCount = signal<number>(0);
+    showPwdModal = signal(false);
+    newPasswordInput = signal('');
+
+    passwordStrength = computed(() => {
+        const password = this.newPasswordInput();
+        if (!password) return null;
+        return this.authService.checkPasswordStrength(password);
+    });
 
     form!: FormGroup;
+    pwdForm!: FormGroup;
 
     sidebarUser = computed(() => {
         const user = this.authService.currentUser();
@@ -47,11 +62,30 @@ export class ProfilRecruteurComponent implements OnInit {
 
     ngOnInit(): void {
         const user = this.authService.currentUser();
+        this.buildPwdForm();
         if (user) {
             this.loadProfil(user.id);
+            this.loadStats(user.id);
         } else {
             this.isLoading.set(false);
         }
+    }
+
+    buildPwdForm(): void {
+        this.pwdForm = this.fb.group({
+            oldPassword: ['', Validators.required],
+            newPassword: ['', [Validators.required, Validators.minLength(6)]],
+            confirmPassword: ['', Validators.required]
+        }, { validators: this.passwordMatchValidator });
+
+        this.pwdForm.get('newPassword')?.valueChanges.subscribe(val => {
+            this.newPasswordInput.set(val || '');
+        });
+    }
+
+    passwordMatchValidator(g: FormGroup) {
+        return g.get('newPassword')?.value === g.get('confirmPassword')?.value
+            ? null : { 'mismatch': true };
     }
 
     buildForm(r?: Recruteur): void {
@@ -72,7 +106,6 @@ export class ProfilRecruteurComponent implements OnInit {
             next: (data) => {
                 this.recruteur.set(data);
                 this.buildForm(data);
-
                 this.authService.updateUser(data as any);
                 this.isLoading.set(false);
             },
@@ -100,19 +133,56 @@ export class ProfilRecruteurComponent implements OnInit {
         this.isLoading.set(true);
         this.recruteurService.updateProfil(current.id, this.form.value).subscribe({
             next: () => {
-                // Backend returns 204, reload the profile from server
                 this.editMode.set(false);
                 this.successMsg.set('Profil mis à jour avec succès !');
                 this.isLoading.set(false);
                 this.loadProfil(current.id);
                 setTimeout(() => this.successMsg.set(''), 3000);
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Update error:', err);
                 this.errorMsg.set('Erreur lors de la mise à jour. Vérifiez la console.');
                 this.isLoading.set(false);
             }
         });
+    }
+
+    onChangePassword(): void {
+        if (this.pwdForm.invalid) {
+            this.pwdForm.markAllAsTouched();
+            return;
+        }
+        const { oldPassword, newPassword } = this.pwdForm.value;
+        this.isLoading.set(true);
+        this.pwdErrorMsg.set('');
+        this.pwdSuccessMsg.set('');
+
+        this.authService.changePassword(oldPassword, newPassword).subscribe({
+            next: () => {
+                this.isLoading.set(false);
+                this.pwdSuccessMsg.set('Mot de passe modifié avec succès !');
+                this.pwdForm.reset();
+                this.newPasswordInput.set('');
+                setTimeout(() => {
+                    this.pwdSuccessMsg.set('');
+                    this.showPwdModal.set(false);
+                }, 2000);
+            },
+            error: (err: any) => {
+                this.isLoading.set(false);
+                this.pwdErrorMsg.set(err.message || 'Erreur lors du changement de mot de passe.');
+            }
+        });
+    }
+
+    togglePwdModal(): void {
+        this.showPwdModal.update(v => !v);
+        this.pwdErrorMsg.set('');
+        this.pwdSuccessMsg.set('');
+        this.newPasswordInput.set('');
+        if (this.showPwdModal()) {
+            this.buildPwdForm();
+        }
     }
 
     onPhotoSelected(event: any): void {
@@ -139,8 +209,20 @@ export class ProfilRecruteurComponent implements OnInit {
 
     getInitiales(): string {
         const r = this.recruteur();
-        if (!r) return '?';
-        return ((r.prenom?.[0] || '') + (r.nom?.[0] || '')).toUpperCase();
+        if (r) {
+            return ((r.prenom?.[0] || '') + (r.nom?.[0] || '')).toUpperCase();
+        }
+        return '?';
+    }
+
+    loadStats(recruiterId: number): void {
+        this.statsService.getStats(recruiterId.toString()).subscribe({
+            next: (stats) => {
+                this.totalOffresCount.set(stats.totalOffres);
+                this.totalCandidaturesCount.set(stats.candidaturesRecues);
+            },
+            error: (err: any) => console.error('Stats load error:', err)
+        });
     }
 
     navigateTo(path: string): void {

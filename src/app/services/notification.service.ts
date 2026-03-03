@@ -7,6 +7,7 @@ export interface Notification {
     read: boolean;
     type: 'candidature' | 'offre' | 'info';
     link?: string;
+    photoUrl?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -50,7 +51,8 @@ export class NotificationService {
             time: c.dateCandidature ?? new Date().toISOString(),
             read: false,
             type: 'candidature' as const,
-            link: `/recruteur/candidatures/${c.id}`
+            link: `/recruteur/candidatures/${c.id}`,
+            photoUrl: c.candidat?.photoUrl ?? null
         }));
         this._notifications.set(notifs);
     }

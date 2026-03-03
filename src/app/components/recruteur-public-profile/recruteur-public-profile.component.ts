@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { AdminService } from '../../services/admin.service';
 
 @Component({
     selector: 'app-recruteur-public-profile',
@@ -16,17 +17,19 @@ export class RecruteurPublicProfileComponent implements OnInit {
     private router = inject(Router);
     private http = inject(HttpClient);
     private authService = inject(AuthService);
+    public adminService = inject(AdminService);
 
     recruteur = signal<any>(null);
     offres = signal<any[]>([]);
     isLoading = signal(true);
-    candidat = signal<any>(null);
+
+    currentUser = computed(() => this.authService.currentUser());
+    isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
+    isCandidat = computed(() => this.currentUser()?.role === 'CANDIDAT');
 
 
 
     ngOnInit(): void {
-        const user = this.authService.currentUser();
-        if (user) this.candidat.set(user);
 
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
@@ -66,8 +69,8 @@ export class RecruteurPublicProfileComponent implements OnInit {
     }
 
     getSidebarInitiales(): string {
-        const c = this.candidat();
-        if (!c) return 'C';
+        const c = this.currentUser();
+        if (!c) return 'U';
         return ((c.prenom?.[0] || '') + (c.nom?.[0] || '')).toUpperCase();
     }
 
@@ -78,11 +81,14 @@ export class RecruteurPublicProfileComponent implements OnInit {
     }
 
     goToOffreDetail(offre: any): void {
-        this.router.navigate(['/candidat/offres', offre.id]);
+        const path = this.isAdmin() ? '/admin/offres' : '/candidat/offres';
+        // Rediriger vers le détail de l'offre
+        this.router.navigate([path, offre.id]);
     }
 
     goBack(): void {
-        this.router.navigate(['/candidat/offres']);
+        const path = this.isAdmin() ? '/admin/users' : '/candidat/offres';
+        this.router.navigate([path]);
     }
 
     navigateTo(path: string): void {

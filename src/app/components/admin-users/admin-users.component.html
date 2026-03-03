@@ -118,14 +118,6 @@
         </div>
       </div>
       <div class="topbar-actions">
-        <button class="btn-sm btn-ghost-sm">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          Exporter CSV
-        </button>
         @if (hasSelection()) {
         <button class="btn-sm btn-danger-sm" (click)="supprimerSelection()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -201,7 +193,9 @@
           [class.row-suspended]="user.status === 'SUSPENDU'">
           <!-- Checkbox -->
           <div class="td-check">
+            @if (user.id !== adminUser()?.id) {
             <input type="checkbox" [checked]="isSelected(user.id)" (change)="toggleSelect(user.id)" />
+            }
           </div>
 
           <!-- Utilisateur -->
@@ -209,13 +203,16 @@
             @if (user.photoUrl) {
             <img class="avatar-sm avatar-img" [src]="getPhotoUrl(user.photoUrl)" alt="Photo">
             } @else {
-            <div class="avatar-sm" [style.background]="getAvatarColor(user.role)">
+            <div class="avatar-sm" [style.background]="user.role === 'ADMIN' ? '#e53e3e' : getAvatarColor(user.role)">
               {{ getInitiales(user.prenom, user.nom) }}
             </div>
             }
             <div class="user-cell-info">
               <div class="name">
                 {{ user.prenom }} {{ user.nom }}
+                @if (user.id === adminUser()?.id) {
+                <span class="me-badge">(Moi)</span>
+                }
               </div>
               <div class="email">{{ user.email }}</div>
             </div>
@@ -223,7 +220,14 @@
 
           <!-- Rôle -->
           <div>
-            @if (user.role === 'RECRUTEUR') {
+            @if (user.role === 'ADMIN') {
+            <span class="tag tag-red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              Administrateur
+            </span>
+            } @else if (user.role === 'RECRUTEUR') {
             <span class="tag tag-purple">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="7" width="20" height="14" rx="2" />
@@ -258,12 +262,38 @@
 
           <!-- Actions -->
           <div class="row-actions">
+            @if (user.id !== adminUser()?.id) {
+            <!-- Voir profil -->
+            <div class="btn-icon btn-icon--primary" title="Voir profil"
+              (click)="navigateTo(user.role === 'CANDIDAT' ? '/admin/candidat/' + user.id : '/admin/recruteur/' + user.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </div>
+            <div class="btn-icon" [class.btn-icon--warning]="user.status !== 'SUSPENDU'"
+              [class.btn-icon--success]="user.status === 'SUSPENDU'"
+              [title]="user.status === 'SUSPENDU' ? 'Activer' : 'Suspendre'" (click)="toggleSuspension(user)">
+              @if (user.status === 'SUSPENDU') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1=9 y1=9 x2=15 y2=15 />
+              </svg>
+              }
+            </div>
             <div class="btn-icon btn-icon--danger" title="Supprimer" (click)="supprimer(user)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
               </svg>
             </div>
+            }
           </div>
         </div>
         }

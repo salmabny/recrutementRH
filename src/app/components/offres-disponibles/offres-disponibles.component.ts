@@ -93,10 +93,14 @@ export class OffresDisponiblesComponent implements OnInit {
     }
   }
 
-  getRecruteurPhotoUrl(photo?: string): string {
+  getPhotoUrl(photo?: string): string {
     if (!photo) return '';
     if (photo.startsWith('http')) return photo;
     return `http://localhost:8081/uploads/images/${photo}`;
+  }
+
+  getRecruteurPhotoUrl(photo?: string): string {
+    return this.getPhotoUrl(photo);
   }
 
   goToDetail(offre: any): void {

@@ -25,7 +25,6 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         Offres d'emploi
-        <span class="nav-badge" [style.display]="totalOffres > 0 ? 'inline-flex' : 'none'">{{ totalOffres }}</span>
       </div>
 
       <div class="nav-item" (click)="navigateTo('/candidat/candidatures')">
@@ -34,8 +33,6 @@
           <polyline points="14 2 14 8 20 8" />
         </svg>
         Mes candidatures
-        <span class="nav-badge" [style.display]="totalCandidatures > 0 ? 'inline-flex' : 'none'">{{ totalCandidatures
-          }}</span>
       </div>
 
       <div class="nav-section-label">Profil</div>
@@ -52,17 +49,8 @@
 
     <div class="sidebar-footer">
       <div class="user-card">
-        @if (candidat()?.photoUrl) {
-        <img class="user-avatar avatar-img" [src]="getPhotoUrl(candidat()?.photoUrl)" alt="Avatar">
-        } @else {
-        <div class="user-avatar">{{ getInitiales() }}</div>
-        }
         <div class="user-info">
-          @if (candidat()) {
-          <div class="user-name">{{ candidat()!.prenom }} {{ candidat()!.nom }}</div>
-          } @else {
-          <div class="user-name">Chargement...</div>
-          }
+          <div class="user-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
           <div class="user-role">Candidat</div>
         </div>
         <button class="btn-logout" (click)="logout()" title="Déconnexion">
@@ -109,8 +97,8 @@
 
       <!-- Stats -->
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon si-blue">
+        <div class="stat-card indigo">
+          <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -121,8 +109,8 @@
           <div class="stat-change up">↑ Nouveautés dispos</div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon si-purple">
+        <div class="stat-card lavender">
+          <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             </svg>
@@ -132,8 +120,8 @@
           <div class="stat-change up">+1 cette semaine</div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon si-green">
+        <div class="stat-card mint">
+          <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="20,6 9,17 4,12" />
             </svg>
@@ -143,8 +131,8 @@
           <div class="stat-change up">Bonne nouvelle !</div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon si-orange">
+        <div class="stat-card amber">
+          <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="20" x2="18" y2="10" />
               <line x1="12" y1="20" x2="12" y2="4" />
@@ -198,36 +186,6 @@
         <div class="right-col">
 
           <!-- Mini profil -->
-          <div class="profil-card">
-            <div class="profil-banner"></div>
-            <div class="profil-body">
-              @if (candidat()?.photoUrl) {
-              <img class="profil-avatar avatar-img" [src]="getPhotoUrl(candidat()?.photoUrl)" alt="Profile">
-              } @else {
-              <div class="profil-avatar">{{ getInitiales() }}</div>
-              }
-              @if (candidat()) {
-              <div class="profil-name">
-                {{ candidat()!.prenom }} {{ candidat()!.nom }}
-              </div>
-              <div class="profil-email">{{ candidat()!.email }}</div>
-              }
-              <div class="profil-stats">
-                <div class="ps-item">
-                  <div class="ps-value">{{ totalCandidatures }}</div>
-                  <div class="ps-label">Candidatures</div>
-                </div>
-                <div class="ps-item">
-                  <div class="ps-value">{{ meilleurScore }}</div>
-                  <div class="ps-label">Meilleur score</div>
-                </div>
-                <div class="ps-item">
-                  <div class="ps-value">{{ enCours }}</div>
-                  <div class="ps-label">En cours</div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Activité récente -->
           <div class="card">

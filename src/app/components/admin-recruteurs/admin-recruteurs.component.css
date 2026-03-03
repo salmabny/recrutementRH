@@ -265,3 +265,7 @@
 .btn-icon--warning:hover svg {
   stroke: #ed8936;
 }
+
+.sidebar-footer {
+  background: transparent !important;
+}

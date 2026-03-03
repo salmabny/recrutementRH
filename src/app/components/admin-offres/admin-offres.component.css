@@ -236,3 +236,7 @@
         grid-template-columns: 2fr 1.5fr 1fr 1fr 100px;
     }
 }
+
+.sidebar-footer {
+    background: transparent !important;
+}

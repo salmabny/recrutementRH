@@ -1,6 +1,97 @@
 <div class="dashboard-layout">
 
-    <!-- ── Sidebar -->
+    <!-- ── Sidebar Admin -->
+    @if (isAdmin()) {
+    <aside class="sidebar sidebar-dark">
+        <div class="sidebar-brand">
+            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+            <div class="brand-sub-title">ADMINISTRATION</div>
+            <div class="admin-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                </svg>
+                SUPER ADMIN
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">TABLEAU DE BORD</div>
+            <div class="nav-item" (click)="navigateTo('/admin')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Vue globale
+            </div>
+
+            <div class="nav-section-label">UTILISATEURS</div>
+            <div class="nav-item active" (click)="navigateTo('/admin/recruteurs')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Recruteurs
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalRecruteurs }}</span>
+                }
+            </div>
+
+            <div class="nav-item" (click)="navigateTo('/admin/users')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Tous les utilisateurs
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalUtilisateurs }}</span>
+                }
+            </div>
+
+            <div class="nav-section-label">CONTENU</div>
+            <div class="nav-item" (click)="navigateTo('/admin/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Offres d'emploi
+                @if (adminService.stats()) {
+                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.offresActives }}</span>
+                }
+            </div>
+
+            <div class="nav-section-label">SYSTÈME</div>
+            <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Statistiques
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-info">
+                    <div class="user-name">{{ currentUser()?.prenom }} {{ currentUser()?.nom }}</div>
+                    <div class="user-company">Super Administrateur</div>
+                </div>
+                <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+    } @else {
+    <!-- ── Sidebar Candidat -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
@@ -18,7 +109,7 @@
                 </svg>
                 Tableau de bord
             </div>
-            <div class="nav-item" (click)="navigateTo('/candidat/offres')">
+            <div class="nav-item active" (click)="navigateTo('/candidat/offres')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -44,9 +135,8 @@
 
         <div class="sidebar-footer">
             <div class="user-card">
-                <div class="user-avatar">{{ getSidebarInitiales() }}</div>
                 <div class="user-info">
-                    <div class="user-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
+                    <div class="user-name">{{ currentUser()?.prenom }} {{ currentUser()?.nom }}</div>
                     <div class="user-role">Candidat</div>
                 </div>
                 <button class="btn-logout" (click)="logout()" title="Déconnexion">
@@ -59,32 +149,22 @@
             </div>
         </div>
     </aside>
+    }
 
     <!-- ── Main -->
     <div class="main">
 
-        <!-- Topbar -->
-        <div class="topbar">
-            <button class="btn-back" (click)="goBack()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="15,18 9,12 15,6" />
-                </svg>
-                Retour
-            </button>
-            <div class="topbar-greeting-wrapper">
-                @if (recruteur()?.photoUrl) {
-                <img class="topbar-avatar avatar-img" [src]="getPhotoUrl()" alt="Profile">
-                } @else {
-                <div class="topbar-avatar-initials">{{ getInitiales() }}</div>
-                }
-                <div>
-                    <div class="topbar-title">Profil du recruteur</div>
-                    <div class="topbar-subtitle">Consultation de {{ recruteur()?.prenom }} {{ recruteur()?.nom }}</div>
-                </div>
-            </div>
-        </div>
 
         <div class="content">
+            <!-- Back Button Area -->
+            <div class="header-actions-row">
+                <button class="btn-back-minimal" (click)="goBack()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="15,18 9,12 15,6" />
+                    </svg>
+                    {{ isAdmin() ? 'Retour à la liste' : 'Retour aux offres' }}
+                </button>
+            </div>
 
             @if (isLoading()) {
             <div class="loading-state">
@@ -93,7 +173,7 @@
             </div>
             } @else if (recruteur()) {
 
-            <!-- Header Card -->
+            <!-- Header Card (Premium Layout) -->
             <div class="profile-header-card">
                 <div class="profile-banner"></div>
                 <div class="profile-header-content">
@@ -118,21 +198,19 @@
                                 </svg>
                                 {{ recruteur()?.entreprise || 'Entreprise non renseignée' }}
                             </span>
-                            @if (recruteur()?.ville) {
                             <span class="meta-pill">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                                     <circle cx="12" cy="10" r="3" />
                                 </svg>
-                                {{ recruteur()?.ville }}
+                                {{ recruteur()?.ville || 'Non renseigné' }}
                             </span>
-                            }
                             <span class="meta-pill">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path
-                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72A12.84 12.84 0 0 0 10 6.54a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6z" />
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                                 </svg>
-                                {{ recruteur()?.telephone || 'Tél. non renseigné' }}
+                                {{ recruteur()?.telephone || 'Non renseigné' }}
                             </span>
                         </div>
                     </div>
@@ -140,40 +218,6 @@
             </div>
 
             <div class="info-grid">
-                <div class="info-card">
-                    <div class="info-card-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                        </svg>
-                        Informations personnelles
-                    </div>
-                    <div class="info-card-body">
-                        <div class="info-row-grid">
-                            <div class="info-item">
-                                <label>Prénom</label>
-                                <span>{{ recruteur()?.prenom || '—' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Nom</label>
-                                <span>{{ recruteur()?.nom || '—' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Email</label>
-                                <span>{{ recruteur()?.email || '—' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Téléphone</label>
-                                <span>{{ recruteur()?.telephone || 'Non renseigné' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Ville</label>
-                                <span>{{ recruteur()?.ville || 'Non renseignée' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="info-card">
                     <div class="info-card-header">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -192,58 +236,44 @@
                                 <label>Domaine</label>
                                 <span>{{ recruteur()?.companyDomain || 'Non renseigné' }}</span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section Offres -->
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                        <path d="M16 3H8l-2 4h12l-2-4z" />
-                    </svg>
-                    Offres d'emploi publiées
-                </div>
-
-                @if (offres().length > 0) {
-                <div class="offres-grid">
-                    @for (offre of offres(); track offre.id) {
-                    <div class="offre-card" (click)="goToOffreDetail(offre)">
-                        <div class="offre-card-header">
-                            <h3 class="offre-title">{{ offre.titre }}</h3>
-                            <span class="offre-status" [class.status-active]="offre.statut === 'OUVERT'">
-                                {{ offre.statut }}
-                            </span>
-                        </div>
-                        <div class="offre-card-body">
-                            <div class="offre-meta-row">
-                                <div class="offre-meta-item">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                        <circle cx="12" cy="10" r="3" />
-                                    </svg>
-                                    {{ offre.localisation }}
-                                </div>
-                                <div class="offre-meta-item">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                                        <path d="M16 3H8l-2 4h12l-2-4z" />
-                                    </svg>
-                                    {{ offre.typeContrat }}
-                                </div>
+                            <div class="info-item">
+                                <label>Email</label>
+                                <span>{{ recruteur()?.email || '—' }}</span>
                             </div>
                         </div>
-                        <div class="offre-card-footer">
-                            <span class="voir-offre">Voir les détails →</span>
-                        </div>
                     </div>
-                    }
                 </div>
-                } @else {
-                <div class="empty-offres">
-                    Aucune offre publiée pour le moment.
+
+                <!-- Section Offres Premium -->
+                <div class="info-card" style="grid-column: span 1;">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                            <line x1="8" y1="21" x2="16" y2="21" />
+                            <line x1="12" y1="17" x2="12" y2="21" />
+                        </svg>
+                        Offres d'emploi ({{ offres().length }})
+                    </div>
+                    <div class="info-card-body">
+                        @if (offres().length > 0) {
+                        <div class="offres-mini-list">
+                            @for (offre of offres(); track offre.id) {
+                            <div class="offre-mini-item" (click)="goToOffreDetail(offre)">
+                                <div class="mini-offre-row">
+                                    <span class="offre-dot"></span>
+                                    <span class="mini-offre-title">{{ offre.title }}</span>
+                                </div>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18">
+                                    <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                            </div>
+                            }
+                        </div>
+                        } @else {
+                        <div class="empty-data">Aucune offre publiée pour le moment.</div>
+                        }
+                    </div>
                 </div>
-                }
             </div>
 
             }
