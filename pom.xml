@@ -13,7 +13,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.esb.recrutementrh</groupId>
+    <groupId>com.esb.recrutementRH</groupId>
     <artifactId>recrutement-rh</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>recrutement-rh</name>

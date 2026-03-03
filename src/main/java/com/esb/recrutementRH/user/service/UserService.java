@@ -3,10 +3,12 @@ package com.esb.recrutementRH.user.service;
 import com.esb.recrutementRH.user.model.User;
 import com.esb.recrutementRH.user.model.Candidat;
 import com.esb.recrutementRH.user.model.Recruteur;
+import com.esb.recrutementRH.user.model.Experience;
 import com.esb.recrutementRH.user.dto.RecruteurUpdateDto;
 import com.esb.recrutementRH.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    @Transactional
     public User updateCandidate(Long id, Candidat updatedCandidat) {
         return userRepository.findById(id).map(user -> {
             if (user instanceof Candidat) {
@@ -66,6 +69,16 @@ public class UserService {
                 }
                 if (updatedCandidat.getSoftSkills() != null && !updatedCandidat.getSoftSkills().isEmpty()) {
                     existing.setSoftSkills(updatedCandidat.getSoftSkills());
+                }
+
+                // ── Experiences: clear + re-add to preserve orphanRemoval behavior
+                if (updatedCandidat.getExperiences() != null) {
+                    existing.getExperiences().clear();
+                    for (Experience exp : updatedCandidat.getExperiences()) {
+                        exp.setId(null); // Let JPA generate a new ID
+                        exp.setCandidat(existing); // Set required back-reference
+                        existing.getExperiences().add(exp);
+                    }
                 }
 
                 return userRepository.save(existing);
