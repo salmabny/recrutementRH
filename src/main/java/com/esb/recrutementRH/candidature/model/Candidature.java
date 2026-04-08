@@ -41,6 +41,9 @@ public class Candidature {
     @Column(columnDefinition = "TEXT")
     private String analysisResult;
 
+    @Column(columnDefinition = "TEXT")
+    private String categorizedSkills;
+
     private LocalDateTime lastStatusUpdate;
 
     // ===== Getters & Setters =====
@@ -139,5 +142,13 @@ public class Candidature {
 
     public void setLastStatusUpdate(LocalDateTime lastStatusUpdate) {
         this.lastStatusUpdate = lastStatusUpdate;
+    }
+
+    public String getCategorizedSkills() {
+        return categorizedSkills;
+    }
+
+    public void setCategorizedSkills(String categorizedSkills) {
+        this.categorizedSkills = categorizedSkills;
     }
 }

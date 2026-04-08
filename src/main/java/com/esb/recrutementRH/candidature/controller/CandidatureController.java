@@ -8,19 +8,19 @@ import com.esb.recrutementRH.candidature.repository.CandidatureRepository;
 import com.esb.recrutementRH.candidature.service.CandidatureService;
 import com.esb.recrutementRH.candidature.service.FileStorageService;
 import com.esb.recrutementRH.candidature.service.CvAnalysisService;
-import com.esb.recrutementRH.job.repository.JobOfferRepository;
 import com.esb.recrutementRH.user.model.Candidat;
+import com.esb.recrutementRH.user.model.User;
 import com.esb.recrutementRH.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +43,7 @@ public class CandidatureController {
     private CvRepository cvRepository;
 
     @Autowired
-    private JobOfferRepository jobOfferRepository;
+    private com.esb.recrutementRH.job.repository.JobOfferRepository jobOfferRepository;
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -55,63 +55,105 @@ public class CandidatureController {
     private Environment env;
 
     @PostMapping("/postuler")
+    @jakarta.transaction.Transactional
     public ResponseEntity<?> postuler(
             @RequestParam("jobOfferId") String jobOfferId,
             @RequestParam("candidatId") String candidatId,
-            @RequestParam("cv") MultipartFile cvFile) {
-
+            @RequestParam(value = "cvFile", required = false) MultipartFile cvFile,
+            @RequestParam(value = "lettre", required = false) String lettre) {
         try {
+            logger.info(">>> POSTULER V2 START <<<");
             Long finalJobOfferId = Long.parseLong(jobOfferId);
             Long finalCandidatId = Long.parseLong(candidatId);
 
-            logger.info("New Candidature Request: Offer={}, Candidate={}", finalJobOfferId, finalCandidatId);
-
-            Candidat candidat = (Candidat) userRepository.findById(finalCandidatId)
-                    .orElseThrow(() -> new RuntimeException("Candidat non trouvé (" + finalCandidatId + ")"));
-
-            var jobOffer = jobOfferRepository.findById(finalJobOfferId)
-                    .orElseThrow(() -> new RuntimeException("Offre non trouvée (" + finalJobOfferId + ")"));
-
-            if (candidatureRepository.existsByJobOfferIdAndCandidatId(finalJobOfferId, finalCandidatId)) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "ALREADY_APPLIED");
-                error.put("message", "Tu as déjà postulé pour cette offre");
-                return ResponseEntity.status(409).body(error);
+            String authEmail = "Anonymous";
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                authEmail = auth.getName();
             }
 
-            if (cvFile.isEmpty())
-                return ResponseEntity.status(400).body("Fichier CV vide");
+            logger.info("Application Request: JobOffer={}, Candidate={}, AuthenticatedUser={}",
+                    finalJobOfferId, finalCandidatId, authEmail);
 
-            if (!cvFile.getContentType().equals("application/pdf"))
-                return ResponseEntity.status(400).body("Seul le format PDF est accepté");
+            User genericUser = userRepository.findById(finalCandidatId).orElse(null);
 
-            String uploadDir = env.getProperty("file.upload-dir", "uploads/cv");
-            String path = fileStorageService.store(uploadDir, cvFile, ".pdf");
+            // Failsafe: If ID in request is wrong, try to use the authenticated user
+            if (genericUser == null && !authEmail.equals("Anonymous")) {
+                logger.warn("ID {} not found, trying to recover from authenticated session: {}", finalCandidatId,
+                        authEmail);
+                genericUser = userRepository.findByEmail(authEmail).orElse(null);
+                if (genericUser != null) {
+                    logger.info("Session recovery SUCCESS. Using User ID {} for application.", genericUser.getId());
+                }
+            }
 
-            CV cv = new CV();
-            cv.setFileName(cvFile.getOriginalFilename());
-            cv.setFileType(cvFile.getContentType());
-            cv.setFilePath(path);
-            cv.setFileSize(cvFile.getSize());
-            cv.setUploadDate(LocalDate.now());
+            if (genericUser == null) {
+                logger.error("!!! USER NOT FOUND !!! Request ID: {}, AuthEmail: {}", finalCandidatId, authEmail);
+                return ResponseEntity.status(404)
+                        .body(Map.of("error", "USER_NOT_FOUND", "message", "Utilisateur non trouvé"));
+            }
 
-            cvRepository.save(cv);
+            if (!(genericUser instanceof Candidat)) {
+                logger.error("!!! TYPE MISMATCH !!! User {} is a {}, not a Candidat.", genericUser.getId(),
+                        genericUser.getClass().getSimpleName());
+                return ResponseEntity.status(403)
+                        .body(Map.of("error", "INVALID_USER_TYPE", "message", "L'utilisateur n'est pas un candidat"));
+            }
+
+            Candidat candidat = (Candidat) genericUser;
+            Long actualCandidatId = candidat.getId();
+
+            if (candidatureRepository.existsByJobOfferIdAndCandidatId(finalJobOfferId, actualCandidatId)) {
+                return ResponseEntity.status(409)
+                        .body(Map.of("error", "ALREADY_APPLIED", "message", "Tu as déjà postulé pour cette offre"));
+            }
+
+            CV cv = null;
+            if (cvFile != null && !cvFile.isEmpty()) {
+                String uploadDir = env.getProperty("file.upload-dir", "uploads/cv");
+                String path = fileStorageService.store(uploadDir, cvFile, ".pdf");
+
+                cv = new CV();
+                cv.setFileName(cvFile.getOriginalFilename());
+                cv.setFileType(cvFile.getContentType());
+                cv.setFileUrl(path);
+                cv.setFileSize(cvFile.getSize());
+                cv.setUploadDate(LocalDate.now());
+                cvRepository.save(cv);
+            } else {
+                // FALLBACK: Use profile CV (Clone metadata to avoid unique constraint or
+                // session issues)
+                CV profileCv = candidat.getCv();
+                if (profileCv != null) {
+                    logger.info("Reusing profile CV: {}", profileCv.getFileName());
+                    cv = new CV();
+                    cv.setFileName(profileCv.getFileName());
+                    cv.setFileType(profileCv.getFileType());
+                    cv.setFileUrl(profileCv.getFileUrl());
+                    cv.setFileSize(profileCv.getFileSize());
+                    cv.setUploadDate(LocalDate.now()); // Re-upload date for this specific application
+                    cvRepository.save(cv);
+                } else {
+                    logger.warn("Candidat has no profile CV and no file uploaded.");
+                }
+            }
+
+            if (cv == null) {
+                return ResponseEntity.status(400)
+                        .body(Map.of("error", "CV_REQUIRED", "message", "Veuillez déposer un CV"));
+            }
 
             Candidature saved = candidatureService.postuler(finalJobOfferId, candidat, cv);
+            logger.info("Application successful for Candidate {} on Offer {}", finalCandidatId, finalJobOfferId);
 
-            Map<String, Object> successResponse = new HashMap<>();
-            successResponse.put("id", saved.getId());
-            successResponse.put("status", saved.getStatus().name());
-            successResponse.put("message", "Application submitted successfully");
+            return ResponseEntity.status(201).body(Map.of(
+                    "id", saved.getId(),
+                    "status", saved.getStatus().name(),
+                    "message", "Application submitted successfully"));
 
-            return ResponseEntity.status(201).body(successResponse);
-
-        } catch (Throwable t) {
-            logger.error("CRITICAL ERROR during application processing: ", t);
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Internal error: " + t.getMessage());
-            error.put("type", t.getClass().getSimpleName());
-            return ResponseEntity.status(500).body(error);
+        } catch (Exception e) {
+            logger.error("Error processing application: {}", e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("error", "INTERNAL_ERROR", "message", e.getMessage()));
         }
     }
 
@@ -165,7 +207,7 @@ public class CandidatureController {
 
             CV cv = new CV();
             cv.setFileName(file.getOriginalFilename());
-            cv.setFilePath(fileName);
+            cv.setFileUrl(fileName);
             cv.setFileType(file.getContentType());
             cv.setFileSize(file.getSize());
             cv.setUploadDate(LocalDate.now());
@@ -178,12 +220,19 @@ public class CandidatureController {
             try {
                 logger.info("Attempting CV analysis via Python service...");
                 cvAnalysisService.analyzeProfile(candidat, cv);
+
+                // --- NEW: Trigger bulk recalculation for dashboard ---
+                logger.info("Triggering bulk dashboard score recalculation...");
+                java.util.List<com.esb.recrutementRH.job.model.JobOffer> allOffers = (java.util.List<com.esb.recrutementRH.job.model.JobOffer>) jobOfferRepository
+                        .findAll();
+                cvAnalysisService.recalculateAllDashboardScores(candidat, allOffers);
+
             } catch (Exception analysisEx) {
-                logger.warn("CV Analysis failed but upload will proceed: {}", analysisEx.getMessage());
-                // Non-blocking: we continue even if analysis fails
+                logger.warn("CV Analysis or bulk scan failed but upload will proceed: {}", analysisEx.getMessage());
             }
 
-            logger.info("Saving updated candidate profile with CV...");
+            logger.info("Saving updated candidate profile and CV...");
+            cvRepository.save(cv);
             userRepository.save(candidat);
 
             return ResponseEntity.ok(candidat);

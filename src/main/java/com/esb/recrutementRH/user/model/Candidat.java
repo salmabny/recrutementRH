@@ -2,7 +2,9 @@ package com.esb.recrutementRH.user.model;
 
 import jakarta.persistence.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "candidates", schema = "recruitment")
@@ -49,6 +51,12 @@ public class Candidat extends User {
     private Double profileExperienceScore;
     @Column(columnDefinition = "TEXT")
     private String profileAnalysisResult;
+
+    @ElementCollection
+    @CollectionTable(name = "candidate_job_scores", joinColumns = @JoinColumn(name = "candidate_id"), schema = "recruitment")
+    @MapKeyColumn(name = "job_offer_id")
+    @Column(name = "score")
+    private Map<Long, Double> jobScores = new HashMap<>();
 
     @Override
     public Role getRole() {
@@ -190,5 +198,17 @@ public class Candidat extends User {
 
     public void setCv(com.esb.recrutementRH.candidature.model.CV cv) {
         this.cv = cv;
+    }
+
+    public Map<Long, Double> getJobScores() {
+        return jobScores;
+    }
+
+    public void setJobScores(Map<Long, Double> jobScores) {
+        this.jobScores = jobScores;
+    }
+
+    public void updateJobScore(Long jobOfferId, Double score) {
+        this.jobScores.put(jobOfferId, score);
     }
 }

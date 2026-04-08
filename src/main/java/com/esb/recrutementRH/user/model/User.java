@@ -30,6 +30,9 @@ public abstract class User {
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
+    @Column(name = "must_change_password")
+    private Boolean mustChangePassword = false;
+
     @Column(name = "date_inscription")
     private LocalDateTime dateInscription;
 
@@ -138,5 +141,13 @@ public abstract class User {
 
     public void setDateInscription(LocalDateTime dateInscription) {
         this.dateInscription = dateInscription;
+    }
+
+    public Boolean getMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
     }
 }

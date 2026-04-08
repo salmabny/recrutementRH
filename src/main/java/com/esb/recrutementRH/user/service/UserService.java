@@ -19,6 +19,13 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
+    public EmailService getEmailService() {
+        return emailService;
+    }
+
     public User saveUser(User user) {
         return userRepository.save(user);
     }
@@ -29,6 +36,11 @@ public class UserService {
 
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
+    }
+
+    @Transactional
+    public void softDeleteUser(Long id) {
+        userRepository.updateStatus(id, com.esb.recrutementRH.user.model.UserStatus.DELETED);
     }
 
     public void deleteUser(Long id) {
@@ -109,6 +121,13 @@ public class UserService {
                 return userRepository.save(existing);
             }
             return user;
+        }).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public User deletePhoto(Long id) {
+        return userRepository.findById(id).map(user -> {
+            user.setPhotoUrl(null);
+            return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

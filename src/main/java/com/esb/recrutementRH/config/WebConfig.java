@@ -31,5 +31,16 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/uploads/images/**")
                 .addResourceLocations(path);
+
+        String uploadDirCv = env.getProperty("file.upload-dir", "uploads/cv");
+        File dirCv = new File(uploadDirCv);
+        if (!dirCv.isAbsolute()) {
+            dirCv = new File(System.getProperty("user.dir"), uploadDirCv);
+        }
+        if (!dirCv.exists()) {
+            dirCv.mkdirs();
+        }
+        registry.addResourceHandler("/uploads/cv/**")
+                .addResourceLocations(dirCv.toURI().toString());
     }
 }

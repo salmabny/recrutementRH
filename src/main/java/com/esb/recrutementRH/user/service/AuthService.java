@@ -8,7 +8,6 @@ import com.esb.recrutementRH.user.model.User;
 import com.esb.recrutementRH.user.model.UserStatus;
 import com.esb.recrutementRH.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,12 +26,6 @@ public class AuthService {
 
     @Autowired
     private EmailService emailService;
-
-    @Autowired
-    private com.esb.recrutementRH.candidature.service.FileStorageService fileStorageService;
-
-    @Autowired
-    private Environment env;
 
     public Map<String, Object> register(RegistrationDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
@@ -80,31 +73,52 @@ public class AuthService {
             return response;
 
         } else if (dto.getRole() == Role.RECRUTEUR) {
-            Recruteur recruteur = new Recruteur();
-            recruteur.setNom(dto.getNom());
-            recruteur.setPrenom(dto.getPrenom());
-            recruteur.setEmail(dto.getEmail());
-            if (dto.getPassword() == null) {
-                throw new RuntimeException("Le mot de passe ne peut pas être vide");
-            }
-            recruteur.setMotDePasse(passwordEncoder.encode(dto.getPassword()));
-            recruteur.setStatus(UserStatus.PENDING_ADMIN_VALIDATION);
-
-            String domain = dto.getEmail().substring(dto.getEmail().indexOf("@") + 1);
-            recruteur.setCompanyDomain(domain);
-
-            User saved = userRepository.save(recruteur);
-            response.put("id", saved.getId());
-            response.put("email", saved.getEmail());
-            response.put("prenom", saved.getPrenom());
-            response.put("nom", saved.getNom());
-            response.put("role", saved.getRole());
-            response.put("status", saved.getStatus());
-            response.put("emailSent", false);
-            return response;
+            throw new RuntimeException(
+                    "L'inscription directe pour les recruteurs est désactivée. Veuillez contacter l'administrateur.");
         } else {
             throw new RuntimeException("Rôle non supporté pour l'inscription");
         }
+    }
+
+    public Map<String, Object> createRecruiterByAdmin(String nom, String prenom, String email, String entreprise,
+            String ville) {
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Cet e-mail est déjà utilisé");
+        }
+
+        String tempPassword = generateRandomPassword();
+        Recruteur recruteur = new Recruteur();
+        recruteur.setNom(nom);
+        recruteur.setPrenom(prenom);
+        recruteur.setEmail(email);
+        recruteur.setEntreprise(entreprise);
+        recruteur.setVille(ville);
+        recruteur.setMotDePasse(passwordEncoder.encode(tempPassword));
+        recruteur.setStatus(UserStatus.ACTIVE);
+        recruteur.setMustChangePassword(true);
+
+        String domain = email.substring(email.indexOf("@") + 1);
+        recruteur.setCompanyDomain(domain);
+
+        User saved = userRepository.save(recruteur);
+
+        emailService.sendTemporaryPasswordEmail(email, prenom, tempPassword);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", saved.getId());
+        response.put("email", saved.getEmail());
+        response.put("status", saved.getStatus());
+        return response;
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < 10; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     public boolean verifyCandidate(String email, String code) {
@@ -223,40 +237,6 @@ public class AuthService {
         return user;
     }
 
-    public Map<String, Object> registerRecruiter(String nom, String prenom, String email, String password,
-            String entreprise, String ville,
-            org.springframework.web.multipart.MultipartFile document) throws java.io.IOException {
-        if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email déjà utilisé");
-        }
-
-        Recruteur recruteur = new Recruteur();
-        recruteur.setNom(nom);
-        recruteur.setPrenom(prenom);
-        recruteur.setEmail(email);
-        recruteur.setMotDePasse(passwordEncoder.encode(password));
-        recruteur.setStatus(UserStatus.PENDING_ADMIN_VALIDATION);
-        recruteur.setEntreprise(entreprise);
-        recruteur.setVille(ville);
-
-        if (document != null && !document.isEmpty()) {
-            String uploadDir = env.getProperty("file.upload-dir");
-            String fileName = fileStorageService.store(uploadDir, document, ".pdf", ".jpg", ".jpeg", ".png");
-            recruteur.setAdminDocPath(fileName);
-        }
-
-        User saved = userRepository.save(recruteur);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", saved.getId());
-        response.put("email", saved.getEmail());
-        response.put("prenom", saved.getPrenom());
-        response.put("nom", saved.getNom());
-        response.put("role", saved.getRole());
-        response.put("status", saved.getStatus());
-        return response;
-    }
-
     public void changePassword(String email, String oldPassword, String newPassword) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
@@ -270,6 +250,7 @@ public class AuthService {
         }
 
         user.setMotDePasse(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
         userRepository.save(user);
     }
 

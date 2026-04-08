@@ -5,5 +5,6 @@ public enum UserStatus {
     PENDING_ADMIN_VALIDATION, // For Recruiters (Admin)
     ACTIVE,
     REJECTED,
-    SUSPENDU
+    SUSPENDU,
+    DELETED
 }

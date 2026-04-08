@@ -43,4 +43,11 @@ public class FileStorageService {
 
         return fileName; // Return just the filename for better URL mapping
     }
+
+    public void delete(String baseDir, String fileName) throws IOException {
+        if (fileName == null || fileName.isEmpty())
+            return;
+        Path path = Paths.get(baseDir).resolve(fileName);
+        Files.deleteIfExists(path);
+    }
 }

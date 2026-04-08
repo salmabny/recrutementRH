@@ -2,25 +2,18 @@ package com.esb.recrutementRH.job.service;
 
 import com.esb.recrutementRH.job.model.JobOffer;
 import com.esb.recrutementRH.job.repository.JobOfferRepository;
-import com.esb.recrutementRH.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class JobOfferService {
-    private static final Logger logger = LoggerFactory.getLogger(JobOfferService.class);
 
     @Autowired
     private JobOfferRepository jobOfferRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     // Créer / Mettre à jour une offre
     public JobOffer saveJobOffer(JobOffer jobOffer) {
@@ -37,6 +30,7 @@ public class JobOfferService {
             existing.setEducationLevel(incoming.getEducationLevel());
             existing.setExperienceYears(incoming.getExperienceYears());
             existing.setImageUrl(incoming.getImageUrl());
+            existing.setCategory(incoming.getCategory());
 
             if (incoming.getStatus() != null) {
                 existing.setStatus(incoming.getStatus());

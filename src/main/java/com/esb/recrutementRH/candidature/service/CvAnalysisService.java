@@ -1,7 +1,6 @@
 package com.esb.recrutementRH.candidature.service;
 
 import com.esb.recrutementRH.candidature.model.Candidature;
-import com.esb.recrutementRH.job.model.JobOffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ public class CvAnalysisService {
             return;
         }
 
-        String cvFilePathRaw = (candidature.getCv() != null) ? candidature.getCv().getFilePath() : null;
+        String cvFilePathRaw = (candidature.getCv() != null) ? candidature.getCv().getFileUrl() : null;
         String cvFilePath = null;
         if (cvFilePathRaw != null) {
             try {
@@ -73,6 +72,8 @@ public class CvAnalysisService {
             requestBody.put("file_path", cvFilePath);
             requestBody.put("job_description", jobDescription);
             requestBody.put("required_skills", candidature.getJobOffer().getRequiredSkills());
+            requestBody.put("education_level", candidature.getJobOffer().getEducationLevel());
+            requestBody.put("experience_years", candidature.getJobOffer().getExperienceYears());
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
@@ -95,6 +96,10 @@ public class CvAnalysisService {
                     candidature.setScore(Double.valueOf(result.get("score_percent").toString()));
                 }
 
+                if (result.containsKey("full_text") && candidature.getCv() != null) {
+                    candidature.getCv().setRawText(result.get("full_text").toString());
+                }
+
                 // Extraction des scores détaillés (points)
                 if (result.containsKey("skills_points")) {
                     candidature.setSkillsScore(Double.valueOf(result.get("skills_points").toString()));
@@ -106,35 +111,25 @@ public class CvAnalysisService {
                     candidature.setExperienceScore(Double.valueOf(result.get("experience_points").toString()));
                 }
 
-                // Formattage du résultat d'analyse
-                StringBuilder formattedResult = new StringBuilder();
-
-                // 1. Détail par critère (AVANT le score total)
-                if (result.containsKey("skill_breakdown")) {
-                    Map<String, Object> breakdown = (Map<String, Object>) result.get("skill_breakdown");
-                    if (breakdown != null && !breakdown.isEmpty()) {
-                        formattedResult.append("Compatibilité par critère :\n");
-                        breakdown.forEach((skill, score) -> {
-                            double s = Double.valueOf(score.toString());
-                            formattedResult.append("- ").append(skill).append(" : ").append(Math.round(s * 100))
-                                    .append("%\n");
-                        });
-                        formattedResult.append("\n");
+                // Sauvegarde des compétences catégorisées
+                if (result.containsKey("categorizedSkills")) {
+                    try {
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                        String json = mapper.writeValueAsString(result.get("categorizedSkills"));
+                        candidature.setCategorizedSkills(json);
+                    } catch (Exception e) {
+                        logger.error("Error serializing categorizedSkills", e);
                     }
                 }
 
-                // 2. Score Total
-                formattedResult.append("SCORE TOTAL : ").append(result.getOrDefault("score_percent", "0"))
-                        .append("%\n\n");
-
-                formattedResult.append("Compétences : ")
-                        .append(result.getOrDefault("competences", "Pas de competences detectees")).append("\n");
-                formattedResult.append("Diplômes : ")
-                        .append(result.getOrDefault("diplomes", "Pas de diplomes detectes")).append("\n");
-                formattedResult.append("Expériences : ")
-                        .append(result.getOrDefault("experiences", "Pas d'experiences detectees")).append("\n");
-
-                candidature.setAnalysisResult(formattedResult.toString());
+                // Utilisation du rapport textuel déjà formaté par Python (Match % + Points)
+                if (result.containsKey("analysisResult")) {
+                    candidature.setAnalysisResult(result.get("analysisResult").toString());
+                } else {
+                    // Fallback si le champ est absent
+                    candidature.setAnalysisResult(
+                            "Analyse terminée. Score : " + result.getOrDefault("score_percent", "0") + "%");
+                }
             } else {
                 logger.warn("Python API returned empty body");
                 candidature.setAnalysisResult("Erreur : Réponse vide du service d'analyse");
@@ -160,13 +155,13 @@ public class CvAnalysisService {
 
         String cvFilePath = null;
         try {
-            java.nio.file.Path p = java.nio.file.Paths.get(cv.getFilePath());
+            java.nio.file.Path p = java.nio.file.Paths.get(cv.getFileUrl());
             if (!p.isAbsolute()) {
-                p = java.nio.file.Paths.get("uploads/cv").resolve(cv.getFilePath());
+                p = java.nio.file.Paths.get("uploads/cv").resolve(cv.getFileUrl());
             }
             cvFilePath = p.toAbsolutePath().toString();
         } catch (Exception e) {
-            cvFilePath = cv.getFilePath();
+            cvFilePath = cv.getFileUrl();
         }
 
         // Generic baseline for a technical profile
@@ -203,17 +198,139 @@ public class CvAnalysisService {
                     candidat.setProfileExperienceScore(Double.valueOf(result.get("experience_points").toString()));
                 }
 
-                StringBuilder summary = new StringBuilder("Synthèse du profil :\n");
-                summary.append("Score Global : ").append(result.getOrDefault("score_percent", "0")).append("%\n");
-                summary.append("Compétences : ").append(result.getOrDefault("competences", "—")).append("\n");
-                summary.append("Diplômes : ").append(result.getOrDefault("diplomes", "—")).append("\n");
-                summary.append("Expériences : ").append(result.getOrDefault("experiences", "—"));
+                if (result.containsKey("full_text")) {
+                    cv.setRawText(result.get("full_text").toString());
+                }
 
-                candidat.setProfileAnalysisResult(summary.toString());
+                // --- Extraction of raw data for profile persistence ---
+                if (result.containsKey("detected_experience")) {
+                    try {
+                        candidat.setAnneesExperience(Integer.valueOf(result.get("detected_experience").toString()));
+                    } catch (Exception e) {
+                        logger.warn("Could not parse detected_experience: {}", result.get("detected_experience"));
+                    }
+                }
+
+                if (result.containsKey("detected_edu_level")) {
+                    try {
+                        int level = Integer.parseInt(result.get("detected_edu_level").toString());
+                        if (level >= 0) {
+                            candidat.setNiveauEtudes("Bac+" + level);
+                        } else if (level == 0) {
+                            candidat.setNiveauEtudes("Bac");
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Could not parse detected_edu_level");
+                    }
+                }
+
+                if (result.containsKey("categorizedSkills")) {
+                    try {
+                        Map<String, Object> cats = (Map<String, Object>) result.get("categorizedSkills");
+                        if (cats.containsKey("Compétences")) {
+                            java.util.List<String> skills = (java.util.List<String>) cats.get("Compétences");
+                            if (skills != null && !skills.isEmpty()) {
+                                candidat.setCompetences(new java.util.ArrayList<>(skills));
+                            }
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Could not parse categorizedSkills for profile");
+                    }
+                }
+
+                // Utilisation du rapport textuel déjà formaté (Match % + Points)
+                if (result.containsKey("analysisResult")) {
+                    candidat.setProfileAnalysisResult(result.get("analysisResult").toString());
+                } else {
+                    StringBuilder summary = new StringBuilder("Synthèse du profil :\n");
+                    summary.append("Score Global : ").append(result.getOrDefault("score_percent", "0")).append("%\n");
+                    candidat.setProfileAnalysisResult(summary.toString());
+                }
             }
         } catch (Exception e) {
             logger.error("Error during profile analysis: ", e);
             candidat.setProfileAnalysisResult("Erreur lors de l'analyse du profil : " + e.getMessage());
+        }
+    }
+
+    public Double calculateSpecificScore(com.esb.recrutementRH.user.model.Candidat candidat,
+            com.esb.recrutementRH.job.model.JobOffer jobOffer) {
+        if (candidat.getCv() == null || jobOffer == null)
+            return null;
+
+        String cvFilePathRaw = candidat.getCv().getFileUrl();
+        String cvFilePath = null;
+        if (cvFilePathRaw != null) {
+            try {
+                java.nio.file.Path p = java.nio.file.Paths.get(cvFilePathRaw);
+                if (!p.isAbsolute()) {
+                    p = java.nio.file.Paths.get("uploads/cv").resolve(cvFilePathRaw);
+                }
+                cvFilePath = p.toAbsolutePath().toString();
+            } catch (Exception e) {
+                cvFilePath = cvFilePathRaw;
+            }
+        }
+
+        StringBuilder jobDescBuilder = new StringBuilder();
+        if (jobOffer.getTitle() != null)
+            jobDescBuilder.append(jobOffer.getTitle()).append(" ");
+        if (jobOffer.getDescription() != null)
+            jobDescBuilder.append(jobOffer.getDescription());
+        if (jobOffer.getRequiredSkills() != null) {
+            jobDescBuilder.append(" ").append(String.join(" ", jobOffer.getRequiredSkills()));
+        }
+
+        String jobDescription = jobDescBuilder.toString().trim();
+
+        try {
+            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+            factory.setConnectTimeout(2000); // Faster for bulk
+            factory.setReadTimeout(5000);
+
+            RestTemplate restTemplate = new RestTemplate(factory);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("file_path", cvFilePath);
+            requestBody.put("job_description", jobDescription);
+            requestBody.put("required_skills", jobOffer.getRequiredSkills());
+            requestBody.put("education_level", jobOffer.getEducationLevel());
+            requestBody.put("experience_years", jobOffer.getExperienceYears());
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+            @SuppressWarnings("unchecked")
+            ResponseEntity<Map<String, Object>> response = (ResponseEntity<Map<String, Object>>) (ResponseEntity<?>) restTemplate
+                    .postForEntity(PYTHON_API_URL, request, Map.class);
+
+            if (response.getBody() != null && response.getBody().containsKey("score_percent")) {
+                return Double.valueOf(response.getBody().get("score_percent").toString());
+            }
+        } catch (Exception e) {
+            logger.error("Error calculating bulk score: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    @jakarta.transaction.Transactional
+    public void recalculateAllDashboardScores(com.esb.recrutementRH.user.model.Candidat candidat,
+            java.util.List<com.esb.recrutementRH.job.model.JobOffer> offers) {
+        if (candidat.getCv() == null)
+            return;
+
+        logger.info("Bulk recalculating scores for candidate {} ({} offers)", candidat.getId(), offers.size());
+        candidat.getJobScores().clear(); // Fresh calculation
+
+        // Limit to most recent 20 for performance in this demo
+        int count = 0;
+        for (com.esb.recrutementRH.job.model.JobOffer offer : offers) {
+            if (count++ >= 20)
+                break;
+            Double score = calculateSpecificScore(candidat, offer);
+            if (score != null) {
+                candidat.updateJobScore(offer.getId(), score);
+            }
         }
     }
 }

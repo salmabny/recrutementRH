@@ -10,8 +10,10 @@ import com.esb.recrutementRH.user.model.User;
 import com.esb.recrutementRH.user.model.UserStatus;
 import com.esb.recrutementRH.user.repository.UserRepository;
 import com.esb.recrutementRH.user.service.AuthService;
+import com.esb.recrutementRH.user.service.EmailService;
 import com.esb.recrutementRH.config.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +33,9 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
+    private EmailService emailService;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -48,26 +53,6 @@ public class AuthController {
             System.err.println("[AuthController] Registration failed: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/register-recruiter")
-    public ResponseEntity<?> registerRecruiter(
-            @RequestParam("nom") String nom,
-            @RequestParam("prenom") String prenom,
-            @RequestParam("email") String email,
-            @RequestParam("password") String password,
-            @RequestParam(value = "entreprise", required = false) String entreprise,
-            @RequestParam(value = "ville", required = false) String ville,
-            @RequestParam(value = "document", required = false) org.springframework.web.multipart.MultipartFile document) {
-        try {
-            Map<String, Object> result = authService.registerRecruiter(nom, prenom, email, password, entreprise, ville,
-                    document);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            System.err.println("[AuthController] Recruiter registration failed: " + e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Erreur lors de l'inscription"));
         }
     }
 
@@ -112,8 +97,16 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Votre compte est en cours de validation par l'admin");
             }
             if (user.getStatus() == UserStatus.SUSPENDU) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Votre compte est suspendu. Veuillez contacter l'administrateur."));
+            }
+            if (user.getStatus() == UserStatus.DELETED) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Ce compte a été supprimé."));
+            }
+            if (user.getStatus() == UserStatus.REJECTED) {
                 return ResponseEntity.status(403)
-                        .body("Votre compte est suspendu. Veuillez contacter l'administration.");
+                        .body("Votre compte a été refusé ou supprimé. Veuillez contacter l'administration.");
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -130,6 +123,7 @@ public class AuthController {
                 response.put("ville", recruteur.getVille());
             }
             response.put("dateInscription", user.getDateInscription());
+            response.put("mustChangePassword", user.getMustChangePassword());
 
             return ResponseEntity.ok(response);
         } catch (org.springframework.security.core.AuthenticationException e) {
@@ -191,6 +185,18 @@ public class AuthController {
             err.put("message", e.getMessage() != null ? e.getMessage()
                     : "L'ancien mot de passe est incorrect ou une erreur est survenue");
             return ResponseEntity.badRequest().body(err);
+        }
+    }
+
+    @PostMapping("/contact-admin")
+    public ResponseEntity<?> contactAdmin(@RequestBody Map<String, String> body) {
+        try {
+            String email = body.get("email");
+            String message = body.get("message");
+            emailService.sendSupportEmail(email, message);
+            return ResponseEntity.ok(Map.of("message", "Votre message a été envoyé avec succès"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 }

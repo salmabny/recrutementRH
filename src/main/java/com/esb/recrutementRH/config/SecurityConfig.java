@@ -2,6 +2,7 @@ package com.esb.recrutementRH.config;
 
 import com.esb.recrutementRH.user.service.UserDetailsServiceImpl;
 import org.springframework.security.config.Customizer;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,15 +20,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers("/favicon.ico", "/resources/**", "/static/**", "/public/**", "/webjars/**",
+                        "/.well-known/**");
+    }
+
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
+    @Bean
+    public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
+        FilterRegistrationBean<JwtAuthenticationFilter> registrationBean = new FilterRegistrationBean<>(filter);
+        registrationBean.setEnabled(false); // Do not register as a standard servlet filter
+        return registrationBean;
+    }
+
     @Autowired
+    @Lazy
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -68,9 +87,9 @@ public class SecurityConfig {
                                     + authException.getMessage() + "\"}");
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/error").permitAll()
+                        .requestMatchers("/api/auth/**", "/error", "/favicon.ico", "/.well-known/**").permitAll()
                         .requestMatchers("/api/candidatures/files/**", "/api/job-offers/images/**",
-                                "/uploads/images/**")
+                                "/uploads/images/**", "/uploads/cv/**")
                         .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated());

@@ -57,6 +57,8 @@ public class JobOffer {
     @Column(columnDefinition = "TEXT")
     private String imageUrl; // URL de l'image de l'offre
 
+    private String category; // Catégorie de l'offre
+
     @OneToMany(mappedBy = "jobOffer", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Candidature> candidatures = new ArrayList<>();
@@ -192,6 +194,14 @@ public class JobOffer {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     @JsonProperty("nombreCandidatures")

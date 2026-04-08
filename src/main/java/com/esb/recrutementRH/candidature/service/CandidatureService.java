@@ -7,6 +7,7 @@ import com.esb.recrutementRH.user.model.Role;
 import com.esb.recrutementRH.user.model.User;
 import com.esb.recrutementRH.user.repository.UserRepository;
 
+import com.esb.recrutementRH.user.service.EmailService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,21 +16,21 @@ import java.time.LocalDateTime;
 public class CandidatureService {
 
     private final CandidatureRepository candidatureRepository;
-    private final CvRepository cvRepository;
     private final JobOfferRepository jobOfferRepository;
     private final UserRepository userRepository;
     private final CvAnalysisService cvAnalysisService;
+    private final EmailService emailService;
 
     public CandidatureService(CandidatureRepository candidatureRepository,
-            CvRepository cvRepository,
             JobOfferRepository jobOfferRepository,
             UserRepository userRepository,
-            CvAnalysisService cvAnalysisService) {
+            CvAnalysisService cvAnalysisService,
+            EmailService emailService) {
         this.candidatureRepository = candidatureRepository;
-        this.cvRepository = cvRepository;
         this.jobOfferRepository = jobOfferRepository;
         this.userRepository = userRepository;
         this.cvAnalysisService = cvAnalysisService;
+        this.emailService = emailService;
     }
 
     public Candidature postuler(Long jobOfferId, User candidat, CV cv) {
@@ -50,8 +51,13 @@ public class CandidatureService {
         candidature.setCandidat(realCandidat); // Use fetched user
         candidature.setCv(cv);
 
-        // Analyse du CV via le microservice Python
-        cvAnalysisService.analyzeCandidature(candidature);
+        // Analyse du CV via le microservice Python (optionnel/non-bloquant)
+        try {
+            cvAnalysisService.analyzeCandidature(candidature);
+        } catch (Exception e) {
+            System.err.println("[CandidatureService] Erreur analyse CV : " + e.getMessage());
+            candidature.setAnalysisResult("Analyse indisponible momentanément.");
+        }
 
         return candidatureRepository.save(candidature);
     }
@@ -65,6 +71,22 @@ public class CandidatureService {
                 .orElseThrow(() -> new RuntimeException("Candidature non trouvée"));
         candidature.setStatus(status);
         candidature.setLastStatusUpdate(LocalDateTime.now());
-        return candidatureRepository.save(candidature);
+        Candidature saved = candidatureRepository.save(candidature);
+
+        // Envoyer une notification par email au candidat
+        try {
+            if (candidature.getCandidat() != null && candidature.getJobOffer() != null) {
+                emailService.sendCandidatureStatusUpdateEmail(
+                        candidature.getCandidat().getEmail(),
+                        candidature.getCandidat().getPrenom(),
+                        candidature.getJobOffer().getTitle(),
+                        status.name());
+            }
+        } catch (Exception e) {
+            System.err.println(
+                    "[CandidatureService] Erreur lors de l'envoi de l'email de notification : " + e.getMessage());
+        }
+
+        return saved;
     }
 }

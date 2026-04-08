@@ -1,8 +1,6 @@
 package com.esb.recrutementRH.config;
 
 import com.esb.recrutementRH.user.model.Admin;
-import com.esb.recrutementRH.user.model.Role;
-import com.esb.recrutementRH.user.model.User;
 import com.esb.recrutementRH.user.model.UserStatus;
 import com.esb.recrutementRH.user.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;

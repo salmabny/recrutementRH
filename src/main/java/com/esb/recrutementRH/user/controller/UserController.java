@@ -2,7 +2,6 @@ package com.esb.recrutementRH.user.controller;
 
 import com.esb.recrutementRH.user.model.User;
 import com.esb.recrutementRH.user.model.Candidat;
-import com.esb.recrutementRH.user.model.Recruteur;
 import com.esb.recrutementRH.user.dto.RecruteurUpdateDto;
 import com.esb.recrutementRH.user.service.UserService;
 import com.esb.recrutementRH.candidature.service.FileStorageService;
@@ -64,6 +63,16 @@ public class UserController {
     public ResponseEntity<Void> updateRecruiter(@PathVariable Long id, @RequestBody RecruteurUpdateDto dto) {
         userService.updateRecruiter(id, dto);
         return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/photo")
+    public ResponseEntity<User> deletePhoto(@PathVariable Long id) throws IOException {
+        User user = userService.getUserById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getPhotoUrl() != null) {
+            String imageDir = env.getProperty("file.upload-dir-images");
+            fileStorageService.delete(imageDir, user.getPhotoUrl());
+        }
+        return ResponseEntity.ok(userService.deletePhoto(id));
     }
 
     @DeleteMapping("/{id}")

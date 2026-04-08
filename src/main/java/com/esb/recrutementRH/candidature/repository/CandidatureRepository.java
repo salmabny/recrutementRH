@@ -21,6 +21,9 @@ public interface CandidatureRepository extends JpaRepository<Candidature, Long> 
     // Vérifier si un candidat a déjà postulé à une offre
     boolean existsByJobOfferIdAndCandidatId(Long jobOfferId, Long candidatId);
 
+    // Récupérer une candidature spécifique
+    java.util.Optional<Candidature> findByJobOfferIdAndCandidatId(Long jobOfferId, Long candidatId);
+
     // Récupérer toutes les candidatures pour une offre
     List<Candidature> findByJobOfferId(Long jobOfferId);
 }

@@ -4,7 +4,6 @@ import com.esb.recrutementRH.job.model.JobOffer;
 import com.esb.recrutementRH.job.service.JobOfferService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.security.Principal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

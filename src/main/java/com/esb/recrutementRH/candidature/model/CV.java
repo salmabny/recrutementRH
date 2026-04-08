@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 @Entity
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@Table(name = "cv", schema = "recruitment")
 public class CV {
 
 	@Id
@@ -14,9 +15,15 @@ public class CV {
 
 	private String fileName;
 	private String fileType;
-	private String filePath;
+
+	@Column(name = "file_path")
+	private String fileUrl;
+
 	private long fileSize;
 	private LocalDate uploadDate;
+
+	@Column(columnDefinition = "TEXT")
+	private String rawText;
 
 	// getters & setters
 
@@ -44,12 +51,12 @@ public class CV {
 		this.fileType = fileType;
 	}
 
-	public String getFilePath() {
-		return filePath;
+	public String getFileUrl() {
+		return fileUrl;
 	}
 
-	public void setFilePath(String filePath) {
-		this.filePath = filePath;
+	public void setFileUrl(String fileUrl) {
+		this.fileUrl = fileUrl;
 	}
 
 	public long getFileSize() {
@@ -66,6 +73,14 @@ public class CV {
 
 	public void setUploadDate(LocalDate uploadDate) {
 		this.uploadDate = uploadDate;
+	}
+
+	public String getRawText() {
+		return rawText;
+	}
+
+	public void setRawText(String rawText) {
+		this.rawText = rawText;
 	}
 
 }
