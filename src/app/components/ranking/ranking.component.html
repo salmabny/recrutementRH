@@ -1,0 +1,205 @@
+<div class="dashboard-layout">
+    <!-- ── Sidebar -->
+    <app-sidebar-recruteur [activeItem]="'ranking'"></app-sidebar-recruteur>
+
+    <!-- ── Main -->
+    <div class="main">
+
+        <!-- Topbar (Title only) -->
+        <div class="topbar">
+            <div class="topbar-title-group">
+                <div class="topbar-title">Classement des Candidats</div>
+                <div class="topbar-subtitle">Visualisez les meilleurs profils analysés par l'intelligence artificielle
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            @if (isLoading()) {
+            <div class="loading-state">
+                <span class="spinner"></span> Chargement des analyses...
+            </div>
+            } @else {
+
+            <!-- ── Synchronized Stats Cards (Matching Candidatures) ── -->
+            <div class="stats-cards-container">
+                <div class="stat-card">
+                    <div class="stat-icon-box ib-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ stats().total }}</div>
+                        <div class="stat-lbl">Total Candidatures</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-box ib-yellow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ stats().topScore }}%</div>
+                        <div class="stat-lbl">Top Score IA</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon ib-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ stats().goodMatch }}</div>
+                        <div class="stat-lbl">Bonne Adéquation</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon ib-red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ stats().toReview }}</div>
+                        <div class="stat-lbl">Candidats à Revoir</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Action Bar ── -->
+            <div class="action-bar">
+                <div class="filters-left">
+                    <span class="filter-lbl">Filtrer par :</span>
+                    <select class="m-select" (change)="onFilterChange($event)">
+                        @for (job of jobFilters(); track job) {
+                        <option [value]="job">{{ job }}</option>
+                        }
+                    </select>
+
+                    <select class="m-select" (change)="onMatchChange($event)">
+                        <option value="Tous">Toutes adéquations</option>
+                        <option value="Bonne">Bonne adéquation</option>
+                        <option value="Moyenne">Adéquation moyenne</option>
+                        <option value="Faible">Faible adéquation</option>
+                    </select>
+
+                    <div class="search-input-wrapper">
+                        <svg class="si-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input type="text" placeholder="Rechercher..." (input)="onSearch($event)">
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- ── Table ── -->
+            <div class="table-card">
+                <div class="table-header">
+                    <span>Candidat</span>
+                    <span>Poste</span>
+                    <span>Adéquation</span>
+                    <span>Score IA</span>
+                    <span>Actions</span>
+                </div>
+
+                <div class="table-body">
+                    @for (c of paginatedCandidates(); track c.id; let i = $index) {
+                    <div class="table-row">
+                        <div class="c-info">
+                            <span class="rank-indicator">
+                                @if (i + (currentPage()-1)*pageSize() === 0) { <svg class="star-gold"
+                                    viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg> }
+                                @else if (i + (currentPage()-1)*pageSize() === 1) { <svg class="star-silver"
+                                    viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg> }
+                                @else if (i + (currentPage()-1)*pageSize() === 2) { <svg class="star-bronze"
+                                    viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg> }
+                                @else { <span class="plain-rank">#{{ i + (currentPage()-1)*pageSize() + 1 }}</span> }
+                            </span>
+                            <div class="avatar-box">
+                                <div class="initials">{{ c.candidat?.prenom?.[0] || 'U' }}{{ c.candidat?.nom?.[0] || ''
+                                    }}</div>
+                            </div>
+                            <div class="name-box">
+                                <span class="name">{{ c.candidat?.prenom }} {{ c.candidat?.nom }}</span>
+                                @if (i + (currentPage()-1)*pageSize() < 10) { <span class="tag-top">TOP IA</span> }
+                            </div>
+                        </div>
+
+                        <div class="job-title">{{ c.jobOffer?.title }}</div>
+
+                        <div>
+                            <span class="adeq-pill" [ngClass]="getMatchClass(c.score)">
+                                <span class="dot"></span>
+                                {{ getMatchLabel(c.score) }}
+                            </span>
+                        </div>
+
+                        <div class="score-col">
+                            <div class="score-val" [ngClass]="getScoreClass(c.score)">{{ c.score?.toFixed(1) }}%</div>
+                            <div class="mini-bar-bg">
+                                <div class="mini-bar-fill" [ngClass]="getScoreClass(c.score)" [style.width.%]="c.score">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-act">
+                            <button class="btn-fav" [class.active]="c.isFavorite" (click)="toggleFavorite(c.id)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            </button>
+                            <button class="btn-view" (click)="viewDetail(c.id)">Voir</button>
+                        </div>
+
+                    </div>
+                    } @empty {
+                    <div class="empty-results">Aucun candidat trouvé.</div>
+                    }
+                </div>
+
+                <div class="table-footer">
+                    <span class="footer-info">Page {{ currentPage() }} sur {{ totalPages() }}</span>
+                    <div class="pagination">
+                        <button class="btn-p" [disabled]="currentPage() === 1" (click)="prevPage()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                        </button>
+                        <button class="btn-p active">{{ currentPage() }}</button>
+                        <button class="btn-p" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>

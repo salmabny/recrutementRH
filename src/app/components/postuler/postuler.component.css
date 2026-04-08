@@ -7,174 +7,11 @@
 
 /* ══════════════════════════════
    SIDEBAR (Light Premium)
-══════════════════════════════ */
-.sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  background: white;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  z-index: 100;
-  border-right: 1px solid #e2e8f0;
-}
-
-.sidebar-brand {
-  padding: 30px 24px 20px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.brand-name {
-  font-size: 22px;
-  font-weight: 800;
-  color: #1a1d2e;
-  letter-spacing: -0.02em;
-}
-
-.brand-accent {
-  color: #4361ee;
-}
-
-.brand-role {
-  font-size: 10px;
-  color: #94a3b8;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 20px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow-y: auto;
-}
-
-.nav-section-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #94a3b8;
-  padding: 16px 10px 8px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 12px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.nav-item svg {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  stroke-width: 2;
-}
-
-.nav-item:hover {
-  background: #f8fafc;
-  color: #1a1d2e;
-}
-
-.nav-item.active {
-  background: #4361ee;
-  color: white;
-  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
-}
-
-.nav-badge {
-  margin-left: auto;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 10px;
-  background: #e8ecff;
-  color: #4361ee;
-}
-
-.sidebar-footer {
-  padding: 10px 14px;
-  background: #4361ee;
-  border-top: none;
-}
-
-.user-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 10px;
-  background: transparent;
-  border-radius: 12px;
-  border: none;
-}
-
-.user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #4361ee;
-  color: white;
-  display: none;
-  /* Hide since removed from HTML */
-}
-
-.user-info {
-  flex: 1;
-  overflow: hidden;
-}
-
-.user-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-role {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 600;
-}
-
-.btn-logout {
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.btn-logout:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.btn-logout svg {
-  width: 18px;
-  height: 18px;
-}
-
+10: ══════════════════════════════ */
+/* ── Main */
 .main {
   flex: 1;
-  margin-left: 240px;
+  margin-left: 220px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -182,7 +19,8 @@
 
 .topbar {
   background: white;
-  padding: 14px 28px;
+  padding: 22px 32px 18px;
+  /* Increased from 18px 28px 14px */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -744,4 +582,68 @@
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── CV Profile Card (Special) */
+.cv-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: #f0f3ff;
+  border: 1.5px solid rgba(67, 97, 238, 0.2);
+  border-radius: 12px;
+  transition: all 0.2s;
+  margin-top: 10px;
+}
+
+.cv-profile-card:hover {
+  background: #e8ecff;
+  border-color: #4361ee;
+}
+
+.profile-cv-icon {
+  background: rgba(67, 97, 238, 0.1) !important;
+}
+
+.profile-cv-icon svg {
+  stroke: #4361ee !important;
+}
+
+.text-primary {
+  color: #4361ee !important;
+}
+
+.cv-file-status {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.btn-change-cv {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid #dde1f0;
+  color: #4361ee;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+.btn-change-cv:hover {
+  background: #4361ee;
+  color: white;
+  border-color: #4361ee;
+}
+
+.btn-change-cv svg {
+  width: 14px;
+  height: 14px;
 }

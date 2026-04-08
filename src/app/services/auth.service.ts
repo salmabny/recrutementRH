@@ -241,9 +241,20 @@ export class AuthService {
     return fallback;
   }
 
-  // ── Déconnexion
+  // ── Déconnexion (Modal Logic)
+  showLogoutModal = signal<boolean>(false);
+
   logout(): void {
+    this.showLogoutModal.set(true);
+  }
+
+  cancelLogout(): void {
+    this.showLogoutModal.set(false);
+  }
+
+  executeLogout(): void {
     console.log('AuthService: Performing logout');
+    this.showLogoutModal.set(false);
     this._currentUser.set(null);
     localStorage.removeItem('sh_user');
     localStorage.removeItem('sh_token');
@@ -275,5 +286,9 @@ export class AuthService {
       { level: 4, label: 'très fort', color: '#38a169' },
     ];
     return levels[Math.max(0, score - 1)] ?? levels[0];
+  }
+
+  contactAdmin(email: string, message: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/contact-admin`, { email, message });
   }
 }

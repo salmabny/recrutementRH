@@ -1,62 +1,7 @@
 <div class="dashboard-layout">
 
     <!-- ── Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
-            <div class="brand-role">Espace Recruteur</div>
-        </div>
-
-        <nav class="sidebar-nav">
-            <div class="nav-section-label">Principal</div>
-            <div class="nav-item" (click)="navigateTo('/recruteur')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                </svg>
-                Tableau de bord
-            </div>
-            <div class="nav-item" (click)="navigateTo('/recruteur/offres')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                </svg>
-                Mes offres
-            </div>
-            <div class="nav-item" (click)="navigateTo('/recruteur/candidatures')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-                Candidatures
-            </div>
-            <div class="nav-item active" (click)="navigateTo('/recruteur/profil')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-                Mon profil
-            </div>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="user-card">
-                <div class="user-info">
-                    <div class="user-name">{{ sidebarUser().prenom }} {{ sidebarUser().nom }}</div>
-                    <div class="user-company">{{ sidebarUser().entreprise }}</div>
-                </div>
-                <button class="btn-logout" (click)="logout()" title="Déconnexion">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <polyline points="16 17 21 12 16 7" />
-                        <line x1="21" y1="12" x2="9" y2="12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </aside>
+    <app-sidebar-recruteur [activeItem]="'profil'"></app-sidebar-recruteur>
 
     <!-- ── Main -->
     <div class="main">
@@ -64,11 +9,10 @@
 
 
         <div class="content">
-
             @if (isLoading()) {
             <div class="loading-state">
                 <span class="spinner"></span>
-                Chargement...
+                Chargement du profil...
             </div>
             } @else if (recruteur()) {
 
@@ -79,218 +23,271 @@
             <div class="alert-error">{{ errorMsg() }}</div>
             }
 
-            <!-- Header Card -->
-            <div class="profile-header-card">
-                <div class="profile-banner"></div>
-                <div class="profile-header-content">
-                    <div class="avatar-zone">
-                        <div class="avatar-circle">
+            <!-- ── Premium Header Banner & Profile Info -->
+            <div class="premium-profile-header">
+                <div class="header-banner">
+                    <div class="banner-overlay"></div>
+                </div>
+
+                <div class="header-main-card">
+                    <div class="avatar-outer">
+                        <div class="avatar-wrapper" (click)="togglePhotoMenu()">
                             @if (getPhotoUrl()) {
                             <img [src]="getPhotoUrl()" alt="Photo" class="avatar-img">
                             } @else {
-                            {{ getInitiales() }}
+                            <div class="avatar-placeholder">{{ getInitiales() }}</div>
                             }
+                            <div class="avatar-edit-hint">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                    <circle cx="12" cy="13" r="4" />
+                                </svg>
+                            </div>
                         </div>
-                        <label class="avatar-upload-btn" title="Changer la photo">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                <polyline points="17 8 12 3 7 8" />
-                                <line x1="12" y1="3" x2="12" y2="15" />
-                            </svg>
-                            <input type="file" accept="image/*" (change)="onPhotoSelected($event)" hidden>
-                        </label>
+
+                        <!-- Glass Photo Menu -->
+                        @if (showPhotoMenu()) {
+                        <div class="glass-menu photo-dropdown">
+                            <button (click)="viewPhoto()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                Voir la photo
+                            </button>
+                            <label class="menu-btn-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                                Modifier
+                                <input type="file" accept="image/*" (change)="onPhotoSelected($event)" hidden>
+                            </label>
+                            <div class="menu-divider"></div>
+                            <button class="btn-danger-lite" (click)="deletePhoto()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                                Supprimer
+                            </button>
+                        </div>
+                        }
                     </div>
 
-                    <div class="header-info">
-                        <h1 class="header-name">{{ recruteur()?.prenom }} {{ recruteur()?.nom }}</h1>
-                        <div class="header-meta">
-                            <span class="meta-pill">
+                    <div class="header-details">
+                        <div class="name-badge-row">
+                            <h1 class="recruiter-name">{{ recruteur()?.prenom }} {{ recruteur()?.nom }}</h1>
+                            <span class="status-pill active-status">Compte Actif</span>
+                        </div>
+
+                        <div class="info-pills-grid">
+                            <div class="info-pill">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                                </svg>
+                                {{ recruteur()?.entreprise || 'Entreprise' }}
+                            </div>
+                            <div class="info-pill">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path
                                         d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                                     <polyline points="22,6 12,13 2,6" />
                                 </svg>
                                 {{ recruteur()?.email }}
-                            </span>
-                            <span class="meta-pill">
+                            </div>
+                            @if (recruteur()?.telephone) {
+                            <div class="info-pill">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-                                    <path d="M9 22v-4h6v4" />
-                                    <path d="M8 6h.01" />
-                                    <path d="M16 6h.01" />
-                                    <path d="M8 10h.01" />
-                                    <path d="M16 10h.01" />
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                                 </svg>
-                                {{ recruteur()?.entreprise || 'Entreprise non renseignée' }}
-                            </span>
+                                {{ recruteur()?.telephone }}
+                            </div>
+                            }
                             @if (recruteur()?.ville) {
-                            <span class="meta-pill">
+                            <div class="info-pill">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                                     <circle cx="12" cy="10" r="3" />
                                 </svg>
                                 {{ recruteur()?.ville }}
-                            </span>
+                            </div>
                             }
-                            <span class="meta-pill">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path
-                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </div>
+                    </div>
+
+                    <div class="header-actions-group">
+                        <div class="dropdown-wrapper">
+                            <button class="btn-more-glass" (click)="toggleProfileMenu()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <circle cx="12" cy="12" r="1" />
+                                    <circle cx="12" cy="5" r="1" />
+                                    <circle cx="12" cy="19" r="1" />
                                 </svg>
-                                {{ recruteur()?.telephone || 'Tél. non renseigné' }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="header-actions">
-                        @if (!editMode()) {
-                        <button class="btn-secondary btn-pwd-trigger" (click)="togglePwdModal()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                            Modifier mot de passe
-                        </button>
-                        <button class="btn-edit" (click)="toggleEdit()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                            Modifier profil
-                        </button>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <!-- ---------- VIEW MODE ---------- -->
-            @if (!editMode()) {
-            <div class="info-grid">
-                <div class="info-card">
-                    <div class="info-card-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                        </svg>
-                        Informations personnelles
-                    </div>
-                    <div class="info-card-body">
-                        <div class="info-row-grid">
-                            <div class="info-item">
-                                <label>Prénom</label>
-                                <span>{{ recruteur()?.prenom || '—' }}</span>
+                            </button>
+                            @if (showProfileMenu()) {
+                            <div class="glass-menu action-dropdown">
+                                <button (click)="toggleEdit(); toggleProfileMenu()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                    Modifier le profil
+                                </button>
+                                <button (click)="togglePwdModal(); toggleProfileMenu()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                    Sécurité du compte
+                                </button>
                             </div>
-                            <div class="info-item">
-                                <label>Nom</label>
-                                <span>{{ recruteur()?.nom || '—' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Email</label>
-                                <span>{{ recruteur()?.email || '—' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Téléphone</label>
-                                <span>{{ recruteur()?.telephone || 'Non renseigné' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Ville</label>
-                                <span>{{ recruteur()?.ville || 'Non renseignée' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-card">
-                    <div class="info-card-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                            <path d="M16 3H8L6 7h12l-2-4z" />
-                        </svg>
-                        Informations professionnelles
-                    </div>
-                    <div class="info-card-body">
-                        <div class="info-row-grid">
-                            <div class="info-item">
-                                <label>Entreprise</label>
-                                <span>{{ recruteur()?.entreprise || 'Non renseignée' }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Domaine</label>
-                                <span>{{ recruteur()?.companyDomain || 'Non renseigné' }}</span>
-                            </div>
+                            }
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ---------- EDIT MODE ---------- -->
-            } @else {
-            <form class="edit-form" [formGroup]="form" (ngSubmit)="onSubmit()">
-                <div class="form-card">
-                    <div class="info-card-header">
+            <!-- ── Glassmorphic Stats Grid -->
+            <div class="glass-stats-grid">
+                <div class="glass-stat-card">
+                    <div class="stat-icon-wrapper blue-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                         </svg>
+                    </div>
+                    <div class="stat-data">
+                        <span class="stat-num">{{ totalOffresCount() }}</span>
+                        <span class="stat-name">Offres publiées</span>
+                    </div>
+                </div>
+                <div class="glass-stat-card">
+                    <div class="stat-icon-wrapper green-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                    </div>
+                    <div class="stat-data">
+                        <span class="stat-num">{{ totalCandidaturesCount() }}</span>
+                        <span class="stat-name">Candidatures</span>
+                    </div>
+                </div>
+                <div class="glass-stat-card">
+                    <div class="stat-icon-wrapper amber-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M2 12h20" />
+                        </svg>
+                    </div>
+                    <div class="stat-data">
+                        <span class="stat-num">{{ recruteur()?.companyDomain || 'Secteur' }}</span>
+                        <span class="stat-name">Secteur d'activité</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Segmented Control Tabs & Content -->
+            <div class="profile-tabs-card">
+                <div class="tabs-navigator">
+                    <button class="segment-btn" [class.active]="activeTab() === 'personal'"
+                        (click)="setTab('personal')">
                         Informations personnelles
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Prénom *</label>
-                            <input class="form-control" formControlName="prenom" placeholder="Prénom">
-                        </div>
-                        <div class="form-group">
-                            <label>Nom *</label>
-                            <input class="form-control" formControlName="nom" placeholder="Nom">
-                        </div>
-                        <div class="form-group">
-                            <label>Email *</label>
-                            <input class="form-control" type="email" formControlName="email" placeholder="Email">
-                        </div>
-                        <div class="form-group">
-                            <label>Téléphone</label>
-                            <input class="form-control" formControlName="telephone" placeholder="Téléphone">
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Ville</label>
-                            <input class="form-control" formControlName="ville" placeholder="Ville">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <div class="info-card-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                            <path d="M16 3H8L6 7h12l-2-4z" />
-                        </svg>
+                    </button>
+                    <button class="segment-btn" [class.active]="activeTab() === 'professional'"
+                        (click)="setTab('professional')">
                         Informations professionnelles
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Entreprise</label>
-                            <input class="form-control" formControlName="entreprise" placeholder="Nom de l'entreprise">
-                        </div>
-                        <div class="form-group">
-                            <label>Domaine d'activité</label>
-                            <input class="form-control" formControlName="companyDomain"
-                                placeholder="ex: Informatique, Finance...">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" (click)="toggleEdit()">Annuler</button>
-                    <button type="submit" class="btn-save" [disabled]="form.invalid">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Enregistrer
                     </button>
                 </div>
-            </form>
-            }
 
+                <div class="tabs-body">
+                    @if (editMode()) {
+                    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="premium-form">
+                        @if (activeTab() === 'personal') {
+                        <div class="p-form-grid">
+                            <div class="p-group">
+                                <label>Prénom</label>
+                                <input type="text" class="p-input" formControlName="prenom">
+                            </div>
+                            <div class="p-group">
+                                <label>Nom</label>
+                                <input type="text" class="p-input" formControlName="nom">
+                            </div>
+                            <div class="p-group">
+                                <label>Email professionnel</label>
+                                <input type="email" class="p-input" formControlName="email">
+                            </div>
+                            <div class="p-group">
+                                <label>Téléphone</label>
+                                <input type="text" class="p-input" formControlName="telephone">
+                            </div>
+                            <div class="p-group full">
+                                <label>Localisation</label>
+                                <input type="text" class="p-input" formControlName="ville">
+                            </div>
+                        </div>
+                        }
+
+                        @if (activeTab() === 'professional') {
+                        <div class="p-form-grid">
+                            <div class="p-group">
+                                <label>Nom de l'entreprise</label>
+                                <input type="text" class="p-input" formControlName="entreprise">
+                            </div>
+                            <div class="p-group">
+                                <label>Domaine d'activité</label>
+                                <input type="text" class="p-input" formControlName="companyDomain">
+                            </div>
+                        </div>
+                        }
+
+                        <div class="p-actions">
+                            <button type="button" class="btn-cancel-p" (click)="toggleEdit()">Annuler</button>
+                            <button type="submit" class="btn-submit-p" [disabled]="form.invalid">Mettre à jour</button>
+                        </div>
+                    </form>
+                    } @else {
+                    @if (activeTab() === 'personal') {
+                    <div class="p-view-grid">
+                        <div class="v-item">
+                            <label>Prénom & Nom</label>
+                            <p>{{ recruteur()?.prenom }} {{ recruteur()?.nom }}</p>
+                        </div>
+                        <div class="v-item">
+                            <label>Adresse Email</label>
+                            <p>{{ recruteur()?.email }}</p>
+                        </div>
+                        <div class="v-item">
+                            <label>Numéro de contact</label>
+                            <p>{{ recruteur()?.telephone || 'Non renseigné' }}</p>
+                        </div>
+                        <div class="v-item">
+                            <label>Ville de résidence</label>
+                            <p>{{ recruteur()?.ville || 'Non renseigné' }}</p>
+                        </div>
+                    </div>
+                    }
+
+                    @if (activeTab() === 'professional') {
+                    <div class="p-view-grid">
+                        <div class="v-item">
+                            <label>Entreprise</label>
+                            <p>{{ recruteur()?.entreprise || 'Non renseigné' }}</p>
+                        </div>
+                        <div class="v-item">
+                            <label>Secteur d'activité</label>
+                            <p>{{ recruteur()?.companyDomain || 'Non renseigné' }}</p>
+                        </div>
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
             }
 
         </div>
@@ -364,5 +361,28 @@
         </div>
     </div>
     }
-
+    <!-- ── Delete Photo Confirmation Modal -->
+    @if (showDeletePhotoModal()) {
+    <div class="modal-backdrop" (click)="showDeletePhotoModal.set(false)">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Supprimer la photo ?</h2>
+                <button class="btn-close" (click)="showDeletePhotoModal.set(false)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer votre photo de profil ? Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" (click)="showDeletePhotoModal.set(false)">Annuler</button>
+                <button type="button" class="btn-danger" (click)="confirmDeletePhoto()" [disabled]="isLoading()">
+                    @if (isLoading()) {
+                    <span class="spinner-small"></span>
+                    } @else {
+                    Supprimer
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+    }
 </div>

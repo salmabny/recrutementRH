@@ -8,10 +8,13 @@ import { CandidatService } from '../../services/candidat.service';
 import { ToastService } from '../../services/toast.service';
 import { Offre } from '../../models/offre.model';
 
+import { SidebarCandidatComponent } from '../sidebar-candidat/sidebar-candidat.component';
+import { SidebarRecruteurComponent } from '../sidebar-recruteur/sidebar-recruteur.component';
+
 @Component({
     selector: 'app-offre-detail',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, SidebarCandidatComponent, SidebarRecruteurComponent],
     templateUrl: './offre-detail.component.html',
     styleUrls: ['./offre-detail.component.css']
 })
@@ -120,9 +123,7 @@ export class OffreDetailComponent implements OnInit {
     }
 
     logout(): void {
-        if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-            this.authService.logout();
-        }
+        this.authService.logout();
     }
 
     navigateTo(path: string): void {

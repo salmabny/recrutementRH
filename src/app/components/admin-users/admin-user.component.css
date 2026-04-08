@@ -14,9 +14,9 @@
   background: #0f1117;
   display: flex;
   flex-direction: column;
-  position: fixed;
+  position: sticky;
+  /* Standardized to sticky to align with flexbox layout */
   top: 0;
-  left: 0;
   height: 100vh;
   z-index: 100;
 }
@@ -185,7 +185,7 @@
 ══════════════════════════════ */
 .main {
   flex: 1;
-  margin-left: 230px;
+  /* margin-left removed to align with global flexbox + sticky sidebar layout */
   display: flex;
   flex-direction: column;
   min-height: 100vh;

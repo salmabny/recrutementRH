@@ -26,8 +26,21 @@ export class AdminOffresComponent implements OnInit {
     searchTerm = signal('');
     filterStatut = signal('tous');
 
+    // Pagination
+    currentPage = signal(1);
+    itemsPerPage = signal(4);
+
+    // Modal Suppression
+    showDeleteModal = signal(false);
+    offreToDelete = signal<Offre | null>(null);
+
     // Admin connecté (Signal)
     adminUser = this.authService.currentUser;
+
+    // Stats
+    totalOffres = computed(() => this.offres().length);
+    totalPubliees = computed(() => this.offres().filter(o => o.status === 'PUBLIEE').length);
+    totalFermees = computed(() => this.offres().filter(o => o.status === 'FERMEE').length);
 
     // Offres filtrées
     offresFiltrees = computed(() => {
@@ -51,10 +64,13 @@ export class AdminOffresComponent implements OnInit {
         return list;
     });
 
-    // Compteurs
-    totalPubliees = computed(() => this.offres().filter(o => o.status === 'PUBLIEE').length);
-    totalFermees = computed(() => this.offres().filter(o => o.status === 'FERMEE').length);
-    totalBrouillons = computed(() => this.offres().filter(o => o.status === 'BROUILLON').length);
+    paginatedOffres = computed(() => {
+        const start = (this.currentPage() - 1) * this.itemsPerPage();
+        const end = start + this.itemsPerPage();
+        return this.offresFiltrees().slice(start, end);
+    });
+
+    totalPages = computed(() => Math.ceil(this.offresFiltrees().length / this.itemsPerPage()));
 
     ngOnInit(): void {
         this.loadOffres();
@@ -75,23 +91,41 @@ export class AdminOffresComponent implements OnInit {
         });
     }
 
-    supprimer(offre: Offre): void {
-        if (!confirm(`Supprimer l'offre "${offre.title}" ? Cette action est irréversible.`)) return;
+    confirmDelete(offre: Offre): void {
+        this.offreToDelete.set(offre);
+        this.showDeleteModal.set(true);
+    }
+
+    cancelDelete(): void {
+        this.showDeleteModal.set(false);
+        this.offreToDelete.set(null);
+    }
+
+    executeDelete(): void {
+        const offre = this.offreToDelete();
+        if (!offre) return;
 
         this.adminService.deleteJobOffer(offre.id).subscribe({
             next: () => {
                 this.offres.update(list => list.filter(o => o.id !== offre.id));
+                this.adminService.refreshStats();
+                this.cancelDelete();
             },
-            error: () => this.errorMessage.set('Erreur lors de la suppression de l\'offre')
+            error: () => {
+                this.errorMessage.set('Erreur lors de la suppression de l\'offre');
+                this.cancelDelete();
+            }
         });
     }
 
     onSearch(event: Event): void {
         this.searchTerm.set((event.target as HTMLInputElement).value);
+        this.currentPage.set(1);
     }
 
-    onFilterChange(event: Event): void {
+    onStatutChange(event: Event): void {
         this.filterStatut.set((event.target as HTMLSelectElement).value);
+        this.currentPage.set(1);
     }
 
     logout(): void {
@@ -106,5 +140,50 @@ export class AdminOffresComponent implements OnInit {
 
     navigateTo(path: string): void {
         this.router.navigate([path]);
+    }
+
+    getStatusClass(status: string): string {
+        switch (status) {
+            case 'PUBLIEE': return 'status-active';
+            case 'FERMEE': return 'status-suspended';
+            case 'BROUILLON': return 'status-pending';
+            default: return '';
+        }
+    }
+
+    getStatusLabel(status: string): string {
+        switch (status) {
+            case 'PUBLIEE': return 'Publiée';
+            case 'FERMEE': return 'Fermée';
+            case 'BROUILLON': return 'Brouillon';
+            default: return status;
+        }
+    }
+
+    // Navigation pagination
+    nextPage(): void {
+        if (this.currentPage() < this.totalPages()) {
+            this.currentPage.update(p => p + 1);
+        }
+    }
+
+    prevPage(): void {
+        if (this.currentPage() > 1) {
+            this.currentPage.update(p => p - 1);
+        }
+    }
+
+    goToPage(p: number): void {
+        this.currentPage.set(p);
+    }
+
+    getPages(): number[] {
+        const total = this.totalPages();
+        if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+
+        const current = this.currentPage();
+        if (current <= 3) return [1, 2, 3, 4, 5];
+        if (current >= total - 2) return [total - 4, total - 3, total - 2, total - 1, total];
+        return [current - 2, current - 1, current, current + 1, current + 2];
     }
 }

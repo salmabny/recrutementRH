@@ -1,0 +1,91 @@
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+        <div class="brand-role">ESPACE CANDIDAT</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+
+        <div class="nav-item" [class.active]="activeItem === 'dashboard'" (click)="navigateTo('/candidat')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            Tableau de bord
+        </div>
+
+        <div class="nav-item" [class.active]="activeItem === 'offres'" (click)="navigateTo('/candidat/offres')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Offres d'emploi
+        </div>
+
+        <div class="nav-item" [class.active]="activeItem === 'candidatures'"
+            (click)="navigateTo('/candidat/candidatures')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>
+            Mes candidatures
+        </div>
+
+        <div class="nav-section-label">Profil</div>
+
+        <div class="nav-item" [class.active]="activeItem === 'profil'" (click)="navigateTo('/candidat/profil')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+                <circle cx="12" cy="12" r="10" />
+            </svg>
+            Mon profil
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-card">
+            <div class="user-info">
+                <div class="user-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
+                <div class="user-role">Candidat</div>
+            </div>
+            <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</aside>
+
+<!-- Logout Confirmation Modal -->
+@if (showLogoutConfirm()) {
+<div class="logout-modal-backdrop animate-fade-in" (click)="cancelLogout()">
+    <div class="logout-modal-card animate-slide-up" (click)="$event.stopPropagation()">
+        <div class="logout-modal-header">
+            <div class="logout-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+            </div>
+            <h3>Déconnexion</h3>
+        </div>
+        <div class="logout-modal-body">
+            <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
+        </div>
+        <div class="logout-modal-footer">
+            <button class="btn-logout-cancel" (click)="cancelLogout()">Annuler</button>
+            <button class="btn-logout-confirm" (click)="confirmLogout()">Se déconnecter</button>
+        </div>
+    </div>
+</div>
+}

@@ -8,11 +8,12 @@ import { RecruiterService } from '../../services/recruiter.service';
 import { NotificationService } from '../../services/notification.service';
 import { Offre } from '../../models/offre.model';
 import { Candidature } from '../../models/candidature.model';
+import { SidebarRecruteurComponent } from '../sidebar-recruteur/sidebar-recruteur.component';
 
 @Component({
   selector: 'app-dashboard-recruteur',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SidebarRecruteurComponent],
   templateUrl: './dashboard-recruteur.component.html',
   styleUrls: ['./dashboard-recruteur.component.css']
 })
@@ -151,9 +152,7 @@ export class DashboardRecruteurComponent implements OnInit {
   }
 
   logout(): void {
-    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      this.authService.logout();
-    }
+    this.authService.logout();
   }
 
   navigateTo(path: string): void {

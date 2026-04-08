@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { RecruteurService, Recruteur } from '../../services/recruteur.service';
 import { RecruiterService } from '../../services/recruiter.service';
 import { AuthService } from '../../services/auth.service';
+import { SidebarRecruteurComponent } from '../sidebar-recruteur/sidebar-recruteur.component';
 
 @Component({
     selector: 'app-profil-recruteur',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [CommonModule, ReactiveFormsModule, SidebarRecruteurComponent],
     templateUrl: './profil-recruteur.component.html',
     styleUrls: ['./profil-recruteur.component.css']
 })
@@ -32,6 +33,10 @@ export class ProfilRecruteurComponent implements OnInit {
     totalCandidaturesCount = signal<number>(0);
     showPwdModal = signal(false);
     newPasswordInput = signal('');
+    activeTab = signal<'personal' | 'professional'>('personal');
+    showProfileMenu = signal(false);
+    showPhotoMenu = signal(false);
+    showDeletePhotoModal = signal(false);
 
     passwordStrength = computed(() => {
         const password = this.newPasswordInput();
@@ -52,13 +57,6 @@ export class ProfilRecruteurComponent implements OnInit {
             initiales: (user?.prenom?.[0] || 'U') + (user?.nom?.[0] || '')
         };
     });
-
-    getPhotoUrlForSidebar(): string {
-        const url = this.sidebarUser().photoUrl;
-        if (!url) return '';
-        if (url.startsWith('http')) return url;
-        return `http://localhost:8081/uploads/images/${url}`;
-    }
 
     ngOnInit(): void {
         const user = this.authService.currentUser();
@@ -125,6 +123,54 @@ export class ProfilRecruteurComponent implements OnInit {
         }
     }
 
+    setTab(tab: 'personal' | 'professional'): void {
+        this.activeTab.set(tab);
+    }
+
+    toggleProfileMenu(): void {
+        this.showProfileMenu.update(v => !v);
+        if (this.showProfileMenu()) this.showPhotoMenu.set(false);
+    }
+
+    togglePhotoMenu(): void {
+        this.showPhotoMenu.update(v => !v);
+        if (this.showPhotoMenu()) this.showProfileMenu.set(false);
+    }
+
+    viewPhoto(): void {
+        const url = this.getPhotoUrl();
+        if (url) window.open(url, '_blank');
+        this.showPhotoMenu.set(false);
+    }
+
+    deletePhoto(): void {
+        this.showDeletePhotoModal.set(true);
+        this.showPhotoMenu.set(false);
+    }
+
+    confirmDeletePhoto(): void {
+        const current = this.recruteur();
+        if (!current) return;
+
+        this.isLoading.set(true);
+        // Explicitly use null for JSON field clearing
+        this.recruteurService.updateProfil(current.id, { ...current, photoUrl: null as any }).subscribe({
+            next: () => {
+                const updated = { ...current, photoUrl: undefined };
+                this.recruteur.set(updated);
+                this.authService.updateUser(updated as any);
+                this.showDeletePhotoModal.set(false);
+                this.photoTimestamp.set(Date.now());
+                this.isLoading.set(false);
+            },
+            error: () => {
+                this.errorMsg.set('Erreur lors de la suppression de la photo.');
+                this.isLoading.set(false);
+                this.showDeletePhotoModal.set(false);
+            }
+        });
+    }
+
     onSubmit(): void {
         if (this.form.invalid) { this.form.markAllAsTouched(); return; }
         const current = this.recruteur();
@@ -148,8 +194,8 @@ export class ProfilRecruteurComponent implements OnInit {
     }
 
     onChangePassword(): void {
-        if (this.pwdForm.invalid) {
-            this.pwdForm.markAllAsTouched();
+        if (!this.pwdForm || this.pwdForm.invalid) {
+            this.pwdForm?.markAllAsTouched();
             return;
         }
         const { oldPassword, newPassword } = this.pwdForm.value;
@@ -186,7 +232,7 @@ export class ProfilRecruteurComponent implements OnInit {
     }
 
     onPhotoSelected(event: any): void {
-        const file = event.target.files?.[0];
+        const file = event.target?.files?.[0];
         if (!file || !file.type.startsWith('image/')) return;
         const current = this.recruteur();
         if (!current) return;
@@ -195,6 +241,7 @@ export class ProfilRecruteurComponent implements OnInit {
             next: (updated) => {
                 this.recruteur.set(updated);
                 this.photoTimestamp.set(Date.now());
+                this.showPhotoMenu.set(false);
             },
             error: () => this.errorMsg.set('Erreur lors du téléchargement de la photo.')
         });

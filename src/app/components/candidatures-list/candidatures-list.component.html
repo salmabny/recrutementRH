@@ -1,66 +1,7 @@
 <div class="dashboard-layout">
 
     <!-- ── Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
-            <div class="brand-role">Espace Recruteur</div>
-        </div>
-
-        <nav class="sidebar-nav">
-            <div class="nav-section-label">Principal</div>
-            <div class="nav-item" (click)="navigateTo('/recruteur')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                </svg>
-                Tableau de bord
-            </div>
-
-            <div class="nav-item" (click)="navigateTo('/recruteur/offres')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                </svg>
-                Mes offres
-            </div>
-
-            <div class="nav-item active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-                Candidatures
-            </div>
-            <div class="nav-item" (click)="navigateTo('/recruteur/profil')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-                Mon profil
-            </div>
-
-
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="user-card">
-                <div class="user-info">
-                    <div class="user-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
-                    <div class="user-company">{{ recruteur().entreprise }}</div>
-                </div>
-                <button class="btn-logout" (click)="logout()" title="Déconnexion">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <polyline points="16 17 21 12 16 7" />
-                        <line x1="21" y1="12" x2="9" y2="12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </aside>
+    <app-sidebar-recruteur [activeItem]="'candidatures'"></app-sidebar-recruteur>
 
     <!-- ── Main -->
     <div class="main">
@@ -68,22 +9,91 @@
         <!-- Topbar -->
         <div class="topbar">
             <div class="topbar-greeting-wrapper">
-                @if (recruteur().photoUrl) {
-                <img class="topbar-avatar avatar-img" [src]="getPhotoUrlHelper(recruteur().photoUrl)" alt="Profile">
-                } @else {
-                <div class="topbar-avatar-initials">{{ recruteur().initiales }}</div>
-                }
                 <div>
                     <div class="topbar-title">Gestion des Candidatures</div>
-                    <div class="topbar-subtitle">Bonjour {{ recruteur().prenom }} 👋</div>
+                    <div class="topbar-subtitle">Suivi et analyse de toutes vos candidatures</div>
                 </div>
+            </div>
+            <div class="topbar-actions" style="display: flex; align-items: center; gap: 8px;">
+                <select class="filter-select" [ngModel]="selectedJob()" (ngModelChange)="selectedJob.set($event)"
+                    style="border-color: #c4b5fd; background: rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(30, 64, 175, 0.05); min-width: 140px; height: 36px; padding: 0 10px; font-size: 12px; border-radius: 8px; color: #312e81; font-weight: 600; outline: none; cursor: pointer;">
+                    @for (job of jobFilters(); track job) {
+                    <option [value]="job">{{ job === 'Tous' ? 'Toutes les offres' : job }}</option>
+                    }
+                </select>
+                <select class="filter-select" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)"
+                    style="border-color: #c4b5fd; background: rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(30, 64, 175, 0.05); min-width: 130px; height: 36px; padding: 0 10px; font-size: 12px; border-radius: 8px; color: #312e81; font-weight: 600; outline: none; cursor: pointer;">
+                    <option value="ALL">Tous les statuts</option>
+                    <option value="SOUMISE">Soumises</option>
+                    <option value="EN_COURS">En cours</option>
+                    <option value="ACCEPTEE">Acceptées</option>
+                    <option value="REFUSEE">Refusées</option>
+                </select>
             </div>
         </div>
 
         <div class="content">
 
-            <!-- Filtres -->
-            <div class="filters-bar">
+            <!-- Stats Dashboard -->
+            <div class="stats-cards-container">
+                <div class="stat-card">
+                    <div class="stat-icon icon-total">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-val">{{ dashboardStats().total }}</span>
+                        <span class="stat-lbl">Total Candidatures</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-pending">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-val">{{ dashboardStats().pending }}</span>
+                        <span class="stat-lbl">En Attente</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-accepted">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-val">{{ dashboardStats().accepted }}</span>
+                        <span class="stat-lbl">Acceptées</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-refused">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-val">{{ dashboardStats().refused }}</span>
+                        <span class="stat-lbl">Refusées</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtres / Search -->
+            <div class="filters-bar" style="margin-bottom: 24px;">
                 <div class="search-wrap">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8" />
@@ -92,14 +102,6 @@
                     <input class="search-input" type="text" placeholder="Rechercher un candidat ou une offre..."
                         [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
                 </div>
-
-                <select class="filter-select" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
-                    <option value="ALL">Tous les statuts</option>
-                    <option value="SOUMISE">Soumises</option>
-                    <option value="EN_COURS">En cours</option>
-                    <option value="ACCEPTEE">Acceptées</option>
-                    <option value="REFUSEE">Refusées</option>
-                </select>
             </div>
 
             <!-- Erreur -->
@@ -134,7 +136,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for (c of filteredCandidatures(); track c.id) {
+                        @for (c of paginatedCandidatures(); track c.id) {
                         <tr>
                             <td>
                                 <div class="candidate-info-wrapper">
@@ -147,7 +149,7 @@
                                     </div>
                                     <div class="candidate-info">
                                         <div class="candidate-name"
-                                            (click)="navigateTo('/recruteur/candidat/' + c.candidat?.id)"
+                                            (click)="navigateTo('/recruteur/candidatures/' + c.id)"
                                             style="cursor: pointer; color: var(--primary-blue);">
                                             {{ c.candidat?.prenom }} {{ c.candidat?.nom }}
                                         </div>
@@ -163,7 +165,7 @@
                             </td>
                             <td>
                                 <div class="score-badge" [ngClass]="getScoreClass(c.score)">
-                                    {{ c.score !== undefined ? (c.score | number:'1.0-0') + '%' : '—' }}
+                                    {{ c.score !== undefined ? (c.score | number:'1.1-1') + '%' : '—' }}
                                 </div>
                             </td>
                             <td>
@@ -173,10 +175,20 @@
                             </td>
                             <td class="actions-col">
                                 <div class="action-buttons">
-                                    <button class="btn-icon" title="Voir CV" (click)="viewCV(c)">
+                                    <button class="btn-icon" title="Voir Dossier"
+                                        (click)="navigateTo('/recruteur/candidatures/' + c.id)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                                             <polyline points="14 2 14 8 20 8" />
+                                            <circle cx="12" cy="13" r="3" />
+                                        </svg>
+                                    </button>
+                                    <button class="btn-icon" title="Voir CV" (click)="viewCV(c)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2-2h12a2 2 0 0 0 2-2V8z" />
+                                            <polyline points="14 2 14 8 20 8" />
+                                            <line x1="16" y1="13" x2="8" y2="13" />
+                                            <line x1="16" y1="17" x2="8" y2="17" />
                                         </svg>
                                     </button>
                                     <button class="btn-icon btn-accept" title="Accepter"
@@ -200,6 +212,39 @@
                 </table>
                 }
             </div>
+
+            <!-- Pagination -->
+            @if (totalPages() > 1) {
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Page <strong>{{ currentPage() }}</strong> sur {{ totalPages() }}
+                </div>
+                <div class="pagination-controls">
+                    <button class="btn-page" [disabled]="currentPage() === 1" (click)="prevPage()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+
+                    <div class="page-numbers">
+                        @for (page of paginationArray; track page) {
+                        <button class="btn-page-number" [class.active]="currentPage() === page"
+                            (click)="goToPage(page)">
+                            {{ page }}
+                        </button>
+                        }
+                    </div>
+
+                    <button class="btn-page" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            }
 
         </div>
     </div>

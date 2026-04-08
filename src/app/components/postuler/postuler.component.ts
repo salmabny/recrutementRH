@@ -5,10 +5,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CandidatService } from '../../services/candidat.service';
 import { AuthService } from '../../services/auth.service';
 
+import { SidebarCandidatComponent } from '../sidebar-candidat/sidebar-candidat.component';
+
 @Component({
   selector: 'app-postuler',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SidebarCandidatComponent],
   templateUrl: './postuler.component.html',
   styleUrls: ['./postuler.component.css']
 })
@@ -30,12 +32,25 @@ export class PostulerComponent implements OnInit {
   cvFileName = signal('');
   isDragging = signal(false);
   alreadyApplied = signal(false);
+  matchScore = signal<number>(0);
+  fullProfil = signal<any>(null);
 
   candidat = computed(() => this.authService.currentUser());
 
   ngOnInit(): void {
     this.buildForm();
     this.loadOffre();
+    this.loadFullProfil();
+  }
+
+  loadFullProfil(): void {
+    const user = this.candidat();
+    if (user) {
+      this.candidatService.getProfil(user.id).subscribe({
+        next: (data) => this.fullProfil.set(data),
+        error: (err) => console.error('Erreur chargement profil complet:', err)
+      });
+    }
   }
 
   buildForm(): void {
@@ -58,6 +73,7 @@ export class PostulerComponent implements OnInit {
         this.offre.set(data);
         this.isLoadingOffre.set(false);
         this.checkIfAlreadyApplied(id);
+        this.loadMatchScore(id);
       },
       error: (err) => {
         console.error('Erreur chargement offre:', err);
@@ -80,6 +96,20 @@ export class PostulerComponent implements OnInit {
         }
       },
       error: (err) => console.error('Erreur check already applied:', err)
+    });
+  }
+
+  loadMatchScore(offreId: number): void {
+    const user = this.candidat();
+    if (!user) return;
+
+    this.candidatService.getScoreCV(user.id, offreId).subscribe({
+      next: (res) => {
+        if (res && res.score !== undefined) {
+          this.matchScore.set(res.score);
+        }
+      },
+      error: (err) => console.error('Erreur chargement score match:', err)
     });
   }
 
@@ -124,14 +154,23 @@ export class PostulerComponent implements OnInit {
   }
 
   get checkInfos(): boolean {
-    return this.form.get('prenom')?.valid && this.form.get('email')?.valid || false;
+    const user = this.candidat();
+    return !!(this.form.get('prenom')?.valid && this.form.get('email')?.valid);
   }
-  get checkCV(): boolean { return !!this.cvFile(); }
+  get checkCV(): boolean {
+    return !!this.cvFile() || !!this.fullProfil()?.cv;
+  }
   get checkLettre(): boolean { return !!this.form.get('lettre')?.value?.trim(); }
 
   onSubmit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    if (!this.cvFile()) { this.errorMessage.set('Veuillez déposer votre CV.'); return; }
+
+    // Check if either a new file is uploaded OR a profile CV exists
+    if (!this.cvFile() && !this.fullProfil()?.cv) {
+      this.errorMessage.set('Veuillez déposer votre CV.');
+      this.isLoading.set(false);
+      return;
+    }
 
     this.isLoading.set(true);
     this.errorMessage.set('');
@@ -146,7 +185,10 @@ export class PostulerComponent implements OnInit {
       return;
     }
 
-    this.candidatService.postuler(currentOffre.id, currentUser.id, this.cvFile()!, lettre).subscribe({
+    // Determine the CV to send: the new one if present, otherwise null (handled by backend)
+    const fileToUpload = this.cvFile();
+
+    this.candidatService.postuler(currentUser.id, currentOffre.id, fileToUpload, lettre).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.successMsg.set('Candidature envoyée avec succès ! 🎉');
@@ -154,8 +196,14 @@ export class PostulerComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur postulation:', err);
-        this.errorMessage.set('Une erreur est survenue lors de l\'envoi de votre candidature.');
         this.isLoading.set(false);
+
+        if (err.status === 409) {
+          this.alreadyApplied.set(true);
+          this.errorMessage.set(err.error?.message || 'Tu as déjà postulé pour cette offre');
+        } else {
+          this.errorMessage.set('Une erreur est survenue lors de l\'envoi de votre candidature.');
+        }
       }
     });
   }

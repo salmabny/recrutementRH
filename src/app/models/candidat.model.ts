@@ -55,6 +55,7 @@ export interface Candidat {
   profileAnalysisResult?: string;
   experienceProf?: string;
   photoUrl?: string;
+  status?: string;
 }
 
 export interface AlerteEmploi {

@@ -25,6 +25,10 @@ export class CandidatService {
     return this.http.post<Candidat>(`${this.apiUrl}/users/${id}/upload-photo`, formData);
   }
 
+  deletePhoto(id: number): Observable<Candidat> {
+    return this.http.delete<Candidat>(`${this.apiUrl}/users/${id}/photo`);
+  }
+
   // ── CV Profile
   uploadProfileCV(id: number, file: File): Observable<Candidat> {
     const formData = new FormData();
@@ -44,6 +48,12 @@ export class CandidatService {
   getScoreCV(candidatId: number, offreId: number): Observable<{ score: number; details: any }> {
     return this.http.get<{ score: number; details: any }>(
       `${this.apiUrl}/candidats/${candidatId}/score/${offreId}`
+    );
+  }
+
+  getAllScoresCV(candidatId: number): Observable<{ [offreId: number]: number }> {
+    return this.http.get<{ [offreId: number]: number }>(
+      `${this.apiUrl}/candidats/${candidatId}/offres-scores`
     );
   }
 
@@ -84,9 +94,11 @@ export class CandidatService {
   }
 
   // ── Postuler
-  postuler(candidatId: number, offreId: number, cvFile: File, lettre?: string): Observable<any> {
+  postuler(candidatId: number, offreId: number, cvFile?: File | null, lettre?: string): Observable<any> {
     const formData = new FormData();
-    formData.append('cvFile', cvFile);
+    if (cvFile) {
+      formData.append('cvFile', cvFile);
+    }
     formData.append('jobOfferId', offreId.toString());
     formData.append('candidatId', candidatId.toString());
     if (lettre) formData.append('lettre', lettre);

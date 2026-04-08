@@ -16,8 +16,13 @@ export class LoginComponent {
   form: FormGroup;
   showPassword = signal(false);
   errorMessage = signal('');
-  isPendingAdmin = signal(false);  // Recruteur en attente d'approbation
-  needsVerification = signal(false); // Candidat non encore vérifié
+  isPendingAdmin = signal(false);
+  needsVerification = signal(false);
+  isSuspended = signal(false);
+  isRejected = signal(false);
+  showContactModal = signal(false);
+  contactMessage = signal('');
+  contactSuccess = signal(false);
   verificationCode = signal('');
   resendSuccess = signal(false);
 
@@ -48,9 +53,15 @@ export class LoginComponent {
     this.errorMessage.set('');
     this.isPendingAdmin.set(false);
     this.needsVerification.set(false);
+    this.isSuspended.set(false);
+    this.isRejected.set(false);
 
     this.authService.login(this.form.value).subscribe({
       next: (user) => {
+        if (user.mustChangePassword) {
+          this.router.navigate(['/update-password']);
+          return;
+        }
         if (user.role === 'ADMIN') {
           this.router.navigate(['/admin']);
         } else if (user.role === 'RECRUTEUR') {
@@ -62,13 +73,17 @@ export class LoginComponent {
         }
       },
       error: (err) => {
-        const msg: string = err?.message || '';
-        if (msg.includes('validation par l\'admin') || msg.includes('validation par l\'administration')) {
+        const msg: string = (err?.message || '').toLowerCase();
+        if (msg.includes('validation par l\'admin')) {
           this.isPendingAdmin.set(true);
-        } else if (msg.includes('vérifier votre email') || msg.includes('v\u00e9rifier votre email')) {
+        } else if (msg.includes('vérifier votre email')) {
           this.needsVerification.set(true);
+        } else if (msg.includes('suspendu')) {
+          this.isSuspended.set(true);
+        } else if (msg.includes('refusé') || msg.includes('supprimé')) {
+          this.isRejected.set(true);
         } else {
-          this.errorMessage.set(msg || 'Erreur de connexion');
+          this.errorMessage.set(err?.message || 'Erreur de connexion');
         }
       }
     });
@@ -110,11 +125,33 @@ export class LoginComponent {
   }
 
   goToSignup(): void {
-    this.router.navigate(['/signup']);
+    this.router.navigate(['/signup/candidat']);
   }
 
   isInvalid(field: string): boolean {
     const ctrl = this.form.get(field);
     return !!(ctrl && ctrl.invalid && ctrl.touched);
+  }
+
+  toggleContactModal(): void {
+    this.showContactModal.update(v => !v);
+    this.contactSuccess.set(false);
+    this.contactMessage.set('');
+  }
+
+  sendContactRequest(): void {
+    const email = this.form.get('email')?.value;
+    const message = this.contactMessage().trim();
+    if (!email || !message) return;
+
+    this.authService.contactAdmin(email, message).subscribe({
+      next: () => {
+        this.contactSuccess.set(true);
+        setTimeout(() => this.toggleContactModal(), 3000);
+      },
+      error: (err) => {
+        this.errorMessage.set(err?.message || 'Erreur lors de l\'envoi du message');
+      }
+    });
   }
 }

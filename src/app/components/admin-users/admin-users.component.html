@@ -4,13 +4,7 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
-      <div class="brand-role">Administration</div>
-      <div class="admin-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        </svg>
-        Super Admin
-      </div>
+      <div class="brand-sub-title">ADMINISTRATION</div>
     </div>
 
     <nav class="sidebar-nav">
@@ -34,20 +28,18 @@
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
         Recruteurs
-        @if (adminService.stats()) {
-        <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalRecruteurs }}</span>
-        }
+
       </div>
 
-      <div class="nav-item active">
+      <div class="nav-item" (click)="navigateTo('/admin/candidats')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
         </svg>
-        Tous les utilisateurs
-        @if (adminService.stats()) {
-        <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalUtilisateurs }}</span>
-        }
+        Candidats
+
       </div>
+
 
       <div class="nav-section-label">Contenu</div>
       <div class="nav-item" (click)="navigateTo('/admin/offres')">
@@ -56,37 +48,16 @@
           <polyline points="14 2 14 8 20 8" />
         </svg>
         Offres d'emploi
-        @if (adminService.stats()) {
-        <span class="nav-badge nav-badge-white">{{ adminService.stats()!.offresActives }}</span>
-        }
       </div>
-
-
-      <div class="nav-section-label">Système</div>
-      <div class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="20" x2="18" y2="10" />
-          <line x1="12" y1="20" x2="12" y2="4" />
-          <line x1="6" y1="20" x2="6" y2="14" />
-        </svg>
-        Statistiques
-      </div>
-
-      <!-- Déconnexion moved to footer -->
     </nav>
 
     <div class="sidebar-footer">
-      <div class="user-card">
-        @if (adminUser()?.photoUrl) {
-        <img class="user-avatar avatar-img" [src]="getPhotoUrl(adminUser()?.photoUrl)" alt="Admin">
-        } @else {
-        <div class="user-avatar">
-          {{ adminUser() ? (adminUser()!.prenom.charAt(0) + adminUser()!.nom.charAt(0)).toUpperCase() : 'AD' }}
-        </div>
-        }
-        <div class="user-info">
-          <div class="user-name">{{ adminUser() ? adminUser()!.prenom + ' ' + adminUser()!.nom : 'Admin' }}</div>
-          <div class="user-role-label">Super Administrateur</div>
+      <div class="user-card footer-minimal">
+        <div class="admin-badge-footer">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+          </svg>
+          SUPER ADMIN
         </div>
         <button class="btn-logout" (click)="logout()" title="Déconnexion">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -101,204 +72,311 @@
 
   <!-- ── Main -->
   <div class="main">
+    <div class="content no-topbar">
 
-    <!-- Topbar -->
-    <div class="topbar">
-      <div class="topbar-greeting-wrapper">
-        @if (adminUser()?.photoUrl) {
-        <img class="topbar-avatar avatar-img" [src]="getPhotoUrl(adminUser()?.photoUrl)" alt="Admin">
-        } @else {
-        <div class="topbar-avatar-initials">
-          {{ adminUser() ? (adminUser()!.prenom.charAt(0) + adminUser()!.nom.charAt(0)).toUpperCase() : 'AD' }}
-        </div>
-        }
-        <div>
-          <div class="topbar-title">Tous les utilisateurs</div>
-          <div class="topbar-subtitle">Bonjour, Administrateur {{ adminUser()?.prenom }}</div>
+      <!-- Welcome Header (Modern Banner) -->
+      <div class="welcome-banner">
+        <div class="welcome-info">
+          <h2>Tous les Utilisateurs</h2>
+          <p>
+            Gérez l'ensemble des comptes de la plateforme ·
+            <span class="hi-blue">{{ totalRecruteurs() }} recruteurs</span> ·
+            <span class="hi-green">{{ totalCandidats() }} candidats</span>
+          </p>
         </div>
       </div>
-      <div class="topbar-actions">
-        @if (hasSelection()) {
-        <button class="btn-sm btn-danger-sm" (click)="supprimerSelection()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-          </svg>
-          Supprimer ({{ selectedIds().length }})
-        </button>
-        }
-      </div>
-    </div>
-
-    <div class="content">
 
       <!-- Erreur -->
       @if (errorMessage()) {
       <div class="alert-error">{{ errorMessage() }}</div>
       }
 
-      <!-- Filtres -->
-      <div class="filters-bar">
-        <div class="search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input class="search-input" type="text" placeholder="Rechercher par nom, email..."
-            (input)="onSearch($event)" />
-        </div>
-        <select class="filter-select" (change)="onRoleChange($event)">
-          <option value="tous">Tous les rôles</option>
-          <option value="recruteur">Recruteur</option>
-          <option value="candidat">Candidat</option>
-        </select>
-        <select class="filter-select" (change)="onStatutChange($event)">
-          <option value="tous">Tous les statuts</option>
-          <option value="ACTIVE">Actif</option>
-          <option value="PENDING_ADMIN_VALIDATION">En attente</option>
-          <option value="SUSPENDU">Suspendu</option>
-        </select>
-      </div>
-
-      <!-- Table -->
-      <div class="card">
-        <div class="table-header">
-          <div class="th-check">
-            <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll()" />
-          </div>
-          <div>Utilisateur</div>
-          <div>Rôle</div>
-          <div>Statut</div>
-          <div>Inscription</div>
-          <div style="text-align:right;">Actions</div>
-        </div>
-
-        @if (isLoading()) {
-        <div class="loading">
-          <span class="spinner"></span>
-          Chargement...
-        </div>
-        } @else if (usersFiltres().length === 0) {
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <p>Aucun utilisateur trouvé</p>
-        </div>
-        } @else {
-        @for (user of usersFiltres(); track user.id) {
-        <div class="table-row" [class.row-selected]="isSelected(user.id)"
-          [class.row-pending]="user.status === 'PENDING_ADMIN_VALIDATION'"
-          [class.row-suspended]="user.status === 'SUSPENDU'">
-          <!-- Checkbox -->
-          <div class="td-check">
-            @if (user.id !== adminUser()?.id) {
-            <input type="checkbox" [checked]="isSelected(user.id)" (change)="toggleSelect(user.id)" />
-            }
-          </div>
-
-          <!-- Utilisateur -->
-          <div class="user-cell">
-            @if (user.photoUrl) {
-            <img class="avatar-sm avatar-img" [src]="getPhotoUrl(user.photoUrl)" alt="Photo">
-            } @else {
-            <div class="avatar-sm" [style.background]="user.role === 'ADMIN' ? '#e53e3e' : getAvatarColor(user.role)">
-              {{ getInitiales(user.prenom, user.nom) }}
-            </div>
-            }
-            <div class="user-cell-info">
-              <div class="name">
-                {{ user.prenom }} {{ user.nom }}
-                @if (user.id === adminUser()?.id) {
-                <span class="me-badge">(Moi)</span>
-                }
-              </div>
-              <div class="email">{{ user.email }}</div>
-            </div>
-          </div>
-
-          <!-- Rôle -->
-          <div>
-            @if (user.role === 'ADMIN') {
-            <span class="tag tag-red">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-              Administrateur
-            </span>
-            } @else if (user.role === 'RECRUTEUR') {
-            <span class="tag tag-purple">
+      <!-- Premium Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card stat-card-border pastel-purple">
+          <div class="stat-top">
+            <div class="stat-icon si-purple">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="7" width="20" height="14" rx="2" />
                 <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
               </svg>
-              Recruteur
-            </span>
-            } @else {
-            <span class="tag tag-blue">
+            </div>
+            <span class="stat-badge badge-purple">Recruteurs</span>
+          </div>
+          <div class="stat-value">{{ totalRecruteurs() }}</div>
+          <div class="stat-label">Comptes entreprises</div>
+        </div>
+
+        <div class="stat-card stat-card-border pastel-green">
+          <div class="stat-top">
+            <div class="stat-icon si-green">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-              Candidat
-            </span>
-            }
-          </div>
-
-          <!-- Statut -->
-          <div>
-            @if (user.status === 'ACTIVE') {
-            <span class="tag tag-green">Actif</span>
-            } @else if (user.status === 'PENDING_ADMIN_VALIDATION') {
-            <span class="tag tag-orange">En attente</span>
-            } @else if (user.status === 'SUSPENDU') {
-            <span class="tag tag-red">Suspendu</span>
-            }
-          </div>
-
-          <!-- Date -->
-          <div class="cell-muted">{{ user.dateInscription | date:'dd/MM/yyyy' }}</div>
-
-          <!-- Actions -->
-          <div class="row-actions">
-            @if (user.id !== adminUser()?.id) {
-            <!-- Voir profil -->
-            <div class="btn-icon btn-icon--primary" title="Voir profil"
-              (click)="navigateTo(user.role === 'CANDIDAT' ? '/admin/candidat/' + user.id : '/admin/recruteur/' + user.id)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
             </div>
-            <div class="btn-icon" [class.btn-icon--warning]="user.status !== 'SUSPENDU'"
-              [class.btn-icon--success]="user.status === 'SUSPENDU'"
-              [title]="user.status === 'SUSPENDU' ? 'Activer' : 'Suspendre'" (click)="toggleSuspension(user)">
-              @if (user.status === 'SUSPENDU') {
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-              } @else {
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="15" y1="9" x2="9" y2="15" />
-                <line x1=9 y1=9 x2=15 y2=15 />
-              </svg>
-              }
-            </div>
-            <div class="btn-icon btn-icon--danger" title="Supprimer" (click)="supprimer(user)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-              </svg>
-            </div>
-            }
+            <span class="stat-badge badge-green">Candidats</span>
           </div>
+          <div class="stat-value">{{ totalCandidats() }}</div>
+          <div class="stat-label">Profils talents</div>
         </div>
+
+        <div class="stat-card stat-card-border pastel-blue">
+          <div class="stat-top">
+            <div class="stat-icon si-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <span class="stat-badge badge-blue">Total</span>
+          </div>
+          <div class="stat-value">{{ usersFiltres().length }}</div>
+          <div class="stat-label">Utilisateurs filtrés</div>
+        </div>
+      </div>
+
+      <!-- Filters & Search -->
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input class="search-input" type="text" placeholder="Rechercher un utilisateur..."
+            (input)="onSearch($event)" />
+        </div>
+        <select class="filter-select" (change)="onRoleChange($event)">
+          <option value="tous">Tous les rôles</option>
+          <option value="RECRUTEUR">Recruteurs</option>
+          <option value="CANDIDAT">Candidats</option>
+        </select>
+        <select class="filter-select" (change)="onStatutChange($event)">
+          <option value="tous">Tous les statuts</option>
+          <option value="ACTIVE">✓ Actif</option>
+          <option value="PENDING_ADMIN_VALIDATION">◷ En attente</option>
+          <option value="SUSPENDU">✕ Suspendu</option>
+          <option value="DELETED">🗑 Supprimé</option>
+        </select>
+
+        @if (hasSelection()) {
+        <button class="btn-bulk-delete" (click)="supprimerSelection()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+          Supprimer ({{ selectedIds().length }})
+        </button>
         }
-        }
+      </div>
+
+      <div class="card card-compact">
+        <div class="table-container">
+          <!-- Header Labels -->
+          <div class="table-header-labels">
+            <div class="col-check"></div>
+            <div class="col-user">Utilisateur</div>
+            <div class="col-role">Rôle</div>
+            <div class="col-stat">Statut</div>
+            <div class="col-date">Inscription</div>
+            <div class="col-act" style="text-align:right;">Actions</div>
+          </div>
+
+          @if (isLoading()) {
+          <div class="loading-state">
+            <span class="spinner"></span>
+            Chargement...
+          </div>
+          } @else if (usersFiltres().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+              </svg>
+            </div>
+            <p>Aucun utilisateur trouvé</p>
+          </div>
+          } @else {
+          <div class="table-body">
+            @for (user of paginatedUsers(); track user.id) {
+            <div class="table-row" [class.row-selected]="isSelected(user.id)"
+              [class.row-deleted]="user.status === 'DELETED'">
+              <div class="td-check">
+                @if (user.id !== adminUser()?.id) {
+                <input type="checkbox" [checked]="isSelected(user.id)" (change)="toggleSelect(user.id)">
+                }
+              </div>
+
+              <!-- User -->
+              <div class="user-cell">
+                <div class="avatar-wrapper">
+                  @if (user.photoUrl) {
+                  <img class="avatar-sm" [src]="getPhotoUrl(user.photoUrl)" alt="Photo">
+                  } @else {
+                  <div class="avatar-initials" [style.background]="getUserColor(user)">
+                    {{ getInitiales(user.prenom, user.nom) }}
+                  </div>
+                  }
+                </div>
+                <div class="user-info">
+                  <div class="user-name">
+                    {{ user.prenom }} {{ user.nom }}
+                    @if (user.id === adminUser()?.id) {
+                    <span class="me-badge-inline">(Moi)</span>
+                    }
+                  </div>
+                  <div class="user-email">{{ user.email }}</div>
+                </div>
+              </div>
+
+              <!-- Rôle -->
+              <div class="role-cell">
+                @if (user.role === 'ADMIN') {
+                <span class="badge-role badge-role-admin">Admin</span>
+                } @else if (user.role === 'RECRUTEUR') {
+                <span class="badge-role badge-role-recruiter">Recruteur</span>
+                } @else {
+                <span class="badge-role badge-role-candidate">Candidat</span>
+                }
+              </div>
+
+              <!-- Statut -->
+              <div class="status-cell">
+                <span class="badge-status" [class]="getStatusClass(user.status)">
+                  {{ getStatusLabel(user.status) }}
+                </span>
+              </div>
+
+              <!-- Date -->
+              <div class="date-cell">
+                {{ user.dateInscription | date:'dd MMM yyyy' }}
+              </div>
+
+              <!-- Actions -->
+              <div class="row-actions">
+                @if (user.id !== adminUser()?.id) {
+                <button class="btn-row-action btn-view" title="Voir profil"
+                  (click)="navigateTo(user.role === 'CANDIDAT' ? '/admin/candidat/' + user.id : '/admin/recruteur/' + user.id)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+
+                <button class="btn-row-action" [class.btn-suspend]="user.status !== 'SUSPENDU'"
+                  [class.btn-activate]="user.status === 'SUSPENDU'"
+                  [title]="user.status === 'SUSPENDU' ? 'Activer' : 'Suspendre'" (click)="toggleSuspension(user)">
+                  @if (user.status === 'SUSPENDU') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                  }
+                </button>
+
+                @if (user.status !== 'DELETED') {
+                <button class="btn-row-action btn-delete" title="Supprimer" (click)="confirmDelete(user)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+                } @else {
+                <button class="btn-row-action btn-restore" title="Restaurer" (click)="restaurer(user)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="23 4 23 10 17 10" />
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                  </svg>
+                </button>
+                }
+                }
+              </div>
+            </div>
+            }
+          </div>
+
+          <!-- Pagination Bar -->
+          @if (totalPages() > 1) {
+          <div class="pagination-bar">
+            <div class="pagination-info">
+              Page <strong>{{ currentPage() }}</strong> sur {{ totalPages() }}
+            </div>
+            <div class="pagination-btns">
+              <button class="btn-page" [disabled]="currentPage() === 1" (click)="prevPage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+
+              @for (p of getPages(); track p) {
+              <button class="btn-page" [class.active]="p === currentPage()" (click)="goToPage(p)">
+                {{ p }}
+              </button>
+              }
+
+              <button class="btn-page" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          }
+          }
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal Suppression -->
+  @if (showDeleteModal()) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-premium-card animate-scale-up" style="max-width: 450px;" (click)="$event.stopPropagation()">
+      <div class="modal-header-premium" style="border-bottom: none; padding-bottom: 0;">
+        <div class="m-header-left">
+          <div class="m-icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </div>
+          <div class="m-title-group">
+            <h3 style="color: #ef4444; margin: 0; font-size: 18px;">Confirmer la suppression</h3>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body-premium" style="padding-top: 16px; padding-bottom: 24px;">
+        <p style="color: #475569; font-size: 14.5px; line-height: 1.5; margin: 0;">
+          Voulez-vous vraiment supprimer le compte de <strong>{{ userToDelete()?.prenom }} {{ userToDelete()?.nom
+            }}</strong> ?
+        </p>
+        <p style="color: #94a3b8; font-size: 13px; margin-top: 8px; font-style: italic; margin-bottom: 0;">
+          (Ce compte pourra être restauré plus tard depuis la liste des utilisateurs)
+        </p>
+      </div>
+      <div class="modal-footer-premium"
+        style="justify-content: center; gap: 12px; border-top: 1px solid #eef2f6; background: #fafafa; padding-top: 24px; padding-bottom: 24px;">
+        <button class="btn-cancel-modal" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-send-modal-premium"
+          style="background: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);" (click)="executeDelete()">
+          <div class="btn-content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Supprimer</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

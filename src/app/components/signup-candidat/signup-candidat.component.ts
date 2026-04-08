@@ -42,14 +42,20 @@ export class SignupCandidatComponent implements AfterViewInit {
       prenom: ['', [Validators.required, Validators.minLength(2)]],
       nom: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]]
-    });
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: this.passwordMatchValidator });
 
     this.form.get('password')!.valueChanges.subscribe(val => {
       this.passwordStrength.set(
         val ? this.authService.checkPasswordStrength(val) : null
       );
     });
+  }
+
+  passwordMatchValidator(g: FormGroup) {
+    return g.get('password')?.value === g.get('confirmPassword')?.value
+      ? null : { mismatch: true };
   }
 
   ngAfterViewInit(): void {
@@ -174,7 +180,7 @@ export class SignupCandidatComponent implements AfterViewInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/signup']);
+    this.router.navigate(['/login']);
   }
 
   switchToRecruteur(): void {

@@ -1,80 +1,14 @@
 <div class="dashboard-layout">
 
   <!-- ── Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
-      <div class="brand-role">Espace Candidat</div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section-label">Principal</div>
-      <div class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-        </svg>
-        Tableau de bord
-      </div>
-
-      <div class="nav-item" (click)="navigateTo('/candidat/offres')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        Offres d'emploi
-      </div>
-
-      <div class="nav-item" (click)="navigateTo('/candidat/candidatures')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-        </svg>
-        Mes candidatures
-      </div>
-
-      <div class="nav-section-label">Profil</div>
-
-      <div class="nav-item" (click)="navigateTo('/candidat/profil')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        Mon profil
-      </div>
-
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="user-card">
-        <div class="user-info">
-          <div class="user-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
-          <div class="user-role">Candidat</div>
-        </div>
-        <button class="btn-logout" (click)="logout()" title="Déconnexion">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </aside>
+  <app-sidebar-candidat [activeItem]="'dashboard'"></app-sidebar-candidat>
 
   <!-- ── Main -->
-  <div class="main">
+  <div class="main" style="flex:1; min-width:0; overflow:hidden;">
 
     <!-- Topbar -->
     <div class="topbar">
       <div class="topbar-greeting-wrapper">
-        @if (candidat()?.photoUrl) {
-        <img class="topbar-avatar avatar-img" [src]="getPhotoUrl(candidat()?.photoUrl)" alt="Profile">
-        } @else {
-        <div class="topbar-avatar-initials">{{ getInitiales() }}</div>
-        }
         <div>
           <div class="topbar-title">Tableau de bord</div>
           <div class="topbar-sub">
@@ -84,6 +18,48 @@
           </div>
         </div>
       </div>
+
+      <div class="topbar-actions">
+        <div class="notification-wrapper">
+          <button class="btn-notification" (click)="toggleNotifications(); $event.stopPropagation()"
+            [class.has-unread]="unreadCount > 0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span class="btn-text">Notifications</span>
+            @if (unreadCount > 0) {
+            <span class="btn-badge">{{ unreadCount }}</span>
+            }
+          </button>
+
+          <!-- Dropdown -->
+          @if (showNotifications()) {
+          <div class="notifications-dropdown" (click)="$event.stopPropagation()">
+            <div class="dropdown-header">
+              <h3>Notifications</h3>
+              <button class="btn-link" (click)="markAllAsRead()">Tout marquer comme lu</button>
+            </div>
+            <div class="dropdown-content">
+              @if (activiteRecente.length === 0) {
+              <div class="empty-notif">Aucune notification</div>
+              } @else {
+              @for (item of activiteRecente; track $index) {
+              <div class="notif-item" [class.unread]="!item.read" (click)="markAsRead(item.id)">
+                <div class="notif-dot {{ item.couleur }}"></div>
+                <div class="notif-body">
+                  <div class="notif-text" [innerHTML]="item.texte"></div>
+                  <div class="notif-time">{{ item.temps }}</div>
+                </div>
+              </div>
+              }
+              }
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+
     </div>
 
     <div class="content">
@@ -95,119 +71,155 @@
       </div>
       } @else {
 
-      <!-- Stats -->
+      <!-- Stats Quick View -->
       <div class="stats-grid">
-        <div class="stat-card indigo">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+        <div class="stat-mini indigo">
+          <div class="stat-mini-info">
+            <span class="stat-mini-label">Offres</span>
+            <span class="stat-mini-val">{{ totalOffres }}</span>
           </div>
-          <div class="stat-value">{{ totalOffres }}</div>
-          <div class="stat-label">Offres disponibles</div>
-          <div class="stat-change up">↑ Nouveautés dispos</div>
         </div>
-
-        <div class="stat-card lavender">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            </svg>
+        <div class="stat-mini lavender">
+          <div class="stat-mini-info">
+            <span class="stat-mini-label">Candidatures</span>
+            <span class="stat-mini-val">{{ totalCandidatures }}</span>
           </div>
-          <div class="stat-value">{{ totalCandidatures }}</div>
-          <div class="stat-label">Candidatures envoyées</div>
-          <div class="stat-change up">+1 cette semaine</div>
         </div>
-
-        <div class="stat-card mint">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20,6 9,17 4,12" />
-            </svg>
+        <div class="stat-mini mint">
+          <div class="stat-mini-info">
+            <span class="stat-mini-label">En cours</span>
+            <span class="stat-mini-val">{{ enCours }}</span>
           </div>
-          <div class="stat-value">{{ enCours }}</div>
-          <div class="stat-label">En cours d'examen</div>
-          <div class="stat-change up">Bonne nouvelle !</div>
         </div>
-
-        <div class="stat-card amber">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
+        <div class="stat-mini amber">
+          <div class="stat-mini-info">
+            <span class="stat-mini-label">Score CV</span>
+            <span class="stat-mini-val">{{ meilleurScore | number:'1.0-0' }}%</span>
           </div>
-          <div class="stat-value">{{ meilleurScore }}</div>
-          <div class="stat-label">Meilleur score CV</div>
-          <div class="stat-change warn">/ 100 pts</div>
         </div>
       </div>
 
-      <!-- Two col -->
-      <div class="two-col">
+      <!-- Main Dashboard Grid -->
+      <div class="dashboard-grid">
 
-        <!-- Offres suggérées -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <!-- 1. Activité des candidatures (Chart) -->
+        <div class="card chart-card">
+          <div class="card-header-slim">
+            <div class="card-title-slim">Activité des candidatures</div>
+          </div>
+          <div class="chart-container">
+            @if (graphiqueActivite().length === 0 || candidatures().length === 0) {
+            <div class="chart-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 12h18M3 6h18M3 18h18" />
               </svg>
-              Offres suggérées pour vous
+              <span>Aucune candidature pour le moment</span>
             </div>
-            <div class="card-link" (click)="navigateTo('/candidat/offres')">
-              Voir tout →
-            </div>
-          </div>
-
-          @for (offre of offresSuggeresMock; track offre.title) {
-          <div class="suggest-item" (click)="navigateTo('/candidat/offres')">
-            @if (offre.photoUrl) {
-            <img class="suggest-logo avatar-img" [src]="getPhotoUrl(offre.photoUrl)" alt="Logo">
             } @else {
-            <div class="suggest-logo" [style.background]="offre.color">
-              {{ offre.initiales }}
-            </div>
-            }
-            <div class="suggest-info">
-              <div class="suggest-title">{{ offre.title }}</div>
-              <div class="suggest-sub">
-                {{ offre.recruiterName }} · {{ offre.company }}
+            <div class="chart-bars">
+              @for (item of graphiqueActivite(); track item.mois) {
+              <div class="chart-column">
+                <div class="bar-stack">
+                  <div class="bar-refusee"
+                    [style.height.%]="item.refusee > 0 ? (item.refusee / (item.total || 1)) * 100 : 0"
+                    [title]="'Refusée: ' + item.refusee"></div>
+                  <div class="bar-soumise"
+                    [style.height.%]="item.soumise > 0 ? (item.soumise / (item.total || 1)) * 100 : 0"
+                    [title]="'Soumise: ' + item.soumise"></div>
+                  <div class="bar-acceptee"
+                    [style.height.%]="item.acceptee > 0 ? (item.acceptee / (item.total || 1)) * 100 : 0"
+                    [title]="'Acceptée: ' + item.acceptee"></div>
+                </div>
+                <div class="bar-label">{{ item.mois }}</div>
               </div>
+              }
             </div>
-          </div>
-          }
-        </div>
-
-        <!-- Right col -->
-        <div class="right-col">
-
-          <!-- Mini profil -->
-
-          <!-- Activité récente -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                Activité récente
-              </div>
-            </div>
-            @for (item of activiteRecente; track item.temps) {
-            <div class="activity-item">
-              <div class="act-dot {{ item.couleur }}"></div>
-              <div class="act-text" [innerHTML]="item.texte"></div>
-              <div class="act-time">{{ item.temps }}</div>
+            <div class="chart-legend">
+              <span class="legend-item"><i class="dot mint"></i> Acceptée</span>
+              <span class="legend-item"><i class="dot lavender"></i> Soumise</span>
+              <span class="legend-item"><i class="dot coral"></i> Refusée</span>
             </div>
             }
           </div>
-
         </div>
+
+        <!-- 2. Activité récente -->
+        <div class="card activity-card">
+          <div class="card-header-slim">
+            <div class="card-title-slim">Activité récente</div>
+          </div>
+          <div class="activity-list-v2">
+            @for (item of activiteRecente; track $index) {
+            <div class="activity-row" [class.unread]="!item.read" (click)="markAsRead(item.id)">
+              <div class="activity-main">
+                <i class="dot {{ item.couleur }}"></i>
+                <div class="activity-row-content">
+                  <span [innerHTML]="item.texte"></span>
+                </div>
+              </div>
+              <span class="activity-time-right">{{ item.temps }}</span>
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- 3. Complétion du profil -->
+        <div class="card profile-completion-card">
+          <div class="card-header-slim">
+            <div class="card-title-slim">Complétion du profil</div>
+          </div>
+          <div class="completion-content">
+            <div class="completion-header">
+              <span class="completion-label">Profil complété à</span>
+              <span class="completion-value">{{ completionProfil().pourcentage }}%</span>
+            </div>
+            <div class="progress-bar-v2">
+              <div class="progress-fill" [style.width.%]="completionProfil().pourcentage"></div>
+            </div>
+            <ul class="completion-checklist">
+              @for (item of completionProfil().items; track item.id) {
+              <li class="checklist-item" [class.completed]="item.completed">
+                <span class="check-icon">
+                  @if (item.completed) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  }
+                </span>
+                {{ item.label }}
+              </li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <!-- 4. Offres recommandées -->
+        <div class="card recommendations-card">
+          <div class="card-header-slim header-with-action">
+            <div class="card-title-slim">Offres recommandées pour vous</div>
+            <button class="btn-see-all" (click)="viewAllRecommended()">Voir tout +</button>
+          </div>
+          <div class="recommendations-list">
+            @for (offre of offresSuggeresMock; track offre.id) {
+            <div class="recommendation-item" (click)="navigateTo('/candidat/offres')">
+              <div class="rec-logo" [style.background]="offre.color" [style.color]="offre.textColor">
+                {{ offre.initiales }}
+              </div>
+              <div class="rec-info">
+                <div class="rec-title">{{ offre.title }}</div>
+                <div class="rec-sub">{{ offre.company }} · {{ offre.location }}</div>
+              </div>
+              <div class="rec-match">{{ offre.match }}%</div>
+            </div>
+            }
+          </div>
+        </div>
+
       </div>
       }
     </div>

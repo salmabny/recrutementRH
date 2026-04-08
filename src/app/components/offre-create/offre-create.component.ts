@@ -5,11 +5,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { OffreService } from '../../services/offre.service';
 import { AuthService } from '../../services/auth.service';
 import { Keyword, KeywordType } from '../../models/keyword.model';
+import { SidebarRecruteurComponent } from '../sidebar-recruteur/sidebar-recruteur.component';
 
 @Component({
   selector: 'app-offre-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SidebarRecruteurComponent],
   templateUrl: './offre-create.component.html',
   styleUrls: ['./offre-create.component.css']
 })
@@ -36,6 +37,11 @@ export class OffreCreateComponent implements OnInit {
   // ExpField input
   expFieldInput = signal('');
   expFields = signal<string[]>([]);
+
+  categories = [
+    'Informatique', 'Marketing', 'Finance', 'RH', 'Vente',
+    'Santé', 'Éducation', 'Design', 'Ingénierie', 'Autre'
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -74,6 +80,7 @@ export class OffreCreateComponent implements OnInit {
     this.form = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(5)]],
       location: ['', Validators.required],
+      category: ['', Validators.required],
       educationLevel: ['', Validators.required],
       experienceYears: [1, [Validators.required, Validators.min(0)]],
       description: ['', [Validators.required, Validators.minLength(20)]],
@@ -99,6 +106,7 @@ export class OffreCreateComponent implements OnInit {
         this.form.patchValue({
           title: offre.title,
           location: offre.location,
+          category: offre.category || '',
           educationLevel: offre.educationLevel,
           experienceYears: offre.experienceYears,
           description: offre.description,
@@ -237,9 +245,7 @@ export class OffreCreateComponent implements OnInit {
   }
 
   logout(): void {
-    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      this.authService.logout();
-    }
+    this.authService.logout();
   }
 
   navigateTo(path: string): void {

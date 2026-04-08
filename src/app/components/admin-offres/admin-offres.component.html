@@ -4,17 +4,11 @@
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
-            <div class="brand-role">Administration</div>
-            <div class="admin-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-                Super Admin
-            </div>
+            <div class="brand-sub-title">ADMINISTRATION</div>
         </div>
 
         <nav class="sidebar-nav">
-            <div class="nav-section-label">Tableau de bord</div>
+            <div class="nav-section-label">TABLEAU DE BORD</div>
             <div class="nav-item" (click)="navigateTo('/admin')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="7" height="7" />
@@ -25,7 +19,7 @@
                 Vue globale
             </div>
 
-            <div class="nav-section-label">Utilisateurs</div>
+            <div class="nav-section-label">UTILISATEURS</div>
             <div class="nav-item" (click)="navigateTo('/admin/recruteurs')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -34,62 +28,41 @@
                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
                 Recruteurs
-                @if (adminService.stats()) {
-                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalRecruteurs }}</span>
-                }
+
             </div>
 
-            <div class="nav-item" (click)="navigateTo('/admin/users')">
+            <div class="nav-item" (click)="navigateTo('/admin/candidats')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                 </svg>
-                Tous les utilisateurs
-                @if (adminService.stats()) {
-                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.totalUtilisateurs }}</span>
-                }
+                Candidats
+
             </div>
 
-            <div class="nav-section-label">Contenu</div>
+            <div class="nav-section-label">CONTENU</div>
             <div class="nav-item active">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                 </svg>
                 Offres d'emploi
-                @if (adminService.stats()) {
-                <span class="nav-badge nav-badge-white">{{ adminService.stats()!.offresActives }}</span>
-                }
+
             </div>
 
 
-            <div class="nav-section-label">Système</div>
-            <div class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                </svg>
-                Statistiques
-            </div>
+
 
             <!-- Déconnexion moved to footer -->
         </nav>
 
         <div class="sidebar-footer">
-            <div class="user-card">
-                @if (adminUser()?.photoUrl) {
-                <img class="user-avatar avatar-img" [src]="getPhotoUrl(adminUser()?.photoUrl)" alt="Admin">
-                } @else {
-                <div class="user-avatar">
-                    {{ adminUser() ? (adminUser()!.prenom.charAt(0) + adminUser()!.nom.charAt(0)).toUpperCase() : 'AD'
-                    }}
-                </div>
-                }
-                <div class="user-info">
-                    <div class="user-name">{{ adminUser() ? adminUser()!.prenom + ' ' + adminUser()!.nom : 'Admin' }}
-                    </div>
-                    <div class="user-role-label">Super Administrateur</div>
+            <div class="user-card footer-minimal">
+                <div class="admin-badge-footer">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                    </svg>
+                    SUPER ADMIN
                 </div>
                 <button class="btn-logout" (click)="logout()" title="Déconnexion">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -104,26 +77,79 @@
 
     <!-- ── Main -->
     <div class="main">
-
-        <!-- Topbar -->
-        <div class="topbar">
-            <div class="topbar-greeting-wrapper">
-                @if (adminUser()?.photoUrl) {
-                <img class="topbar-avatar avatar-img" [src]="getPhotoUrl(adminUser()?.photoUrl)" alt="Admin">
-                } @else {
-                <div class="topbar-avatar-initials">
-                    {{ adminUser() ? (adminUser()!.prenom.charAt(0) + adminUser()!.nom.charAt(0)).toUpperCase() : 'AD'
-                    }}
-                </div>
-                }
-                <div>
-                    <div class="topbar-title">Gestion des Offres d'Emploi</div>
-                    <div class="topbar-subtitle">Bonjour, Administrateur {{ adminUser()?.prenom }}</div>
+        <div class="content no-topbar">
+            <!-- Welcome Banner -->
+            <div class="welcome-banner">
+                <div class="welcome-info">
+                    <h2>Gestion des Offres d'Emploi</h2>
+                    <p>
+                        Supervisez les opportunités ·
+                        <span class="hi-blue">{{ totalOffres() }} au total</span> ·
+                        <span class="hi-green">{{ totalPubliees() }} publiées</span> ·
+                        <span class="hi-orange">{{ totalFermees() }} fermées</span>
+                    </p>
                 </div>
             </div>
-        </div>
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card card-total">
+                    <div class="stat-top">
+                        <div class="stat-icon icon-blue">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                        </div>
+                        <span class="stat-badge">+{{ totalOffres() }}</span>
+                    </div>
+                    <div class="stat-value">{{ totalOffres() }}</div>
+                    <div class="stat-label">Total des offres</div>
+                </div>
 
-        <div class="content">
+                <div class="stat-card card-active">
+                    <div class="stat-top">
+                        <div class="stat-icon icon-green">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ totalPubliees() }}</div>
+                    <div class="stat-label">Offres Publiées</div>
+                </div>
+
+                <div class="stat-card card-closed">
+                    <div class="stat-top">
+                        <div class="stat-icon icon-orange">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="15" y1="9" x2="9" y2="15" />
+                                <line x1="9" y1="9" x2="15" y2="15" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ totalFermees() }}</div>
+                    <div class="stat-label">Offres Fermées</div>
+                </div>
+            </div>
+
+            <div class="filters-bar">
+                <div class="search-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Rechercher une offre par titre, ville..."
+                        (input)="onSearch($event)">
+                </div>
+                <select class="filter-select" (change)="onStatutChange($event)">
+                    <option value="tous">Tous les statuts</option>
+                    <option value="PUBLIEE">Publiée</option>
+                    <option value="FERMEE">Fermée</option>
+                    <option value="BROUILLON">Brouillon</option>
+                </select>
+            </div>
 
             @if (errorMessage()) {
             <div class="alert-error">{{ errorMessage() }}</div>
@@ -131,108 +157,191 @@
 
 
             <!-- Table / Grid -->
-            <div class="card">
-                <div class="table-header">
-                    <div>Offre d'emploi</div>
-                    <div>Recruteur / Entreprise</div>
-                    <div>Statut</div>
-                    <div>Date de publication</div>
-                    <div>Candidatures</div>
-                    <div style="text-align:right;">Actions</div>
-                </div>
+            <div class="card card-compact">
+                <div class="table-container">
+                    <!-- Header Labels -->
+                    <div class="table-header-labels">
+                        <div class="col-off">Offre d'emploi</div>
+                        <div class="col-rec">Recruteur / Entreprise</div>
+                        <div class="col-sta">Statut</div>
+                        <div class="col-dat">Publication</div>
+                        <div class="col-can">Candidatures</div>
+                        <div class="col-act" style="text-align:right;">Actions</div>
+                    </div>
 
-                @if (isLoading()) {
-                <div class="loading">
-                    <span class="spinner"></span> Chargement...
-                </div>
-                } @else if (offresFiltrees().length === 0) {
-                <div class="empty-state">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    </svg>
-                    <p>Aucune offre trouvée</p>
-                </div>
-                } @else {
-                @for (offre of offresFiltrees(); track offre.id) {
-                <div class="table-row">
-                    <div class="offre-cell">
-                        @if (offre.imageUrl) {
-                        <img [src]="offre.imageUrl" class="offre-thumb" alt="Thumb">
-                        } @else {
-                        <div class="offre-thumb-placeholder">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            </svg>
-                        </div>
-                        }
-                        <div class="offre-info">
-                            <div class="title">{{ offre.title }}</div>
-                            <div class="location">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    style="width:12px;height:12px">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z" />
-                                    <circle cx="12" cy="10" r="3" />
-                                </svg>
-                                {{ offre.location }}
+                    @if (isLoading()) {
+                    <div class="loading">
+                        <span class="spinner"></span> Chargement...
+                    </div>
+                    } @else if (offresFiltrees().length === 0) {
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        <p>Aucune offre ne correspond à ce filtre pour le moment.</p>
+                    </div>
+                    } @else {
+                    <div class="table-body">
+                        @for (offre of paginatedOffres(); track offre.id) {
+                        <div class="table-row">
+                            <div class="offre-cell">
+                                <div class="offre-thumb-wrapper">
+                                    @if (offre.imageUrl) {
+                                    <img [src]="offre.imageUrl" class="offre-thumb" alt="Thumb">
+                                    } @else {
+                                    <div class="offre-thumb-placeholder">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        </svg>
+                                    </div>
+                                    }
+                                </div>
+                                <div class="offre-info">
+                                    <div class="offre-title">{{ offre.title }}</div>
+                                    <div class="offre-meta">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z" />
+                                            <circle cx="12" cy="10" r="3" />
+                                        </svg>
+                                        {{ offre.location }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="user-cell">
+                                @if (offre.recruteur?.photoUrl) {
+                                <img class="avatar-sm" [src]="getPhotoUrl(offre.recruteur?.photoUrl)" alt="Recruteur">
+                                } @else {
+                                <div class="avatar-initials"
+                                    style="background: linear-gradient(135deg,#7b61ff,#4361ee)">
+                                    {{ (offre.recruteur?.prenom?.[0] || 'R') + (offre.recruteur?.nom?.[0] || '') }}
+                                </div>
+                                }
+                                <div class="user-cell-info">
+                                    <div class="user-name">{{ offre.recruteur?.prenom }} {{ offre.recruteur?.nom }}
+                                    </div>
+                                    <div class="user-email text-truncate" style="max-width: 150px;">{{
+                                        offre.recruteur?.entreprise }}</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                @if (offre.status === 'PUBLIEE') {
+                                <span class="badge-status status-active">Publiée</span>
+                                } @else if (offre.status === 'FERMEE') {
+                                <span class="badge-status status-suspended">Fermée</span>
+                                } @else {
+                                <span class="badge-status status-pending">Brouillon</span>
+                                }
+                            </div>
+
+                            <div class="date-cell">{{ offre.publicationDate | date:'dd MMM yyyy' }}</div>
+
+                            <div class="apps-cell">
+                                <span class="apps-count">{{ offre.nombreCandidatures || 0 }}</span>
+                                <span class="apps-label">dossiers</span>
+                            </div>
+
+                            <div class="row-actions">
+                                <button class="btn-row-action btn-view" title="Voir l'offre"
+                                    (click)="navigateTo('/candidat/offres/' + offre.id)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </button>
+
+                                <button class="btn-row-action btn-delete" title="Supprimer l'offre"
+                                    (click)="confirmDelete(offre)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path
+                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="user-cell">
-                        @if (offre.recruteur?.photoUrl) {
-                        <img class="avatar-sm avatar-img" [src]="getPhotoUrl(offre.recruteur?.photoUrl)"
-                            alt="Recruteur">
-                        } @else {
-                        <div class="avatar-sm" style="background: linear-gradient(135deg,#7b61ff,#4361ee)">
-                            {{ (offre.recruteur?.prenom?.[0] || 'R') + (offre.recruteur?.nom?.[0] || '') }}
-                        </div>
-                        }
-                        <div class="user-cell-info">
-                            <div class="cell-text">{{ offre.recruteur?.prenom }} {{ offre.recruteur?.nom }}</div>
-                            <div class="cell-muted">{{ offre.recruteur?.entreprise }}</div>
-                        </div>
-                    </div>
-
-                    <div>
-                        @if (offre.status === 'PUBLIEE') {
-                        <span class="tag tag-green">Publiée</span>
-                        } @else if (offre.status === 'FERMEE') {
-                        <span class="tag tag-red">Fermée</span>
-                        } @else {
-                        <span class="tag tag-gray">Brouillon</span>
                         }
                     </div>
 
-                    <div class="cell-muted">{{ offre.publicationDate }}</div>
-
-                    <div class="cell-text">
-                        <strong>{{ offre.nombreCandidatures || 0 }}</strong>
-                        <span class="cell-muted"> dossiers</span>
-                    </div>
-
-                    <div class="row-actions">
-                        <!-- Voir detail (admin peut vouloir voir) -->
-                        <div class="btn-icon" title="Voir l'offre" (click)="navigateTo('/candidat/offres/' + offre.id)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
+                    <!-- Pagination Bar -->
+                    @if (offresFiltrees().length > 0) {
+                    <div class="pagination-bar">
+                        <div class="pagination-info">
+                            Page <strong>{{ currentPage() }}</strong> sur {{ totalPages() }}
                         </div>
+                        <div class="pagination-btns">
+                            <button class="btn-page" [disabled]="currentPage() === 1" (click)="prevPage()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15 18 9 12 15 6" />
+                                </svg>
+                            </button>
 
-                        <!-- Supprimer -->
-                        <div class="btn-icon btn-icon--danger" title="Supprimer l'offre" (click)="supprimer(offre)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path
-                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                            </svg>
+                            @for (p of getPages(); track p) {
+                            <button class="btn-page" [class.active]="p === currentPage()" (click)="goToPage(p)">
+                                {{ p }}
+                            </button>
+                            }
+
+                            <button class="btn-page" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
+                    }
+                    }
                 </div>
-                }
-                }
-            </div>
 
+            </div>
         </div>
     </div>
+
+    <!-- Modal Suppression -->
+    @if (showDeleteModal()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+        <div class="modal-premium-card animate-scale-up" style="max-width: 450px;" (click)="$event.stopPropagation()">
+            <div class="modal-header-premium" style="border-bottom: none; padding-bottom: 0;">
+                <div class="m-header-left">
+                    <div class="m-icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="m-title-group">
+                        <h3 style="color: #ef4444; margin: 0; font-size: 18px;">Confirmer la suppression</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body-premium" style="padding-top: 16px; padding-bottom: 24px;">
+                <p style="color: #475569; font-size: 14.5px; line-height: 1.5; margin: 0;">
+                    Voulez-vous vraiment supprimer l'offre "<strong>{{ offreToDelete()?.title }}</strong>" ?
+                </p>
+                <p style="color: #94a3b8; font-size: 13px; margin-top: 8px; font-style: italic; margin-bottom: 0;">
+                    (Cette action est irréversible et retirera l'offre de la plateforme)
+                </p>
+            </div>
+            <div class="modal-footer-premium"
+                style="justify-content: center; gap: 12px; border-top: 1px solid #eef2f6; background: #fafafa; padding-top: 24px; padding-bottom: 24px;">
+                <button class="btn-cancel-modal" (click)="cancelDelete()">Annuler</button>
+                <button class="btn-send-modal-premium"
+                    style="background: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);"
+                    (click)="executeDelete()">
+                    <div class="btn-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                        <span>Supprimer</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    }
 </div>

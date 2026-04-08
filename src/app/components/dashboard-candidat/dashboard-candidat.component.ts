@@ -3,12 +3,15 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CandidatService } from '../../services/candidat.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 import { Candidat } from '../../models/candidat.model';
+
+import { SidebarCandidatComponent } from '../sidebar-candidat/sidebar-candidat.component';
 
 @Component({
   selector: 'app-dashboard-candidat',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SidebarCandidatComponent],
   templateUrl: './dashboard-candidat.component.html',
   styleUrls: ['./dashboard-candidat.component.css']
 })
@@ -17,21 +20,48 @@ export class DashboardCandidatComponent implements OnInit {
   private candidatService = inject(CandidatService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  public notificationService = inject(NotificationService);
 
   candidat = signal<Candidat | null>(null);
   candidatures = signal<any[]>([]);
   offres = signal<any[]>([]);
   isLoading = signal(true);
+  showNotifications = signal(false);
 
   // Activité & Suggestions
-  activiteRecente: any[] = [];
   offresSuggeresMock: any[] = [];
+
+  // Graphique d'activité (calculé depuis les vraies candidatures)
+  graphiqueActivite = signal<any[]>([]);
+
+  // Complétion du profil
+  completionProfil = signal<{ pourcentage: number, items: any[] }>({
+    pourcentage: 0,
+    items: []
+  });
 
   // Stats calculées
   get totalOffres() { return this.offres().length; }
   get totalCandidatures() { return this.candidatures().length; }
   get enCours() { return this.candidatures().filter(c => c.status === 'EN_COURS' || c.status === 'SOUMISE').length; }
   get meilleurScore() { return this.candidatures().length ? Math.max(...this.candidatures().map(c => c.score ?? 0)) : 0; }
+
+  // Adapt notifications for the dashboard view
+  get activiteRecente() {
+    return this.notificationService.notifications().slice(0, 3).map(n => {
+      let couleur = 'lavender';
+      if (n.message.includes('acceptée')) couleur = 'mint';
+      if (n.message.includes('refusée')) couleur = 'coral';
+
+      return {
+        id: n.id,
+        texte: n.message,
+        temps: this.notificationService.formatTime(n.time),
+        read: n.read,
+        couleur: couleur
+      };
+    });
+  }
 
   ngOnInit(): void {
     const user = this.authService.currentUser();
@@ -49,6 +79,7 @@ export class DashboardCandidatComponent implements OnInit {
     this.candidatService.getProfil(userId).subscribe({
       next: (data) => {
         this.candidat.set(data);
+        this.calculerCompletionProfil(data);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false)
@@ -58,7 +89,8 @@ export class DashboardCandidatComponent implements OnInit {
     this.candidatService.getMesCandidatures(userId).subscribe({
       next: (data) => {
         this.candidatures.set(data);
-        this.generateRecentActivity(data);
+        this.notificationService.seedFromCandidaturesForCandidat(data);
+        this.calculerGraphiqueActivite(data);
       },
       error: () => this.candidatures.set([])
     });
@@ -73,63 +105,99 @@ export class DashboardCandidatComponent implements OnInit {
     });
   }
 
-  generateRecentActivity(candidatures: any[]): void {
-    const activity = candidatures.slice(0, 3).map(c => {
-      let color = 'd-blue';
-      let text = `Candidature envoyée pour <strong>${c.jobOffer?.title}</strong>`;
 
-      if (c.status === 'REFUSEE') {
-        color = 'd-orange';
-        text = `Votre candidature pour <strong>${c.jobOffer?.title}</strong> a été refusée`;
-      } else if (c.status === 'VALIDEE' || c.status === 'ACCEPTEE') {
-        color = 'd-green';
-        text = `Bravo ! Votre candidature pour <strong>${c.jobOffer?.title}</strong> a été acceptée`;
-      }
+  toggleNotifications(): void {
+    this.showNotifications.update(v => !v);
+  }
 
-      const dateToDisplay = c.lastStatusUpdate || c.dateCandidature || 'Récemment';
-      let formattedDate = dateToDisplay;
-      if (dateToDisplay !== 'Récemment') {
-        try {
-          formattedDate = new Date(dateToDisplay).toLocaleDateString('fr-FR', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-          });
-        } catch (e) {
-          formattedDate = 'Récemment';
-        }
-      }
+  get unreadCount(): number {
+    return this.notificationService.unreadCount();
+  }
 
-      return { color, texte: text, temps: formattedDate };
-    });
+  markAllAsRead(): void {
+    this.notificationService.markAllAsRead();
+  }
 
-    if (activity.length === 0) {
-      activity.push({ color: 'd-blue', texte: 'Bienvenue ! Postulez à votre première offre pour voir votre activité.', temps: 'Maintenant' });
-    }
-
-    this.activiteRecente = activity;
+  markAsRead(id: number): void {
+    this.notificationService.markAsRead(id);
   }
 
   generateSuggestedOffres(allOffres: any[]): void {
-    const colors = [
-      'linear-gradient(135deg,#4361ee,#7b61ff)',
-      'linear-gradient(135deg,#38a169,#2d9250)',
-      'linear-gradient(135deg,#ed8936,#dd6b20)',
-      'linear-gradient(135deg,#7b61ff,#6b51ef)'
+    const colors = ['#4361ee20', '#38a16920', '#ed893620', '#7b61ff20'];
+    const textColors = ['#4361ee', '#38a169', '#ed8936', '#7b61ff'];
+
+    this.offresSuggeresMock = allOffres.slice(0, 3).map((o, idx) => {
+      // Utilise le score réel de l'offre si disponible, sinon calcule
+      const realScore = o.scoreMatch ?? o.matchScore ?? o.score ?? null;
+      const matchPct = realScore !== null
+        ? Math.min(100, Math.round(realScore))
+        : Math.floor(Math.random() * 20) + 70;
+
+      return {
+        id: o.id,
+        initiales: o.title?.substring(0, 1).toUpperCase() || 'J',
+        color: colors[idx % colors.length],
+        textColor: textColors[idx % textColors.length],
+        title: o.title,
+        company: o.recruteur?.entreprise || 'SmartHiring Partner',
+        recruiterName: o.recruteur ? `${o.recruteur.prenom} ${o.recruteur.nom}` : 'Recruteur',
+        photoUrl: o.recruteur?.photoUrl,
+        location: o.location || 'À distance',
+        contrat: o.typeContrat || 'CDI',
+        match: matchPct
+      };
+    });
+  }
+
+  calculerGraphiqueActivite(candidatures: any[]): void {
+    const moisLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const now = new Date();
+
+    // Créer les 6 derniers mois
+    const derniers6Mois: { mois: string, annee: number, moisNum: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      derniers6Mois.push({
+        mois: moisLabels[d.getMonth()],
+        annee: d.getFullYear(),
+        moisNum: d.getMonth()
+      });
+    }
+
+    const data = derniers6Mois.map(({ mois, annee, moisNum }) => {
+      const ofCeMois = candidatures.filter(c => {
+        const dateStr = c.dateCandidature || c.lastStatusUpdate;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        return d.getFullYear() === annee && d.getMonth() === moisNum;
+      });
+
+      return {
+        mois,
+        soumise: ofCeMois.filter(c => c.status === 'SOUMISE' || c.status === 'EN_COURS').length,
+        acceptee: ofCeMois.filter(c => c.status === 'VALIDEE' || c.status === 'ACCEPTEE').length,
+        refusee: ofCeMois.filter(c => c.status === 'REFUSEE').length,
+        total: ofCeMois.length
+      };
+    });
+
+    this.graphiqueActivite.set(data);
+  }
+
+  calculerCompletionProfil(c: Candidat | null): void {
+    if (!c) return;
+
+    const items = [
+      { id: 'perso', label: 'Informations personnelles', completed: !!(c.nom && c.prenom && c.email && c.telephone) },
+      { id: 'cv', label: 'CV téléchargé', completed: !!(c.cvFileName || c.cvUrl || c.cv?.fileName) },
+      { id: 'exp', label: 'Expériences professionnelles', completed: !!(c.experiences && c.experiences.length > 0) },
+      { id: 'photo', label: 'Photo de profil', completed: !!c.photoUrl }
     ];
 
-    this.offresSuggeresMock = allOffres.slice(0, 4).map((o, idx) => ({
-      id: o.id,
-      initiales: o.title?.substring(0, 2).toUpperCase() || 'JB',
-      color: colors[idx % colors.length],
-      title: o.title,
-      company: o.recruteur?.entreprise || 'SmartHiring Partner',
-      recruiterName: o.recruteur ? `${o.recruteur.prenom} ${o.recruteur.nom}` : 'Recruteur',
-      photoUrl: o.recruteur?.photoUrl,
-      location: o.location || 'À distance',
-      contrat: o.typeContrat || 'CDI',
-      match: Math.floor(Math.random() * 25) + 75
-    }));
+    const completedCount = items.filter(i => i.completed).length;
+    const pourcentage = Math.round((completedCount / items.length) * 100);
+
+    this.completionProfil.set({ pourcentage, items });
   }
 
   getInitiales(): string {
@@ -146,6 +214,10 @@ export class DashboardCandidatComponent implements OnInit {
 
   navigateTo(path: string): void {
     this.router.navigate([path]);
+  }
+
+  viewAllRecommended(): void {
+    this.router.navigate(['/candidat/offres'], { queryParams: { tab: 'recommended' } });
   }
 
   logout(): void {

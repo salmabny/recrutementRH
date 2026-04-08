@@ -21,55 +21,11 @@
   <!-- Cards -->
   <div class="role-cards">
 
-    <!-- Recruteur -->
-    <div class="role-card role-card--recruteur" [class.role-card--hovered]="hoveredRole === 'RECRUTEUR'"
-      [routerLink]="['/signup/recruteur']" (click)="selectRole('RECRUTEUR')" (mouseenter)="hoveredRole = 'RECRUTEUR'"
-      (mouseleave)="hoveredRole = null" role="button" tabindex="0" (keydown.enter)="selectRole('RECRUTEUR')">
-      <div class="card-icon card-icon--purple">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <rect x="2" y="7" width="20" height="14" rx="2" />
-          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-          <line x1="12" y1="12" x2="12" y2="16" />
-          <line x1="10" y1="14" x2="14" y2="14" />
-        </svg>
-      </div>
-
-      <h2 class="card-title">Recruteur</h2>
-      <p class="card-desc">
-        Je représente une entreprise et souhaite publier des offres
-        d'emploi et gérer mes candidatures.
-      </p>
-
-      <div class="card-features">
-        <div class="feature">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="20,6 9,17 4,12" />
-          </svg>
-          Publication d'offres illimitées
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="20,6 9,17 4,12" />
-          </svg>
-          Gestion des candidatures
-        </div>
-        <div class="feature">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="20,6 9,17 4,12" />
-          </svg>
-          Tableau de bord analytique
-        </div>
-      </div>
-
-      <div class="card-cta card-cta--purple">
-        Continuer en tant que Recruteur →
-      </div>
-    </div>
-
     <!-- Candidat -->
-    <div class="role-card role-card--candidat" [class.role-card--hovered]="hoveredRole === 'CANDIDAT'"
-      [routerLink]="['/signup/candidat']" (click)="selectRole('CANDIDAT')" (mouseenter)="hoveredRole = 'CANDIDAT'"
-      (mouseleave)="hoveredRole = null" role="button" tabindex="0" (keydown.enter)="selectRole('CANDIDAT')">
+    <div class="role-card role-card--candidat" style="width: 100%; max-width: 500px;"
+      [class.role-card--hovered]="hoveredRole === 'CANDIDAT'" [routerLink]="['/signup/candidat']"
+      (click)="selectRole('CANDIDAT')" (mouseenter)="hoveredRole = 'CANDIDAT'" (mouseleave)="hoveredRole = null"
+      role="button" tabindex="0" (keydown.enter)="selectRole('CANDIDAT')">
       <div class="card-icon card-icon--blue">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />

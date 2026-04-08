@@ -49,31 +49,13 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="15,18 9,12 15,6" />
       </svg>
-      Retour au choix du profil
+      Retour à la connexion
     </button>
 
     <div class="brand">
       <span class="brand-name">Smart<span class="brand-accent">Hiring</span></span>
     </div>
-    <p class="subtitle">Créer un compte <strong>Candidat</strong></p>
-
-    <!-- Toggle rôle -->
-    <div class="role-toggle">
-      <button type="button" class="role-btn" (click)="switchToRecruteur()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="7" width="20" height="14" rx="2" />
-          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-        </svg>
-        Recruteur
-      </button>
-      <button type="button" class="role-btn role-btn--active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        Candidat
-      </button>
-    </div>
+    <p class="subtitle">Créer votre compte <strong>Candidat</strong></p>
 
     <!-- Étapes -->
     <div class="steps">
@@ -141,7 +123,7 @@
         <label for="password">Mot de passe</label>
         <div class="input-wrap">
           <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
-            placeholder="8 caractères minimum" autocomplete="new-password" />
+            placeholder="6 caractères minimum" autocomplete="new-password" />
           <button type="button" class="eye-btn" (click)="togglePassword()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -150,20 +132,27 @@
           </button>
         </div>
 
-        @if (passwordStrength()) {
-        <div class="strength">
+        <div class="strength" *ngIf="passwordStrength()">
           <div class="strength-bar">
             @for (filled of strengthSegments; track $index) {
             <div class="strength-seg" [style.background]="filled ? passwordStrength()!.color : '#dde1f0'"></div>
             }
           </div>
-          <span class="strength-label">
-            Force :
-            <strong [style.color]="passwordStrength()!.color">
-              {{ passwordStrength()!.label }}
-            </strong>
-          </span>
+          <div class="strength-label" [style.color]="passwordStrength()!.color">
+            Force : <strong>{{passwordStrength()!.label}}</strong>
+          </div>
         </div>
+      </div>
+
+      <!-- Confirmer mot de passe -->
+      <div class="field" [class.field--error]="form.hasError('mismatch') && form.get('confirmPassword')?.touched">
+        <label for="confirmPassword">Confirmer le mot de passe</label>
+        <div class="input-wrap">
+          <input id="confirmPassword" type="password" formControlName="confirmPassword"
+            placeholder="Répétez le mot de passe" />
+        </div>
+        @if (form.hasError('mismatch') && form.get('confirmPassword')?.touched) {
+        <span class="error-msg">Les mots de passe ne correspondent pas</span>
         }
       </div>
 

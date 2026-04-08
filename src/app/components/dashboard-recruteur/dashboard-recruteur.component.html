@@ -1,65 +1,7 @@
 <div class="dashboard-layout">
 
   <!-- ── Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
-      <div class="brand-role">Espace Recruteur</div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section-label">Principal</div>
-      <div class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-        </svg>
-        Tableau de bord
-      </div>
-
-      <div class="nav-item" (click)="navigateTo('/recruteur/offres')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-        </svg>
-        Mes offres
-      </div>
-
-      <div class="nav-item" (click)="navigateTo('/recruteur/candidatures')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        Candidatures
-      </div>
-      <div class="nav-item" (click)="navigateTo('/recruteur/profil')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        Mon profil
-      </div>
-
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="user-card">
-        <div class="user-info">
-          <div class="user-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
-          <div class="user-company">{{ recruteur().entreprise }}</div>
-        </div>
-        <button class="btn-logout" (click)="logout()" title="Déconnexion">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </aside>
+  <app-sidebar-recruteur [activeItem]="'dashboard'"></app-sidebar-recruteur>
 
   <!-- ── Main -->
   <div class="main">
@@ -67,16 +9,9 @@
     <!-- Topbar -->
     <div class="topbar">
       <div class="topbar-greeting-wrapper">
-        @if (recruteur().photoUrl) {
-        <img class="topbar-avatar avatar-img" [src]="getPhotoUrl(recruteur().photoUrl)" alt="Profile">
-        } @else {
-        <div class="topbar-avatar-initials">{{ recruteur().initiales }}</div>
-        }
         <div>
-          <div class="topbar-title">Tableau de bord</div>
-          <div class="topbar-subtitle">
-            Bonjour {{ recruteur().prenom }} 👋
-          </div>
+          <div class="topbar-title">Vue Globale</div>
+          <div class="topbar-subtitle">Tableau de bord et statistiques principales</div>
         </div>
       </div>
       <div class="topbar-actions">
@@ -219,71 +154,78 @@
       <div class="two-col">
 
         <!-- Offres récentes -->
-        <div class="fb-feed fb-feed-recruiter">
-          <div class="fb-feed-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            </svg>
-            Mes offres récentes
-            <div class="card-link" (click)="navigateTo('/recruteur/offres')">
-              Voir tout →
+        <div class="premium-offers-card">
+          <div class="poc-header">
+            <div class="poc-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              </svg>
+              Mes offres récentes
+            </div>
+            <div class="poc-link" (click)="navigateTo('/recruteur/offres')">
+              Voir tout &rarr;
             </div>
           </div>
 
-          @if (isLoading()) {
-          <div class="loading">
-            <span class="spinner"></span> Chargement...
+          @if (offresExpirantCount() > 0) {
+          <div class="poc-warning">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            {{ offresExpirantCount() }} offres arrivent à expiration — pensez à les renouveler
           </div>
-          } @else {
-          @for (offre of offres().slice(0, 5); track offre.id) {
-          <div class="fb-post">
-            <div class="post-header">
-              @if (recruteur().photoUrl) {
-              <img class="poster-avatar avatar-img" [src]="getPhotoUrl(recruteur().photoUrl)" alt="Recruiter">
-              } @else {
-              <div class="poster-avatar">
-                {{ recruteur().initiales }}
-              </div>
-              }
-              <div class="poster-info">
-                <div class="poster-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
-                <div class="post-meta">
-                  <span style="font-weight: 500; color: #1a1d2e;">{{ recruteur().entreprise }}</span> ·
-                  <span>{{ formatDate(offre.publicationDate) }}</span> ·
-                  <span>{{ offre.location }}</span>
+          }
+
+          <div class="poc-list">
+            @if (isLoading()) {
+            <div class="poc-empty">Chargement...</div>
+            } @else {
+            @for (offre of offres().slice(0, 2); track offre.id) {
+            <div class="poc-item">
+
+              <div class="poc-item-top">
+                <div class="poc-poster">
+                  @if (recruteur().photoUrl) {
+                  <img class="poc-avatar" [src]="getPhotoUrl(recruteur().photoUrl)" alt="R">
+                  } @else {
+                  <div class="poc-avatar poc-initials">{{ recruteur().initiales }}</div>
+                  }
+                  <div class="poc-poster-info">
+                    <div class="poc-poster-name">
+                      {{ recruteur().prenom }} {{ recruteur().nom }} &middot; <span class="poc-company">{{
+                        recruteur().entreprise }}</span>
+                    </div>
+                    <div class="poc-poster-meta">
+                      {{ formatDate(offre.publicationDate) }} &middot; {{ offre.location }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="poc-status-badge poc-status-{{ offre.status | lowercase }}">
+                  {{ getStatutTag(offre.status).label | uppercase }}
                 </div>
               </div>
-              <span class="tag {{ getStatutTag(offre.status).css }}">
-                {{ getStatutTag(offre.status).label }}
-              </span>
-            </div>
 
-            <div class="post-content" (click)="navigateTo('/recruteur/offres/' + offre.id)" style="cursor: pointer;">
-              <div class="post-title">{{ offre.title }}</div>
-              <div class="post-text">
-                {{ offre.description | slice:0:150 }}...
+              <div class="poc-item-body" (click)="navigateTo('/recruteur/offres/' + offre.id)">
+                <h3 class="poc-job-title">{{ offre.title }}</h3>
+                <p class="poc-job-desc">{{ offre.description | slice:0:120 }}...</p>
               </div>
-              @if (offre.imageUrl) {
-              <div class="post-image-container">
-                <img [src]="offre.imageUrl" class="post-image" alt="Job Image">
-              </div>
-              }
-            </div>
 
-            <div class="post-stats">
-              <div class="stats-left">
-                <span class="stats-text">
-                  <strong>{{ offre.nombreCandidatures }}</strong> candidatures
-                </span>
+              <div class="poc-item-tags">
+                @if (offre.category) {
+                <span class="poc-tag">{{ offre.category }}</span>
+                }
+                <span class="poc-tag">{{ offre.experienceYears }}+ ans</span>
+                <span class="poc-tag poc-tag-highlight">{{ offre.nombreCandidatures }} candidatures</span>
               </div>
             </div>
+            } @empty {
+            <div class="poc-empty">Vous n'avez pas encore publié d'offres.</div>
+            }
+            }
           </div>
-          } @empty {
-          <div class="loading" style="padding: 40px; color: #8990a8;">
-            Vous n'avez pas encore publié d'offres.
-          </div>
-          }
-          }
         </div>
 
         <!-- Activité récente -->

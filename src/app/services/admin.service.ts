@@ -30,21 +30,17 @@ export class AdminService {
     return this.http.get<User[]>(`${this.apiUrl}/admin/recruteurs`);
   }
 
-  getRecruteursEnAttente(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/admin/recruteurs/en-attente`);
-  }
-
-  validerRecruteur(id: number): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/admin/recruteurs/${id}/valider`, {});
-  }
-
-  refuserRecruteur(id: number): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/admin/recruteurs/${id}/refuser`, {});
+  createRecruiter(data: { nom: string, prenom: string, email: string, entreprise: string, ville: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/admin/recruteurs/create`, data);
   }
 
   // ── Tous les utilisateurs
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/admin/users`);
+  }
+
+  getAllCandidats(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/admin/candidats`);
   }
 
   supprimerUser(id: number): Observable<void> {
@@ -59,6 +55,10 @@ export class AdminService {
     return this.http.put<User>(`${this.apiUrl}/admin/users/${id}/activer`, {});
   }
 
+  restaurerUser(id: number): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/admin/users/${id}/restaurer`, {});
+  }
+
   // ── Stats mensuelles pour le graphique
   getMonthlyStats(): Observable<MonthlyChartData[]> {
     return this.http.get<MonthlyChartData[]>(`${this.apiUrl}/admin/stats/monthly`);
@@ -71,5 +71,9 @@ export class AdminService {
 
   deleteJobOffer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/admin/job-offers/${id}`);
+  }
+
+  envoyerEmail(to: string, subject: string, content: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/admin/email`, { to, subject, content });
   }
 }

@@ -1,21 +1,42 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CandidatService } from '../../services/candidat.service';
 import { AuthService } from '../../services/auth.service';
 import { Candidat, Experience } from '../../models/candidat.model';
+import { Candidature } from '../../models/candidature.model';
+
+import { SidebarCandidatComponent } from '../sidebar-candidat/sidebar-candidat.component';
+
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-mon-profil',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SidebarCandidatComponent],
   templateUrl: './mon-profil.component.html',
-  styleUrls: ['./mon-profil.component.css']
+  styleUrls: ['./mon-profil.component.css'],
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-out', style({ opacity: 1 }))
+      ])
+    ]),
+    trigger('slideUp', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(20px) scale(0.95)' }),
+        animate('300ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          style({ opacity: 1, transform: 'translateY(0) scale(1)' }))
+      ])
+    ])
+  ]
 })
 export class MonProfilComponent implements OnInit {
 
   candidat = signal<Candidat | null>(null);
+  candidatures = signal<Candidature[]>([]);
   candidatureCount = signal(0);
   isLoading = signal(true);
   editMode = signal(false);
@@ -31,6 +52,42 @@ export class MonProfilComponent implements OnInit {
   skills = signal<string[]>([]);
   skillInput = signal('');
   experiences = signal<Experience[]>([]);
+
+  // TABS & ACTIONS
+  activeTab = signal<'info' | 'skills' | 'experience' | 'cv'>('info');
+  showActionsMenu = signal(false);
+  showPhotoMenu = signal(false);
+  showDeletePhotoConfirm = signal(false);
+
+  // PAGINATION Exp
+  readonly EXP_PER_PAGE = 3;
+  currentPageExp = signal(1);
+
+  paginatedExperiences = computed(() => {
+    const exps = this.experiences();
+    const start = (this.currentPageExp() - 1) * this.EXP_PER_PAGE;
+    return exps.slice(start, start + this.EXP_PER_PAGE);
+  });
+
+  totalExpPages = computed(() => {
+    const exps = this.experiences();
+    return Math.ceil(exps.length / this.EXP_PER_PAGE) || 1;
+  });
+
+  // PAGINATION Cand
+  readonly CAND_PER_PAGE = 5;
+  currentPageCand = signal(1);
+
+  paginatedCandidatures = computed(() => {
+    const cands = this.candidatures();
+    const start = (this.currentPageCand() - 1) * this.CAND_PER_PAGE;
+    return cands.slice(start, start + this.CAND_PER_PAGE);
+  });
+
+  totalCandPages = computed(() => {
+    const cands = this.candidatures();
+    return Math.ceil(cands.length / this.CAND_PER_PAGE) || 1;
+  });
 
   // New experience form fields (plain object — mutated directly by ngModel)
   newExp: { poste: string; entreprise: string; dateDebut: string; dateFin: string; enCours: boolean; description: string } = {
@@ -163,8 +220,14 @@ export class MonProfilComponent implements OnInit {
         this.buildForm(data);
 
         this.candidatService.getMesCandidatures(data.id).subscribe({
-          next: (cands) => this.candidatureCount.set(cands.length),
-          error: () => this.candidatureCount.set(0)
+          next: (cands) => {
+            this.candidatures.set(cands);
+            this.candidatureCount.set(cands.length);
+          },
+          error: () => {
+            this.candidatures.set([]);
+            this.candidatureCount.set(0);
+          }
         });
 
         this.authService.updateUser(data as any);
@@ -174,6 +237,58 @@ export class MonProfilComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  setTab(tab: any): void {
+    this.activeTab.set(tab);
+    this.currentPageExp.set(1);
+    this.currentPageCand.set(1);
+  }
+
+  toggleActionsMenu(): void {
+    this.showActionsMenu.update(v => !v);
+  }
+
+  togglePhotoMenu(event: Event): void {
+    event.stopPropagation();
+    this.showPhotoMenu.update(v => !v);
+  }
+
+  viewPhoto(): void {
+    const url = this.getPhotoUrl();
+    if (url) window.open(url, '_blank');
+    this.showPhotoMenu.set(false);
+  }
+
+  triggerPhotoEdit(): void {
+    const input = document.getElementById('photoInput') as HTMLInputElement;
+    if (input) input.click();
+    this.showPhotoMenu.set(false);
+  }
+
+  @HostListener('document:click')
+  clickout() {
+    if (this.showPhotoMenu()) {
+      this.showPhotoMenu.set(false);
+    }
+  }
+
+  // Experience Nav
+  nextPageExp() { if (this.currentPageExp() < this.totalExpPages()) this.currentPageExp.update(p => p + 1); }
+  prevPageExp() { if (this.currentPageExp() > 1) this.currentPageExp.update(p => p - 1); }
+  goToPageExp(p: number) { this.currentPageExp.set(p); }
+
+  // Candidature Nav (Not used for tabs but good to have)
+  nextPageCand() { if (this.currentPageCand() < this.totalCandPages()) this.currentPageCand.update(p => p + 1); }
+  prevPageCand() { if (this.currentPageCand() > 1) this.currentPageCand.update(p => p - 1); }
+  goToPageCand(p: number) { this.currentPageCand.set(p); }
+
+  getPageArray(total: number): number[] {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text);
   }
 
   toggleEdit(): void {
@@ -296,6 +411,42 @@ export class MonProfilComponent implements OnInit {
     }
   }
 
+  deletePhoto(event: Event): void {
+    event.stopPropagation();
+    this.showPhotoMenu.set(false);
+    this.showDeletePhotoConfirm.set(true);
+  }
+
+  cancelDeletePhoto(): void {
+    this.showDeletePhotoConfirm.set(false);
+  }
+
+  confirmDeletePhoto(): void {
+    const current = this.candidat();
+    if (!current) return;
+
+    this.isLoading.set(true);
+    this.showDeletePhotoConfirm.set(false);
+
+    this.candidatService.deletePhoto(current.id).subscribe({
+      next: (updated) => {
+        this.candidat.set({
+          ...updated,
+          competences: updated.competences?.length ? updated.competences : this.skills(),
+          experiences: updated.experiences?.length ? updated.experiences : this.experiences()
+        });
+        this.successMsg.set('Photo supprimée avec succès !');
+        this.isLoading.set(false);
+        setTimeout(() => this.successMsg.set(''), 3000);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMsg.set('Erreur lors de la suppression de la photo.');
+        console.error('Delete photo error:', err);
+      }
+    });
+  }
+
   handleFile(file: File): void {
     if (file.type !== 'application/pdf' || file.size > 5 * 1024 * 1024) return;
     const current = this.candidat();
@@ -305,6 +456,7 @@ export class MonProfilComponent implements OnInit {
     this.candidatService.uploadProfileCV(current.id, file).subscribe({
       next: (updatedCandidat) => {
         this.candidat.set(updatedCandidat);
+        this.authService.updateUser(updatedCandidat as any);
         this.successMsg.set('CV mis à jour et analysé avec succès !');
         this.isLoading.set(false);
       },
@@ -320,6 +472,7 @@ export class MonProfilComponent implements OnInit {
     this.candidatService.reanalyzeProfile(c.id).subscribe({
       next: (updated) => {
         this.candidat.set(updated);
+        this.authService.updateUser(updated as any);
         this.successMsg.set('Analyse du profil mise à jour !');
         this.isLoading.set(false);
         setTimeout(() => this.successMsg.set(''), 3000);
@@ -379,5 +532,16 @@ export class MonProfilComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  viewCv() {
+    const cvUrl = this.candidat()?.cv?.fileUrl;
+    if (cvUrl) {
+      // Accessing the backend file server URL directly
+      const fullUrl = cvUrl.startsWith('http') ? cvUrl : `http://localhost:8081/uploads/cv/${cvUrl}`;
+      window.open(fullUrl, '_blank');
+    } else {
+      this.errorMsg.set("Aucun CV disponible à consulter.");
+    }
   }
 }

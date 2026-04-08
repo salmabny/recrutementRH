@@ -27,8 +27,16 @@ export interface Candidature {
     prenom: string;
     email: string;
     photoUrl?: string;
+    anneesExperience?: number;
+    niveauEtudes?: string;
+    competences?: string[];
   };
   cv?: CV;
   score?: number;
+  skillsScore?: number;
+  educationScore?: number;
+  experienceScore?: number;
   analysisResult?: string;
+  categorizedSkills?: any;
+  isFavorite?: boolean;
 }

@@ -43,6 +43,13 @@ export interface AuthUser {
   telephone?: string;
   photoUrl?: string;
   companyDomain?: string;
+  mustChangePassword?: boolean;
+  cv?: {
+    id: number;
+    fileName: string;
+    fileUrl: string;
+    uploadDate: string;
+  };
 }
 
 export type PasswordStrength = 'faible' | 'moyen' | 'fort' | 'très fort';

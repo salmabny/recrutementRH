@@ -45,8 +45,8 @@ export class NotificationService {
 
     seedFromCandidatures(candidatures: any[]): void {
         if (this._notifications().length > 0) return; // don't re-seed
-        const notifs: Notification[] = candidatures.slice(0, 5).map((c, i) => ({
-            id: i + 1,
+        const notifs: Notification[] = candidatures.slice(0, 8).map((c, i) => ({
+            id: c.id || i + 1,
             message: `${c.candidat?.prenom ?? ''} ${c.candidat?.nom ?? ''} a postulé à "${c.jobOffer?.title ?? 'une offre'}"`,
             time: c.dateCandidature ?? new Date().toISOString(),
             read: false,
@@ -55,6 +55,37 @@ export class NotificationService {
             photoUrl: c.candidat?.photoUrl ?? null
         }));
         this._notifications.set(notifs);
+    }
+
+    seedFromCandidaturesForCandidat(candidatures: any[]): void {
+        const currentNotifs = this._notifications();
+        const existingIds = new Set(currentNotifs.map(n => n.id));
+
+        const newNotifs: Notification[] = candidatures.slice(0, 10).map((c) => {
+            let message = `Candidature envoyée pour <strong>${c.jobOffer?.title}</strong>`;
+            let type: 'candidature' | 'offre' | 'info' = 'info';
+
+            if (c.status === 'REFUSEE') {
+                message = `Votre candidature pour <strong>${c.jobOffer?.title}</strong> a été refusée`;
+                type = 'candidature';
+            } else if (c.status === 'VALIDEE' || c.status === 'ACCEPTEE') {
+                message = `Bravo ! Votre candidature pour <strong>${c.jobOffer?.title}</strong> a été acceptée`;
+                type = 'candidature';
+            }
+
+            return {
+                id: c.id,
+                message: message,
+                time: c.lastStatusUpdate || c.dateCandidature || new Date().toISOString(),
+                read: false,
+                type: type,
+                link: `/candidat/candidatures`
+            };
+        }).filter(n => !existingIds.has(n.id));
+
+        if (newNotifs.length > 0) {
+            this._notifications.update(list => [...newNotifs, ...list]);
+        }
     }
 
     formatTime(isoStr: string): string {

@@ -1,15 +1,16 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CandidatureService } from '../../services/candidature.service';
 import { AuthService } from '../../services/auth.service';
 import { Candidature, CandidatureStatus } from '../../models/candidature.model';
+import { SidebarRecruteurComponent } from '../sidebar-recruteur/sidebar-recruteur.component';
 
 @Component({
     selector: 'app-candidatures-list',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, SidebarRecruteurComponent],
     templateUrl: './candidatures-list.component.html',
     styleUrls: ['./candidatures-list.component.css']
 })
@@ -26,6 +27,21 @@ export class CandidaturesListComponent implements OnInit {
     // Filtres
     searchQuery = signal<string>('');
     filterStatus = signal<string>('ALL');
+    selectedJob = signal<string>('Tous');
+
+    // Pagination
+    currentPage = signal<number>(1);
+    readonly itemsPerPage = 6;
+
+    constructor() {
+        effect(() => {
+            // Reset to page 1 whenever a filter changes
+            this.searchQuery();
+            this.filterStatus();
+            this.selectedJob();
+            this.currentPage.set(1);
+        }, { allowSignalWrites: true });
+    }
 
     // Recruteur info (sidebar)
     recruteur = computed(() => {
@@ -39,11 +55,47 @@ export class CandidaturesListComponent implements OnInit {
         };
     });
 
+    // ── Unique Jobs for Filter
+    jobFilters = computed(() => {
+        const jobs = this.candidatures()
+            .map(c => c.jobOffer?.title)
+            .filter(Boolean) as string[];
+        return ['Tous', ...new Set(jobs)];
+    });
+
+    // ── Computed Statistics
+    dashboardStats = computed(() => {
+        let list = this.candidatures();
+        const job = this.selectedJob();
+
+        if (job !== 'Tous') {
+            list = list.filter(c => c.jobOffer?.title === job);
+        }
+
+        let pending = 0;
+        let accepted = 0;
+        let refused = 0;
+
+        for (const c of list) {
+            if (c.status === 'ACCEPTEE') accepted++;
+            else if (c.status === 'REFUSEE') refused++;
+            else pending++;
+        }
+
+        return {
+            total: list.length,
+            pending,
+            accepted,
+            refused
+        };
+    });
+
     // ── Computed
     filteredCandidatures = computed(() => {
         let list = this.candidatures();
         const query = this.searchQuery().toLowerCase();
         const status = this.filterStatus();
+        const job = this.selectedJob();
 
         if (query) {
             list = list.filter(c => {
@@ -63,8 +115,48 @@ export class CandidaturesListComponent implements OnInit {
             list = list.filter(c => c.status === status);
         }
 
+        if (job !== 'Tous') {
+            list = list.filter(c => c.jobOffer?.title === job);
+        }
+
         return list.sort((a, b) => new Date(b.dateCandidature).getTime() - new Date(a.dateCandidature).getTime());
     });
+
+    // ── Pagination Computed
+    totalPages = computed(() => {
+        return Math.ceil(this.filteredCandidatures().length / this.itemsPerPage) || 1;
+    });
+
+    paginatedCandidatures = computed(() => {
+        const start = (this.currentPage() - 1) * this.itemsPerPage;
+        return this.filteredCandidatures().slice(start, start + this.itemsPerPage);
+    });
+
+    get showingEnd() {
+        return Math.min(this.currentPage() * this.itemsPerPage, this.filteredCandidatures().length);
+    }
+
+    get paginationArray() {
+        return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
+    }
+
+    nextPage() {
+        if (this.currentPage() < this.totalPages()) {
+            this.currentPage.update(p => p + 1);
+        }
+    }
+
+    prevPage() {
+        if (this.currentPage() > 1) {
+            this.currentPage.update(p => p - 1);
+        }
+    }
+
+    goToPage(page: number) {
+        if (page >= 1 && page <= this.totalPages()) {
+            this.currentPage.set(page);
+        }
+    }
 
     ngOnInit(): void {
         const user = this.authService.currentUser();
@@ -112,16 +204,21 @@ export class CandidaturesListComponent implements OnInit {
     }
 
     viewCV(candidature: Candidature): void {
-        // Priorité au CV de la candidature spécifique
+        const token = localStorage.getItem('auth-token');
         const candidatureCV = candidature.cv?.fileUrl;
         const profileCV = (candidature.candidat as any)?.cvFileName;
 
         if (candidatureCV) {
-            // fileUrl contient déjà le chemin relatif ou absolu depuis l'API
-            const url = candidatureCV.startsWith('http') ? candidatureCV : `http://localhost:8081/uploads/cvs/${candidatureCV}`;
+            let url = candidatureCV.startsWith('http') ? candidatureCV : `http://localhost:8081/uploads/cv/${candidatureCV}`;
+            if (token) {
+                url += (url.includes('?') ? '&' : '?') + `token=${token}`;
+            }
             window.open(url, '_blank');
         } else if (profileCV) {
-            const url = `http://localhost:8081/uploads/cvs/${profileCV}`;
+            let url = `http://localhost:8081/uploads/cv/${profileCV}`;
+            if (token) {
+                url += `?token=${token}`;
+            }
             window.open(url, '_blank');
         } else {
             alert("Aucun CV n'est disponible pour cette candidature.");
@@ -150,9 +247,7 @@ export class CandidaturesListComponent implements OnInit {
     }
 
     logout(): void {
-        if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-            this.authService.logout();
-        }
+        this.authService.logout();
     }
 
     navigateTo(path: string): void {

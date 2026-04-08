@@ -1,5 +1,5 @@
 export type UserRole = 'ADMIN' | 'RECRUTEUR' | 'CANDIDAT';
-export type UserStatus = 'ACTIVE' | 'PENDING_ADMIN_VALIDATION' | 'PENDING_VERIFICATION' | 'REJECTED' | 'SUSPENDU';
+export type UserStatus = 'ACTIVE' | 'PENDING_ADMIN_VALIDATION' | 'PENDING_VERIFICATION' | 'REJECTED' | 'SUSPENDU' | 'DELETED';
 
 export interface User {
   id: number;
@@ -19,7 +19,6 @@ export interface User {
 export interface AdminStats {
   totalUtilisateurs: number;
   totalRecruteurs: number;
-  recruteursEnAttente: number;
   totalCandidats: number;
   offresActives: number;
   candidaturesTraitees: number;

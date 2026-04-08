@@ -1,0 +1,356 @@
+<div class="admin-layout">
+    <!-- ── Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
+            <div class="brand-sub-title">ADMINISTRATION</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">TABLEAU DE BORD</div>
+            <div class="nav-item" (click)="navigateTo('/admin')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Vue globale
+            </div>
+
+            <div class="nav-section-label">UTILISATEURS</div>
+            <div class="nav-item" (click)="navigateTo('/admin/recruteurs')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Recruteurs
+
+            </div>
+
+            <div class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Candidats
+
+            </div>
+
+            <div class="nav-section-label">CONTENU</div>
+            <div class="nav-item" (click)="navigateTo('/admin/offres')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Offres d'emploi
+
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card footer-minimal">
+                <div class="admin-badge-footer">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                    </svg>
+                    SUPER ADMIN
+                </div>
+                <button class="btn-logout" (click)="logout()" title="Déconnexion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Main -->
+    <div class="main">
+        <div class="content no-topbar">
+
+            <!-- Welcome Header (Modern Banner) -->
+            <div class="welcome-banner">
+                <div class="welcome-info">
+                    <h2>Gestion des Candidats</h2>
+                    <p>
+                        Consultez et gérez les profils inscrits ·
+                        <span class="hi-green">{{ totalValides() }} actifs</span> ·
+                        <span class="hi-orange">{{ totalSuspendus() }} suspendus</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Erreur -->
+            @if (errorMessage()) {
+            <div class="alert-error">{{ errorMessage() }}</div>
+            }
+
+            <!-- Premium Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card stat-card-border pastel-green">
+                    <div class="stat-top">
+                        <div class="stat-icon si-green">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                        </div>
+                        <span class="stat-badge badge-green">Actif</span>
+                    </div>
+                    <div class="stat-value">{{ totalValides() }}</div>
+                    <div class="stat-label">Comptes actifs</div>
+                </div>
+
+                <div class="stat-card stat-card-border pastel-orange">
+                    <div class="stat-top">
+                        <div class="stat-icon si-orange">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                            </svg>
+                        </div>
+                        <span class="stat-badge badge-orange">Suspendu</span>
+                    </div>
+                    <div class="stat-value">{{ totalSuspendus() }}</div>
+                    <div class="stat-label">Comptes suspendus</div>
+                </div>
+
+                <div class="stat-card stat-card-border pastel-blue">
+                    <div class="stat-top">
+                        <div class="stat-icon si-blue">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        <span class="stat-badge badge-blue">Total</span>
+                    </div>
+                    <div class="stat-value">{{ totalCandidats() }}</div>
+                    <div class="stat-label">Candidats au total</div>
+                </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="filters-bar">
+                <div class="search-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input class="search-input" type="text" placeholder="Rechercher par nom, email, ville..."
+                        (input)="onSearch($event)" />
+                </div>
+                <select class="filter-select" (change)="onStatutChange($event)">
+                    <option value="tous">Tous les statuts</option>
+                    <option value="ACTIVE">✓ Actif</option>
+                    <option value="SUSPENDU">✕ Suspendu</option>
+                    <option value="DELETED">🗑 Supprimé</option>
+                </select>
+
+            </div>
+
+            <!-- Modern Table Card -->
+            <div class="card card-compact">
+                <div class="table-container">
+                    <!-- Header Labels -->
+                    <div class="table-header-labels">
+                        <div class="col-cand">Candidat</div>
+                        <div class="col-city">Ville</div>
+                        <div class="col-stat">Statut</div>
+                        <div class="col-date">Inscription</div>
+                        <div class="col-act" style="text-align:right;">Actions</div>
+                    </div>
+
+                    @if (isLoading()) {
+                    <div class="loading-state">
+                        <span class="spinner"></span>
+                        Chargement...
+                    </div>
+                    } @else if (candidatsFiltres().length === 0) {
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <p>Aucun candidat ne correspond à ce filtre pour le moment.</p>
+                    </div>
+                    } @else {
+                    <div class="table-body">
+                        @for (user of paginatedCandidats(); track user.id) {
+                        <div class="table-row" [class.row-deleted]="user.status === 'DELETED'">
+
+                            <!-- User -->
+                            <div class="user-cell">
+                                <div class="avatar-wrapper">
+                                    @if (user.photoUrl) {
+                                    <img class="avatar-sm" [src]="getPhotoUrl(user.photoUrl)" alt="Photo">
+                                    } @else {
+                                    <div class="avatar-initials" [style.background]="getUserColor(user)">
+                                        {{ getInitiales(user.prenom, user.nom) }}
+                                    </div>
+                                    }
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">{{ user.prenom }} {{ user.nom }}</div>
+                                    <div class="user-email">{{ user.email }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Ville -->
+                            <div class="city-cell">
+                                <div class="location-info">
+                                    <svg style="width:12px;height:12px;color:#94a3b8;" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                    {{ user.ville || '-' }}
+                                </div>
+                            </div>
+
+                            <!-- Statut -->
+                            <div class="status-cell">
+                                <span class="badge-status" [class]="getStatusClass(user.status)">
+                                    {{ getStatusLabel(user.status) }}
+                                </span>
+                            </div>
+
+                            <!-- Date -->
+                            <div class="date-cell">
+                                {{ user.dateInscription | date:'dd MMM yyyy' }}
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="row-actions">
+                                <button class="btn-row-action btn-view" title="Voir profil"
+                                    (click)="navigateTo('/admin/candidat/' + user.id)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </button>
+
+                                <button class="btn-row-action" [class.btn-suspend]="user.status === 'ACTIVE'"
+                                    [class.btn-activate]="user.status === 'SUSPENDU'"
+                                    [title]="user.status === 'SUSPENDU' ? 'Activer' : 'Suspendre'"
+                                    (click)="toggleSuspension(user)">
+                                    @if (user.status === 'SUSPENDU') {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    } @else {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="15" y1="9" x2="9" y2="15" />
+                                        <line x1="9" y1="9" x2="15" y2="15" />
+                                    </svg>
+                                    }
+                                </button>
+
+                                @if (user.status !== 'DELETED') {
+                                <button class="btn-row-action btn-delete" title="Supprimer"
+                                    (click)="confirmDelete(user)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path
+                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    </svg>
+                                </button>
+                                } @else {
+                                <button class="btn-row-action btn-restore" title="Restaurer" (click)="restaurer(user)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                                    </svg>
+                                </button>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+
+                    <!-- Pagination Bar -->
+                    @if (candidatsFiltres().length > 0) {
+                    <div class="pagination-bar">
+                        <div class="pagination-info">
+                            Page <strong>{{ currentPage() }}</strong> sur {{ totalPages() }}
+                        </div>
+                        <div class="pagination-btns">
+                            <button class="btn-page" [disabled]="currentPage() === 1" (click)="prevPage()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15 18 9 12 15 6" />
+                                </svg>
+                            </button>
+
+                            @for (p of getPages(); track p) {
+                            <button class="btn-page" [class.active]="p === currentPage()" (click)="goToPage(p)">
+                                {{ p }}
+                            </button>
+                            }
+
+                            <button class="btn-page" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Suppression -->
+    @if (showDeleteModal()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+        <div class="modal-premium-card animate-scale-up" style="max-width: 450px;" (click)="$event.stopPropagation()">
+            <div class="modal-header-premium" style="border-bottom: none; padding-bottom: 0;">
+                <div class="m-header-left">
+                    <div class="m-icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="m-title-group">
+                        <h3 style="color: #ef4444; margin: 0; font-size: 18px;">Confirmer la suppression</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body-premium" style="padding-top: 16px; padding-bottom: 24px;">
+                <p style="color: #475569; font-size: 14.5px; line-height: 1.5; margin: 0;">
+                    Voulez-vous vraiment supprimer le compte de <strong>{{ userToDelete()?.prenom }} {{
+                        userToDelete()?.nom }}</strong> ?
+                </p>
+                <p style="color: #94a3b8; font-size: 13px; margin-top: 8px; font-style: italic; margin-bottom: 0;">
+                    (Ce compte pourra être restauré plus tard depuis la liste des utilisateurs)
+                </p>
+            </div>
+            <div class="modal-footer-premium"
+                style="justify-content: center; gap: 12px; border-top: 1px solid #eef2f6; background: #fafafa; padding-top: 24px; padding-bottom: 24px;">
+                <button class="btn-cancel-modal" (click)="cancelDelete()">Annuler</button>
+                <button class="btn-send-modal-premium"
+                    style="background: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);"
+                    (click)="executeDelete()">
+                    <div class="btn-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                        <span>Supprimer</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+</div>

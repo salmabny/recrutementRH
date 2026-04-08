@@ -1,13 +1,17 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CandidatService } from '../../services/candidat.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
+
+import { SidebarCandidatComponent } from '../sidebar-candidat/sidebar-candidat.component';
 
 @Component({
   selector: 'app-mes-candidatures',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, SidebarCandidatComponent],
   templateUrl: './mes-candidatures.component.html',
   styleUrls: ['./mes-candidatures.component.css']
 })
@@ -16,11 +20,79 @@ export class MesCandidaturesComponent implements OnInit {
   private candidatService = inject(CandidatService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  public notificationService = inject(NotificationService);
+
+  showNotifications = signal(false);
+
+  searchTerm = signal<string>('');
+
+  constructor() {
+    // Reset pagination when searching
+    effect(() => {
+      this.searchTerm();
+      this.currentPage.set(1);
+    }, { allowSignalWrites: true });
+  }
 
   candidatures = signal<any[]>([]);
   candidat = signal<any | null>(null);
   isLoading = signal(true);
   error = signal<string | null>(null);
+
+  // Filtering signals
+  selectedStatusFilter = signal<string>('Toutes');
+
+  // Pagination for Applied history
+  currentPage = signal(1);
+  pageSize = 3;
+
+  candidaturesFiltrees = computed(() => {
+    let list = this.candidatures();
+    const filter = this.selectedStatusFilter();
+    const term = this.searchTerm().toLowerCase();
+
+    // 1. Filter by status
+    if (filter !== 'Toutes') {
+      list = list.filter(c => {
+        const status = c.status?.toUpperCase();
+        if (filter === 'Soumises') return status === 'SOUMISE' || status === 'EN_COURS';
+        if (filter === 'Acceptées') return status === 'ACCEPTEE' || status === 'VALIDEE';
+        if (filter === 'Refusées') return status === 'REFUSEE';
+        return true;
+      });
+    }
+
+    // 2. Filter by search term
+    if (term) {
+      list = list.filter(c =>
+        c.jobOffer?.title?.toLowerCase().includes(term) ||
+        c.jobOffer?.recruteur?.entreprise?.toLowerCase().includes(term) ||
+        c.jobOffer?.location?.toLowerCase().includes(term)
+      );
+    }
+
+    return list;
+  });
+
+  // Filter change handler
+  setFilter(filter: string): void {
+    this.selectedStatusFilter.set(filter);
+    this.resetPagination();
+  }
+
+  paginatedCandidatures = computed(() => {
+    const list = this.candidaturesFiltrees();
+    const startIndex = (this.currentPage() - 1) * this.pageSize;
+    return list.slice(startIndex, startIndex + this.pageSize);
+  });
+
+  totalPages = computed(() => Math.ceil(this.candidaturesFiltrees().length / this.pageSize));
+
+  statsBestScore = computed(() => {
+    const list = this.candidatures();
+    if (list.length === 0) return 0;
+    return Math.max(...list.map(c => c.score || 0));
+  });
 
   getPhotoUrl(photo?: string): string {
     if (!photo) return '';
@@ -54,6 +126,7 @@ export class MesCandidaturesComponent implements OnInit {
       next: (data) => {
         this.candidatures.set(data);
         this.calculateStats(data);
+        this.notificationService.seedFromCandidaturesForCandidat(data);
         this.error.set(null);
         this.isLoading.set(false);
       },
@@ -120,6 +193,31 @@ export class MesCandidaturesComponent implements OnInit {
 
   navigateTo(path: string): void {
     this.router.navigate([path]);
+  }
+
+  // --- Pagination Methods ---
+  setPage(p: number): void {
+    if (p >= 1 && p <= this.totalPages()) {
+      this.currentPage.set(p);
+    }
+  }
+
+  resetPagination(): void {
+    this.currentPage.set(1);
+  }
+
+  viewCV(c: any) {
+    const token = localStorage.getItem('auth-token');
+    const cvUrl = c.cv?.fileUrl;
+    if (cvUrl) {
+      let url = cvUrl.startsWith('http') ? cvUrl : `http://localhost:8081/uploads/cv/${cvUrl}`;
+      if (token) {
+        url += (url.includes('?') ? '&' : '?') + `token=${token}`;
+      }
+      window.open(url, '_blank');
+    } else {
+      alert("Aucun CV n'est disponible pour cette candidature.");
+    }
   }
 
   logout(): void {

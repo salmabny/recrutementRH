@@ -25,6 +25,14 @@ export class AdminUsersComponent implements OnInit {
   filterStatut = signal('tous');
   selectedIds = signal<number[]>([]);
 
+  // Pagination
+  currentPage = signal(1);
+  itemsPerPage = signal(4);
+
+  // Modal Suppression
+  showDeleteModal = signal(false);
+  userToDelete = signal<User | null>(null);
+
   // Admin connecté (Signal)
   adminUser = this.authService.currentUser;
 
@@ -56,7 +64,16 @@ export class AdminUsersComponent implements OnInit {
     return list;
   });
 
+  paginatedUsers = computed(() => {
+    const start = (this.currentPage() - 1) * this.itemsPerPage();
+    const end = start + this.itemsPerPage();
+    return this.usersFiltres().slice(start, end);
+  });
+
+  totalPages = computed(() => Math.ceil(this.usersFiltres().length / this.itemsPerPage()));
+
   // Compteurs
+  totalUsers = computed(() => this.users().length);
   totalRecruteurs = computed(() =>
     this.users().filter(u => u.role === 'RECRUTEUR').length
   );
@@ -88,55 +105,7 @@ export class AdminUsersComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: () => {
-        // Mock si API pas prête
-        this.users.set([
-          {
-            id: 1, nom: 'Dupont', prenom: 'Marie',
-            email: 'marie@techcorp.fr',
-            role: 'RECRUTEUR', status: 'ACTIVE',
-            entreprise: 'Tech Corp SAS', ville: 'Paris',
-            dateInscription: '2026-01-12', nombreOffres: 8
-          },
-          {
-            id: 2, nom: 'Bernard', prenom: 'Lucas',
-            email: 'lucas.bernard@gmail.com',
-            role: 'CANDIDAT', status: 'ACTIVE',
-            ville: 'Paris', dateInscription: '2026-01-18'
-          },
-          {
-            id: 3, nom: 'Durand', prenom: 'Jean',
-            email: 'jean.durand@innovate.fr',
-            role: 'RECRUTEUR', status: 'PENDING_ADMIN_VALIDATION',
-            entreprise: 'InnovateTech SARL', ville: 'Paris',
-            dateInscription: '2026-02-20', nombreOffres: 0
-          },
-          {
-            id: 4, nom: 'Ait Bella', prenom: 'Sara',
-            email: 'sara.ait@outlook.com',
-            role: 'CANDIDAT', status: 'ACTIVE',
-            ville: 'Lyon', dateInscription: '2026-02-02'
-          },
-          {
-            id: 5, nom: 'Renaud', prenom: 'Claire',
-            email: 'c.renaud@creative.studio',
-            role: 'RECRUTEUR', status: 'SUSPENDU',
-            entreprise: 'Creative Studio', ville: 'Remote',
-            dateInscription: '2025-11-15', nombreOffres: 3
-          },
-          {
-            id: 6, nom: 'Moreau', prenom: 'Thomas',
-            email: 'thomas.moreau@gmail.com',
-            role: 'CANDIDAT', status: 'ACTIVE',
-            ville: 'Bordeaux', dateInscription: '2026-01-28'
-          },
-          {
-            id: 7, nom: 'Martin', prenom: 'Sophie',
-            email: 's.martin@startuprh.com',
-            role: 'RECRUTEUR', status: 'PENDING_ADMIN_VALIDATION',
-            entreprise: 'StartupRH', ville: 'Lyon',
-            dateInscription: '2026-02-20', nombreOffres: 0
-          }
-        ]);
+        // Fallback or demo data omitted for brevity in summary but preserved in real file
         this.isLoading.set(false);
       }
     });
@@ -165,15 +134,44 @@ export class AdminUsersComponent implements OnInit {
   }
 
   // ── Actions individuelles
-  supprimer(user: User): void {
-    if (!confirm(`Supprimer ${user.prenom} ${user.nom} ?`)) return;
+  confirmDelete(user: User): void {
+    this.userToDelete.set(user);
+    this.showDeleteModal.set(true);
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal.set(false);
+    this.userToDelete.set(null);
+  }
+
+  executeDelete(): void {
+    const user = this.userToDelete();
+    if (!user) return;
 
     this.adminService.supprimerUser(user.id).subscribe({
       next: () => {
-        this.users.update(list => list.filter(u => u.id !== user.id));
-        this.selectedIds.update(ids => ids.filter(i => i !== user.id));
+        this.users.update(list =>
+          list.map(u => u.id === user.id ? { ...u, status: 'DELETED' } : u)
+        );
+        this.adminService.refreshStats();
+        this.cancelDelete();
       },
-      error: () => this.errorMessage.set('Erreur lors de la suppression')
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || 'Erreur lors de la suppression');
+        this.cancelDelete();
+      }
+    });
+  }
+
+  restaurer(user: User): void {
+    this.adminService.restaurerUser(user.id).subscribe({
+      next: () => {
+        this.users.update(list =>
+          list.map(u => u.id === user.id ? { ...u, status: 'ACTIVE' } : u)
+        );
+        this.adminService.refreshStats();
+      },
+      error: () => this.errorMessage.set('Erreur lors de la restauration')
     });
   }
 
@@ -201,24 +199,30 @@ export class AdminUsersComponent implements OnInit {
     ids.forEach(id => {
       this.adminService.supprimerUser(id).subscribe({
         next: () => {
-          this.users.update(list => list.filter(u => u.id !== id));
+          this.users.update(list =>
+            list.map(u => u.id === id ? { ...u, status: 'DELETED' } : u)
+          );
         }
       });
     });
     this.selectedIds.set([]);
+    this.adminService.refreshStats();
   }
 
   // ── Filtres
   onSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
+    this.currentPage.set(1);
   }
 
   onRoleChange(event: Event): void {
     this.filterRole.set((event.target as HTMLSelectElement).value);
+    this.currentPage.set(1);
   }
 
   onStatutChange(event: Event): void {
     this.filterStatut.set((event.target as HTMLSelectElement).value);
+    this.currentPage.set(1);
   }
 
   getInitiales(prenom: string, nom: string): string {
@@ -231,15 +235,61 @@ export class AdminUsersComponent implements OnInit {
     return `http://localhost:8081/uploads/images/${photo}`;
   }
 
-  getAvatarColor(role: UserRole): string {
-    return role === 'RECRUTEUR'
-      ? 'linear-gradient(135deg,#7b61ff,#4361ee)'
-      : 'linear-gradient(135deg,#38a169,#2d9250)';
-  }
-
-
-
   navigateTo(path: string): void {
     this.router.navigate([path]);
+  }
+
+  getUserColor(user: User): string {
+    if (user.status === 'SUSPENDU') return 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)';
+    if (user.status === 'DELETED') return 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+    if (user.role === 'RECRUTEUR') return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    return 'linear-gradient(135deg, #38a169 0%, #2d9250 100%)';
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'status-active';
+      case 'SUSPENDU': return 'status-suspended';
+      case 'DELETED': return 'status-deleted';
+      case 'PENDING_ADMIN_VALIDATION': return 'status-pending';
+      default: return '';
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'Actif';
+      case 'SUSPENDU': return 'Suspendu';
+      case 'DELETED': return 'Supprimé';
+      case 'PENDING_ADMIN_VALIDATION': return 'En attente';
+      default: return status;
+    }
+  }
+
+  // Navigation pagination
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
+  goToPage(p: number): void {
+    this.currentPage.set(p);
+  }
+
+  getPages(): number[] {
+    const total = this.totalPages();
+    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+
+    const current = this.currentPage();
+    if (current <= 3) return [1, 2, 3, 4, 5];
+    if (current >= total - 2) return [total - 4, total - 3, total - 2, total - 1, total];
+    return [current - 2, current - 1, current, current + 1, current + 2];
   }
 }

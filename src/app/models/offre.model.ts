@@ -8,6 +8,7 @@ export interface Offre {
   title: string;
   description: string;
   location: string;
+  category?: string;
   requiredSkills: string[];
   educationLevel: string;
   experienceYears: number;
@@ -25,6 +26,7 @@ export interface OffreFormData {
   title: string;
   description: string;
   location: string;
+  category: string;
   requiredSkills: string;
   educationLevel: string;
   experienceYears: number;

@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { OffreService } from '../../services/offre.service';
 import { AuthService } from '../../services/auth.service';
 import { Offre, StatutOffre } from '../../models/offre.model';
+import { SidebarRecruteurComponent } from '../sidebar-recruteur/sidebar-recruteur.component';
 
 @Component({
   selector: 'app-offres-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SidebarRecruteurComponent],
   templateUrl: './offres-list.component.html',
   styleUrls: ['./offres-list.component.css']
 })
@@ -22,7 +23,11 @@ export class OffresListComponent implements OnInit {
   filterStatut = signal('tous');
   filterContrat = signal('tous');
 
-  // Offres filtrées
+  // Pagination
+  currentPage = signal(1);
+  readonly PAGE_SIZE = 3;
+
+  // Offres filtrées (base pour la pagination)
   offresFiltrees = computed(() => {
     let list = this.offres();
 
@@ -41,10 +46,27 @@ export class OffresListComponent implements OnInit {
     return list;
   });
 
-  // Compteurs
-  totalPubliees = computed(() => this.offres().filter(o => o.status === 'PUBLIEE').length);
-  totalBrouillon = computed(() => this.offres().filter(o => o.status === 'BROUILLON').length);
-  totalFermees = computed(() => this.offres().filter(o => o.status === 'FERMEE').length);
+  // Pagination computed
+  paginatedOffres = computed(() => {
+    const list = this.offresFiltrees();
+    const start = (this.currentPage() - 1) * this.PAGE_SIZE;
+    return list.slice(start, start + this.PAGE_SIZE);
+  });
+
+  totalPages = computed(() => {
+    return Math.ceil(this.offresFiltrees().length / this.PAGE_SIZE) || 1;
+  });
+
+  // Compteurs / Stats
+  dashboardStats = computed(() => {
+    const list = this.offres();
+    return {
+      total: list.length,
+      publiees: list.filter(o => o.status === 'PUBLIEE').length,
+      brouillons: list.filter(o => o.status === 'BROUILLON').length,
+      fermees: list.filter(o => o.status === 'FERMEE').length
+    };
+  });
 
   constructor(
     private offreService: OffreService,
@@ -110,10 +132,33 @@ export class OffresListComponent implements OnInit {
 
   onSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
+    this.currentPage.set(1); // Reset to page 1
   }
 
   onFilterStatut(event: Event): void {
     this.filterStatut.set((event.target as HTMLSelectElement).value);
+    this.currentPage.set(1); // Reset to page 1
+  }
+
+  // Pagination methods
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
+  goToPage(p: number): void {
+    this.currentPage.set(p);
+  }
+
+  getPageArray(): number[] {
+    return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
   }
 
   isExpiringSoon(expirationDate?: string): boolean {
@@ -135,9 +180,7 @@ export class OffresListComponent implements OnInit {
   }
 
   logout(): void {
-    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      this.authService.logout();
-    }
+    this.authService.logout();
   }
 
   formatDate(date?: string): string {

@@ -1,51 +1,62 @@
-<div class="dashboard-layout">
+<div class="admin-layout">
 
     <!-- ── Sidebar -->
+    @if (isAdmin()) {
     <aside class="sidebar">
+        <!-- ... standardized admin sidebar ... -->
         <div class="sidebar-brand">
             <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
-            <div class="brand-role">Espace Recruteur</div>
+            <div class="brand-sub-title">ADMINISTRATION</div>
         </div>
 
         <nav class="sidebar-nav">
-            <div class="nav-section-label">Principal</div>
-            <div class="nav-item" (click)="navigateTo('/recruteur')">
+            <div class="nav-section-label">TABLEAU DE BORD</div>
+            <div class="nav-item" (click)="navigateTo('/admin')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="7" height="7" />
                     <rect x="14" y="3" width="7" height="7" />
                     <rect x="14" y="14" width="7" height="7" />
                     <rect x="3" y="14" width="7" height="7" />
                 </svg>
-                Tableau de bord
+                Vue globale
             </div>
-            <div class="nav-item" (click)="navigateTo('/recruteur/offres')">
+
+            <div class="nav-section-label">UTILISATEURS</div>
+            <div class="nav-item" (click)="navigateTo('/admin/recruteurs')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Recruteurs
+            </div>
+
+            <div class="nav-item active" (click)="navigateTo('/admin/candidats')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Candidats
+            </div>
+
+            <div class="nav-section-label">CONTENU</div>
+            <div class="nav-item" (click)="navigateTo('/admin/offres')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                 </svg>
-                Mes offres
-            </div>
-            <div class="nav-item active" (click)="navigateTo('/recruteur/candidatures')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-                Candidatures
-            </div>
-            <div class="nav-item" (click)="navigateTo('/recruteur/profil')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-                Mon profil
+                Offres d'emploi
             </div>
         </nav>
 
         <div class="sidebar-footer">
-            <div class="user-card">
-                <div class="user-info">
-                    <div class="user-name">{{ recruteur().prenom }} {{ recruteur().nom }}</div>
-                    <div class="user-company">{{ recruteur().entreprise }}</div>
+            <div class="user-card footer-minimal">
+                <div class="admin-badge-footer">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                    </svg>
+                    SUPER ADMIN
                 </div>
                 <button class="btn-logout" (click)="logout()" title="Déconnexion">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -57,6 +68,11 @@
             </div>
         </div>
     </aside>
+    } @else if (isRecruteur()) {
+    <app-sidebar-recruteur activeItem="candidatures"></app-sidebar-recruteur>
+    } @else {
+    <app-sidebar-candidat activeItem="candidatures"></app-sidebar-candidat>
+    }
 
     <!-- ── Main -->
     <div class="main">
@@ -149,25 +165,79 @@
                         </div>
                     </div>
 
-                    <div class="card score-card">
-                        <div class="card-header">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="8" x2="12" y2="12" />
-                                <line x1="12" y1="16" x2="12.01" y2="16" />
-                            </svg>
-                            <span>Score IA</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="score-display {{ getScoreClass(candidature()!.score) }}">
-                                {{ candidature()!.score !== undefined ? (candidature()!.score | number:'1.0-0') + '%' :
-                                '—' }}
+                    <!-- New Premium AI Analysis Card -->
+                    <div class="card premium-analysis-card">
+                        <div class="analysis-header">
+                            <div class="score-badge-gradient">
+                                <span class="score-value">{{ candidature()!.score | number:'1.1-1' }}%</span>
+                                <span class="score-label">SCORE IA</span>
                             </div>
-                            @if (candidature()!.analysisResult) {
-                            <div class="analysis-text">{{ candidature()!.analysisResult }}</div>
-                            } @else {
-                            <div class="analysis-empty">Aucune analyse disponible</div>
-                            }
+                            <div class="analysis-title-group">
+                                <h2>Rapport d'Analyse</h2>
+                                <p>Compatibilité par critère</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-body">
+                            <!-- Progress Bars Section -->
+                            <div class="progress-section">
+                                <div class="progress-item">
+                                    <div class="progress-label">
+                                        <span>COMPÉTENCES (50%)</span>
+                                        <span class="progress-stats">
+                                            <span class="progress-percent blue">{{ getSkillProgress() }}% match</span>
+                                            <span class="progress-points">({{ getSkillPoints() | number:'1.1-1' }} / 50
+                                                pts)</span>
+                                        </span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill bar-blue" [style.width.%]="getSkillProgress()"></div>
+                                    </div>
+                                </div>
+                                <div class="progress-item">
+                                    <div class="progress-label">
+                                        <span>DIPLÔMES (25%)</span>
+                                        <span class="progress-stats">
+                                            <span class="progress-percent purple">{{ getEducationProgress() }}%
+                                                match</span>
+                                            <span class="progress-points">({{ getEducationPoints() | number:'1.1-1' }} /
+                                                25 pts)</span>
+                                        </span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill bar-purple" [style.width.%]="getEducationProgress()">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="progress-item">
+                                    <div class="progress-label">
+                                        <span>EXPÉRIENCES (25%)</span>
+                                        <span class="progress-stats">
+                                            <span class="progress-percent green">{{ getExperienceProgress() }}%
+                                                match</span>
+                                            <span class="progress-points">({{ getExperiencePoints() | number:'1.1-1' }}
+                                                / 25 pts)</span>
+                                        </span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill bar-green" [style.width.%]="getExperienceProgress()">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Candidate Identification Card (Bottom of Analysis) -->
+                            <div class="candidate-brief-card">
+                                <div class="brief-avatar">
+                                    {{ getInitiales(candidature()) }}
+                                </div>
+                                <div class="brief-info">
+                                    <span class="brief-name">{{ candidature()!.candidat?.prenom }} {{
+                                        candidature()!.candidat?.nom }}</span>
+                                    <span class="brief-email">{{ candidature()!.candidat?.email }}</span>
+                                </div>
+                                <div class="status-indicator active"></div>
+                            </div>
                         </div>
                     </div>
 

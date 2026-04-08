@@ -1,209 +1,345 @@
 <div class="dashboard-layout">
-
   <!-- ── Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-name">Smart<span class="brand-accent">Hiring</span></div>
-      <div class="brand-role">Espace Candidat</div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section-label">Principal</div>
-
-      <div class="nav-item" (click)="navigateTo('/candidat')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-        </svg>
-        Tableau de bord
-      </div>
-
-      <div class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        Offres d'emploi
-      </div>
-
-      <div class="nav-item" (click)="navigateTo('/candidat/candidatures')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-        </svg>
-        Mes candidatures
-      </div>
-
-      <div class="nav-section-label">Profil</div>
-
-      <div class="nav-item" (click)="navigateTo('/candidat/profil')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        Mon profil
-      </div>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="user-card">
-        <div class="user-info">
-          <div class="user-name">{{ candidat()?.prenom }} {{ candidat()?.nom }}</div>
-          <div class="user-role">Candidat</div>
-        </div>
-        <button class="btn-logout" (click)="logout()" title="Déconnexion">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </aside>
+  <app-sidebar-candidat [activeItem]="'offres'"></app-sidebar-candidat>
 
   <div class="main">
-
-    <!-- Topbar -->
-    <div class="topbar">
-      <div class="topbar-greeting-wrapper">
-        @if (candidat()?.photoUrl) {
-        <img class="topbar-avatar avatar-img" [src]="getPhotoUrl(candidat()?.photoUrl)" alt="Profile">
-        } @else {
-        <div class="topbar-avatar-initials">{{ getInitiales() }}</div>
-        }
-        <div>
-          <div class="topbar-title">Offres d'emploi</div>
-          <div class="topbar-sub">
-            {{ offresFiltrees().length }} offres disponibles
+    <div class="topbar-alt">
+      <div class="topbar-row-1">
+        <div class="banner-header-alt">
+          <div class="banner-text-content">
+            <h1 class="topbar-title-alt">Offres d'emploi</h1>
+            <div class="topbar-subtitle-alt">Trouvez le poste qui vous correspond</div>
           </div>
+          <div class="topbar-search-alt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon-alt">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" x2="16.65" y1="21" y2="16.65" />
+            </svg>
+            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+              placeholder="Rechercher..." class="search-input-alt">
+          </div>
+        </div>
+      </div>
+      <div class="topbar-row-2">
+        <div class="tabs-nav-alt">
+          <button class="tab-btn-alt" [class.active]="selectedTab() === 'available'" (click)="setTab('available')">
+            Offres disponibles <span class="tab-count-alt">{{ (offres().length - appliedOffreIds().length) > 0 ?
+              (offres().length - appliedOffreIds().length) : 0 }}</span>
+          </button>
+          <button class="tab-btn-alt" [class.active]="selectedTab() === 'recommended'" (click)="setTab('recommended')">
+            Offres recommandées <span class="tab-count-alt">{{ offresRecommandees().length }}</span>
+          </button>
+          <button class="tab-btn-alt" [class.active]="selectedTab() === 'applied'" (click)="setTab('applied')">
+            Offres postulées <span class="tab-count-alt">{{ candidatures().length }}</span>
+          </button>
         </div>
       </div>
     </div>
 
     <div class="content">
+      @if (selectedTab() === 'available') {
+      <div class="category-filters-alt">
+        @for (cat of categories; track cat) {
+        <button class="filter-pill-alt" [class.active]="selectedCategory() === cat" (click)="setCategory(cat)">
+          {{ cat }}
+        </button>
+        }
+      </div>
+      @if (isLoading()) {
+      <div class="loading">
+        <span class="spinner"></span>
+        <p>Recherche des offres...</p>
+      </div>
+      } @else if (offresFiltrees().length === 0) {
+      <div class="empty-state">
+        <p>Aucune offre disponible.</p>
+      </div>
+      } @else {
+      <div class="job-list-final">
+        @for (offre of paginatedOffres(); track offre.id) {
+        <div class="job-row-final" (click)="goToDetail(offre)">
+          <div class="row-status-stripe stripe-blue"></div>
+          <div class="row-logo-container">
+            @if (offre.recruteur?.photoUrl) {
+            <img [src]="getRecruteurPhotoUrl(offre.recruteur?.photoUrl)" alt="Logo">
+            } @else {
+            {{ (offre.recruteur?.entreprise || 'E')?.substring(0, 1).toUpperCase() }}
+            }
+          </div>
+          <div class="row-info-container">
+            <div class="row-title-row">
+              <h3 class="row-title-text">{{ offre.title }}</h3>
+              @if (offre.category) {
+              <span class="row-cat-pill">{{ offre.category.toUpperCase() }}</span>
+              }
+            </div>
+            <div class="row-company-text">{{ offre.recruteur?.entreprise || 'Esprit-RH' }}</div>
+            <div class="row-meta-row">
+              <div class="row-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                {{ offre.location || 'Tunis' }}
+              </div>
+              <div class="row-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                {{ offre.publicationDate | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+          </div>
+          <div class="row-right-section">
+            <div class="row-score-container">
+              <div class="row-score-header">
+                <span class="row-score-label">SCORE MATCH</span>
+                <span class="row-score-pct">{{ getScore(offre.id) || 0 }}%</span>
+              </div>
+              <div class="row-score-progress-bg">
+                <div class="row-score-progress-fill" [ngClass]="getScoreClass(getScore(offre.id) || 0)"
+                  [style.width.%]="getScore(offre.id) || 0"></div>
+              </div>
+            </div>
+            <div class="row-buttons">
+              <button class="row-btn-outline" (click)="postuler(offre, $event)">Postuler</button>
+              <button class="row-btn-outline" (click)="goToDetail(offre); $event.stopPropagation()">Détails</button>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
 
-      <!-- Notification Toast -->
-      @if (showAlreadyAppliedToast()) {
-      <div class="toast-container">
-        <div class="fb-toast">
-          <div class="toast-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
+      }
+      } @else if (selectedTab() === 'recommended') {
+      <div class="category-filters-alt">
+        <div class="filter-info-text">Voici les offres qui correspondent le mieux à votre profil</div>
+      </div>
+      @if (isLoading()) {
+      <div class="loading">
+        <span class="spinner"></span>
+        <p>Calcul des recommandations...</p>
+      </div>
+      } @else if (offresRecommandees().length === 0) {
+      <div class="empty-state">
+        <p>Aucune recommandation pour le moment. Complétez votre profil pour obtenir de meilleurs résultats.</p>
+      </div>
+      } @else {
+      <div class="job-list-final">
+        @for (offre of paginatedOffresRecommandees(); track offre.id) {
+        <div class="job-row-final" (click)="goToDetail(offre)">
+          <div class="row-status-stripe stripe-blue"></div>
+          <div class="row-logo-container">
+            @if (offre.recruteur?.photoUrl) {
+            <img [src]="getRecruteurPhotoUrl(offre.recruteur?.photoUrl)" alt="Logo">
+            } @else {
+            {{ (offre.recruteur?.entreprise || 'E')?.substring(0, 1).toUpperCase() }}
+            }
+          </div>
+          <div class="row-info-container">
+            <div class="row-title-row">
+              <h3 class="row-title-text">{{ offre.title }}</h3>
+              @if (offre.category) {
+              <span class="row-cat-pill">{{ offre.category.toUpperCase() }}</span>
+              }
+            </div>
+            <div class="row-company-text">{{ offre.recruteur?.entreprise || 'Esprit-RH' }}</div>
+            <div class="row-meta-row">
+              <div class="row-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                {{ offre.location || 'Tunis' }}
+              </div>
+              <div class="row-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                {{ offre.publicationDate | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+          </div>
+          <div class="row-right-section">
+            <div class="row-score-container">
+              <div class="row-score-header">
+                <span class="row-score-label">MATCH RECOMMANDÉ</span>
+                <span class="row-score-pct">{{ getScore(offre.id) || 0 }}%</span>
+              </div>
+              <div class="row-score-progress-bg">
+                <div class="row-score-progress-fill" [ngClass]="getScoreClass(getScore(offre.id) || 0)"
+                  [style.width.%]="getScore(offre.id) || 0"></div>
+              </div>
+            </div>
+            <div class="row-buttons">
+              <button class="row-btn-outline" (click)="postuler(offre, $event)">Postuler</button>
+              <button class="row-btn-outline" (click)="goToDetail(offre); $event.stopPropagation()">Détails</button>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Pagination for Recommended -->
+      @if (totalPagesRecommended() > 1) {
+      <div class="pagination-container">
+        <div class="pag-left">Page {{ currentPageAvailable() }}</div>
+        <div class="pag-right">
+          <button class="pag-btn-arrow" [disabled]="currentPageAvailable() === 1"
+            (click)="setPageAvailable(currentPageAvailable() - 1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
+          </button>
+          <div class="pag-numbers">
+            @for (p of [].constructor(totalPagesRecommended()); track $index) {
+            <button class="pag-num" [class.active]="currentPageAvailable() === ($index + 1)"
+              (click)="setPageAvailable($index + 1)">
+              {{ $index + 1 }}
+            </button>
+            }
           </div>
-          <div class="toast-body">
-            <div class="toast-title">Candidature déjà envoyée</div>
-            <div class="toast-text">Vous avez déjà postulé à cette offre d'emploi.</div>
-          </div>
-          <button class="toast-close" (click)="showAlreadyAppliedToast.set(false)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
+          <button class="pag-btn-arrow" [disabled]="currentPageAvailable() === totalPagesRecommended()"
+            (click)="setPageAvailable(currentPageAvailable() + 1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </button>
         </div>
       </div>
       }
-
-      <!-- Loading -->
-      @if (isLoading()) {
-      <div class="loading">
-        <span class="spinner"></span> Chargement des offres...
-      </div>
       }
-
-      <!-- Vide -->
-      @else if (offresFiltrees().length === 0) {
+      } @else {
+      <div class="stats-grid-alt">
+        <div class="stat-card-premium stat-card-blue">
+          <div class="stat-number">{{ statsSoumises() }}</div>
+          <div class="stat-label-small">Soumises</div>
+        </div>
+        <div class="stat-card-premium stat-card-green">
+          <div class="stat-number">{{ statsAcceptees() }}</div>
+          <div class="stat-label-small">Acceptées</div>
+        </div>
+        <div class="stat-card-premium stat-card-red">
+          <div class="stat-number">{{ statsRefusees() }}</div>
+          <div class="stat-label-small">Refusées</div>
+        </div>
+        <div class="stat-card-premium stat-card-orange">
+          <div class="stat-number">{{ statsBestScore() | number:'1.1-1' }}%</div>
+          <div class="stat-label-small">Meilleur score</div>
+        </div>
+      </div>
+      <div class="recent-header-alt">
+        <h2 class="section-title-alt">Candidatures récentes</h2>
+        <div class="status-tabs-alt">
+          <button class="status-tab-btn" [class.active]="selectedStatusFilter() === 'Toutes'"
+            (click)="selectedStatusFilter.set('Toutes'); resetPagination()">Toutes</button>
+          <button class="status-tab-btn tab-blue" [class.active]="selectedStatusFilter() === 'Soumises'"
+            (click)="selectedStatusFilter.set('Soumises'); resetPagination()">Soumises</button>
+          <button class="status-tab-btn tab-green" [class.active]="selectedStatusFilter() === 'Acceptées'"
+            (click)="selectedStatusFilter.set('Acceptées'); resetPagination()">Acceptées</button>
+          <button class="status-tab-btn tab-red" [class.active]="selectedStatusFilter() === 'Refusées'"
+            (click)="selectedStatusFilter.set('Refusées'); resetPagination()">Refusées</button>
+        </div>
+      </div>
+      @if (candidaturesFiltrees().length === 0) {
       <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <p>Aucune offre disponible pour le moment</p>
+        <p>Aucune candidature trouvée.</p>
       </div>
-      }
-
-      <!-- Grille -->
-      @else {
-      <div class="fb-feed">
-        @for (offre of offresFiltrees(); track offre.id) {
-        <div class="fb-post">
-
-          <!-- Post Header -->
-          <div class="post-header">
-            <div class="poster-avatar-wrap" (click)="goToRecruteur(offre); $event.stopPropagation()">
-              @if (offre.recruteur?.photoUrl) {
-              <img class="poster-avatar poster-avatar-img" [src]="getRecruteurPhotoUrl(offre.recruteur?.photoUrl)"
-                alt="{{ offre.recruteur?.prenom }}">
-              } @else {
-              <div class="poster-avatar" [style.background]="offre.color || '#4361ee'">
-                {{ (offre.recruteur?.entreprise || 'SH')?.substring(0, 1).toUpperCase() }}
-              </div>
-              }
+      } @else {
+      <div class="job-list-final">
+        @for (c of paginatedCandidatures(); track c.id) {
+        <div class="job-row-final">
+          <div class="row-status-stripe" [ngClass]="'stripe-' + c.status?.toLowerCase()"></div>
+          <div class="row-logo-container">
+            @if (c.jobOffer?.recruteur?.photoUrl) {
+            <img [src]="getPhotoUrl(c.jobOffer?.recruteur?.photoUrl)" alt="Logo">
+            } @else {
+            <div class="logo-placeholder">{{ (c.jobOffer?.recruteur?.entreprise || 'E')?.substring(0, 1).toUpperCase()
+              }}</div>
+            }
+          </div>
+          <div class="row-info-container">
+            <div class="row-title-row">
+              <h3 class="row-title-text">{{ c.jobOffer?.title }}</h3>
+              <span class="row-status-pill" [ngClass]="'badge-' + c.status?.toLowerCase()">{{
+                getStatusConfig(c.status).label.toUpperCase() }}</span>
             </div>
-            <div class="poster-info">
-              <div class="poster-name poster-name-link" (click)="goToRecruteur(offre); $event.stopPropagation()">
-                {{ offre.recruteur?.prenom || 'Nom' }} {{ offre.recruteur?.nom || 'Recruteur' }}
-              </div>
-              <div class="post-meta">
-                <span style="font-weight: 500; color: #050505;">{{ offre.recruteur?.entreprise || 'Entreprise'
-                  }}</span>
-                ·
-                <span>{{ offre.publicationDate | date:'dd/MM/yyyy' }}</span> ·
+            <div class="row-company-text">{{ c.jobOffer?.recruteur?.entreprise || 'Entreprise' }}</div>
+            <div class="row-meta-row">
+              <div class="row-meta-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                <span>{{ offre.location || 'Tunis' }}</span>
+                {{ c.jobOffer?.location || 'Tunis' }}
+              </div>
+              <div class="row-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Postulé le {{ c.dateCandidature | date:'dd/MM/yyyy' }}
               </div>
             </div>
           </div>
-
-          <!-- Post Content -->
-          <div class="post-content">
-            <div class="post-title">{{ offre.title }}</div>
-            <div class="post-text">
-              Nous recrutons un(e) {{ offre.title }} passionné(e) pour rejoindre notre équipe à {{ offre.location }}.
-              Venez participer à des projets innovants dans un environnement stimulant !
+          <div class="row-right-section">
+            <div class="row-score-container">
+              <div class="row-score-header">
+                <span class="row-score-label">SCORE MATCH</span>
+                <span class="row-score-pct">{{ c.score | number:'1.1-1' }}%</span>
+              </div>
             </div>
-
-            @if (offre.imageUrl) {
-            <div class="post-image-container">
-              <img [src]="offre.imageUrl" class="post-image" alt="Aperçu de l'offre">
+            <div class="row-buttons">
+              <button class="row-btn-outline" (click)="viewCV(c); $event.stopPropagation()">Mon CV</button>
+              <button class="row-btn-outline"
+                (click)="navigateTo('/candidat/offres/' + c.jobOffer?.id); $event.stopPropagation()">Détails</button>
             </div>
-            }
-
-            <div class="post-tags">
-              @for (skill of offre.skills?.slice(0,4); track skill) {
-              <span class="fb-tag">#{{ skill.replace(' ', '') }}</span>
-              }
-            </div>
-          </div>
-
-          <!-- Post Actions -->
-          <div class="post-actions">
-            <button class="action-btn" (click)="goToDetail(offre); $event.stopPropagation()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              Voir plus sur l'offre
-            </button>
-            <button class="action-btn highlight" (click)="postuler(offre, $event)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-              Postuler
-            </button>
           </div>
         </div>
         }
       </div>
+
+      <!-- Pagination for Applied -->
+      @if (totalPagesApplied() > 1) {
+      <div class="pagination-container">
+        <div class="pag-left">Page {{ currentPageApplied() }}</div>
+        <div class="pag-right">
+          <button class="pag-btn-arrow" [disabled]="currentPageApplied() === 1"
+            (click)="setPageApplied(currentPageApplied() - 1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="pag-numbers">
+            @for (p of [].constructor(totalPagesApplied()); track $index) {
+            <button class="pag-num" [class.active]="currentPageApplied() === ($index + 1)"
+              (click)="setPageApplied($index + 1)">
+              {{ $index + 1 }}
+            </button>
+            }
+          </div>
+          <button class="pag-btn-arrow" [disabled]="currentPageApplied() === totalPagesApplied()"
+            (click)="setPageApplied(currentPageApplied() + 1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+      }
+      }
       }
     </div>
   </div>

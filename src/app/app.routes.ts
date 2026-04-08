@@ -16,24 +16,15 @@ export const routes: Routes = [
   },
   {
     path: 'signup',
-    canActivate: [guestGuard],
-    loadComponent: () =>
-      import('./components/role-select/role-select.component').then(m => m.RoleSelectComponent),
-    title: 'SmartHiring — Inscription'
+    redirectTo: 'signup/candidat',
+    pathMatch: 'full'
   },
   {
     path: 'signup/candidat',
-    canActivate: [guestGuard, roleSelectedGuard],
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./components/signup-candidat/signup-candidat.component').then(m => m.SignupCandidatComponent),
     title: 'SmartHiring — Inscription Candidat'
-  },
-  {
-    path: 'signup/recruteur',
-    canActivate: [guestGuard, roleSelectedGuard],
-    loadComponent: () =>
-      import('./components/signup-recruteur/signup-recruteur.component').then(m => m.SignupRecruteurComponent),
-    title: 'SmartHiring — Inscription Recruteur'
   },
   {
     path: 'recruteur',
@@ -88,6 +79,12 @@ export const routes: Routes = [
         title: 'SmartHiring — Profil Candidat'
       },
       {
+        path: 'ranking',
+        loadComponent: () =>
+          import('./components/ranking/ranking.component').then(m => m.RankingComponent),
+        title: 'SmartHiring — Classement'
+      },
+      {
         path: 'profil',
         loadComponent: () =>
           import('./components/profil-recruteur/profil-recruteur.component').then(m => m.ProfilRecruteurComponent),
@@ -101,6 +98,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
     title: 'SmartHiring — Mot de passe oublié'
+  },
+  {
+    path: 'update-password',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./components/update-password/update-password.component').then(m => m.UpdatePasswordComponent),
+    title: 'SmartHiring — Sécurisez votre compte'
   },
 
   // ── Dashboard Admin
@@ -117,6 +121,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/admin-recruteurs/admin-recruteurs.component').then(m => m.AdminRecruteursComponent),
     title: 'SmartHiring — Gestion Recruteurs'
+  },
+  {
+    path: 'admin/candidats',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () =>
+      import('./components/admin-candidats/admin-candidats.component').then(m => m.AdminCandidatsComponent),
+    title: 'SmartHiring — Gestion Candidats'
   },
   {
     path: 'admin/users',
